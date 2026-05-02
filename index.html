@@ -387,17 +387,23 @@
 
   .price-row {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 0.4rem;
     padding: 0.9rem 0;
     border-bottom: 1px solid #1a1a1a;
   }
 
   .price-row:last-of-type { border-bottom: none; }
 
-  .price-label { font-size: 0.9rem; color: #aaa; }
-  .price-gestor { font-weight: 700; color: #ff4455; }
-  .price-ivan { font-weight: 700; color: #4caf7d; }
+  .price-row-values {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .price-label { font-size: 0.8rem; color: #777; text-transform: uppercase; letter-spacing: 0.05em; }
+  .price-gestor { font-weight: 700; color: #ff4455; font-size: 0.95rem; }
+  .price-ivan { font-weight: 700; color: #4caf7d; font-size: 0.95rem; }
 
   .price-saving {
     margin-top: 1.5rem;
@@ -893,6 +899,8 @@
     overflow: hidden;
     padding: 0.6rem 0;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
   }
 
   .ticker {
@@ -917,16 +925,64 @@
   @media (max-width: 900px) {
     nav { padding: 1rem 1.5rem; }
     nav ul { display: none; }
-    section { padding: 4rem 1.5rem; }
+    section { padding: 3.5rem 1.2rem; }
     .hero { grid-template-columns: 1fr; min-height: auto; }
-    .hero-left { padding: 6rem 1.5rem 3rem; }
+    .hero-left { padding: 6rem 1.2rem 3rem; }
     .hero-right { display: none; }
-    .hero-stats { gap: 1.5rem; }
-    .problema, .formacion-inner, .sobre-mi { grid-template-columns: 1fr; gap: 3rem; }
-    .alert-banner { padding: 1rem 1.5rem; }
+    .hero-stats { gap: 1.2rem; flex-wrap: wrap; }
+    .hero-stats > div { min-width: 80px; }
+    .hero-btns { flex-direction: column; }
+    .btn-primary, .btn-secondary { text-align: center; width: 100%; }
+    .problema, .formacion-inner, .sobre-mi { grid-template-columns: 1fr; gap: 2.5rem; }
+    .alert-banner { padding: 1rem 1.2rem; flex-direction: column; gap: 0.6rem; }
     .llamadas-grid, .faq-grid { grid-template-columns: 1fr; }
-    footer { flex-direction: column; gap: 1rem; text-align: center; }
+    footer { flex-direction: column; gap: 1rem; text-align: center; padding: 2rem 1.2rem; }
     .sobre-puntos { grid-template-columns: 1fr 1fr; }
+    .cards-grid { grid-template-columns: 1fr; }
+
+    /* Price compare — rediseño móvil limpio */
+    .price-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+      padding: 1rem 0;
+    }
+    .price-label {
+      font-size: 0.8rem;
+      color: #777;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .price-row-values {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      align-items: center;
+    }
+    .price-gestor {
+      font-size: 0.9rem;
+    }
+    .price-ivan {
+      font-size: 0.9rem;
+    }
+
+    /* Formación */
+    .formacion-cta-box { padding: 2rem 1.2rem; }
+
+    /* Sobre mí */
+    .sobre-box { padding: 2rem 1.5rem; }
+
+    /* FAQ */
+    .faq-item { padding: 1.5rem 1.2rem; }
+
+    /* Servicios header */
+    .servicios-header { flex-direction: column; align-items: flex-start; }
+
+    /* Ticker más pequeño en móvil */
+    .ticker span { font-size: 0.85rem; margin: 0 1.2rem; }
+
+    /* CTA final */
+    .cta-final { padding: 4rem 1.2rem; }
   }
 </style>
 </head>
@@ -934,7 +990,7 @@
 
 <!-- NAV -->
 <nav>
-  <div class="nav-logo">Iván<span>.</span>Imports</div>
+  <div class="nav-logo">Ivan<span>.</span>Imports</div>
   <ul>
     <li><a href="#servicios">Servicios</a></li>
     <li><a href="#matriculacion">Matriculación</a></li>
@@ -981,7 +1037,7 @@
       <span class="line-accent">sin que te timen.</span>
     </h1>
     <p class="hero-sub">
-      Los gestores te cobran <strong>+500€ de más</strong> por procesos que puedes hacer tú mismo — muchas veces bastante más. O que yo hago por una fracción del precio. <strong>+7 años importando vehículos por Europa.</strong>
+      Los gestores te cobran <strong>+500€ de más</strong> por procesos que puedes hacer tú mismo — muchas veces bastante más. <strong>+7 años importando vehículos desde Europa.</strong>
     </p>
     <div class="hero-btns">
       <a href="#servicios" class="btn-primary">Ver servicios</a>
@@ -1106,18 +1162,24 @@
       <div class="price-compare-title">Comparativa real de costes — Matriculación</div>
       <div class="price-row">
         <span class="price-label">Tasas de matriculación (DGT)</span>
-        <span class="price-gestor">Te dicen: 300€</span>
-        <span class="price-ivan">Real: 99,77€</span>
+        <div class="price-row-values">
+          <span class="price-gestor">Te cobran: 300€</span>
+          <span class="price-ivan">Real: 99,77€</span>
+        </div>
       </div>
       <div class="price-row">
         <span class="price-label">Placas de matrícula</span>
-        <span class="price-gestor">Te cobran: 100€</span>
-        <span class="price-ivan">Real: 30€</span>
+        <div class="price-row-values">
+          <span class="price-gestor">Te cobran: 100€</span>
+          <span class="price-ivan">Real: 30€</span>
+        </div>
       </div>
       <div class="price-row">
         <span class="price-label">Honorarios del gestor</span>
-        <span class="price-gestor">200 — 500€</span>
-        <span class="price-ivan">Con Iván: 197€ todo</span>
+        <div class="price-row-values">
+          <span class="price-gestor">Te cobran: 200–500€</span>
+          <span class="price-ivan">Con Iván: 197€ todo</span>
+        </div>
       </div>
       <div class="price-saving">
         <span class="price-saving-label">Ahorro medio con Iván</span>
@@ -1138,17 +1200,38 @@
   </div>
 
   <div class="cards-grid">
-    <!-- Búsqueda Estándar -->
+    <!-- Matriculación PRIMERA -->
+    <div class="card featured fade-up" id="matriculacion">
+      <span class="card-badge">Más demandado</span>
+      <span class="card-icon">📋</span>
+      <h3 class="card-title">Matriculación Sin Gestor</h3>
+      <p class="card-desc">Te guío paso a paso para matricular tu vehículo importado sin pagar de más. Desde ITV y COC hasta recibir tus matrículas definitivas — sin intermediarios, sin costes inflados.</p>
+      <ul class="card-features">
+        <li>Rellenar y pagar el modelo 576 (impuesto de matriculación)</li>
+        <li>Cálculo exacto de tasas reales (sin sorpresas)</li>
+        <li>Tramitación DGT incluida</li>
+        <li>Ahorra 500€+ vs. gestor tradicional</li>
+        <li>Llamada incluida para hablarlo todo</li>
+      </ul>
+      <div class="card-price">
+        <span class="price-amount">197</span>
+        <span class="price-currency">€</span>
+        <span class="price-note">precio fijo, sin extras</span>
+      </div>
+      <a href="https://tidycal.com" target="_blank" class="btn-primary">Contratar ahora</a>
+    </div>
+
+    <!-- Búsqueda + Rentabilidad -->
     <div class="card fade-up">
       <span class="card-icon">🔍</span>
       <h3 class="card-title">Búsqueda + Rentabilidad</h3>
-      <p class="card-desc">Te busco los 5 mejores coches del mercado europeo para tu presupuesto, y te calculo exactamente cuánto te va a costar y cuánto puedes ganar.</p>
+      <p class="card-desc">Dime qué tipo de vehículo buscas — o si no lo tienes claro, te asesoro yo. Busco los 5 mejores del mercado europeo para tu presupuesto y te calculo exactamente cuánto te va a costar y cuánto puedes ganar.</p>
       <ul class="card-features">
-        <li>5 vehículos seleccionados a mano</li>
+        <li>5 vehículos seleccionados según tus características</li>
         <li>Cálculo de costes totales (vuelos, transporte, matriculación)</li>
         <li>Estimación de rentabilidad real</li>
-        <li>Informe PDF detallado</li>
-        <li>Llamada de 15 min incluida para hablarlo todo</li>
+        <li>Informe detallado por cada opción</li>
+        <li>Llamada incluida para hablarlo todo</li>
       </ul>
       <div class="card-price">
         <span class="price-amount">147</span>
@@ -1158,46 +1241,42 @@
     </div>
 
     <!-- Llave en mano -->
-    <div class="card featured fade-up">
-      <span class="card-badge">Más popular</span>
+    <div class="card fade-up">
       <span class="card-icon">🔑</span>
       <h3 class="card-title">Llave en Mano</h3>
-      <p class="card-desc">Me encargo de todo. Busco, analizo, negocio directamente con los vendedores europeos en inglés y te dejo el coche listo para recoger. Lo que consiga bajar del precio puede cubrir mi servicio.</p>
+      <p class="card-desc">Me encargo de todo. Busco, analizo y negocio directamente con los vendedores europeos en inglés. Lo que consiga bajar del precio puede cubrir mi servicio — tú solo vas a recoger el coche.</p>
       <ul class="card-features">
-        <li>Todo lo del plan anterior</li>
-        <li>Negociación directa con vendedores europeos en inglés</li>
-        <li>Gestión de comunicación completa</li>
-        <li>Coche listo para que solo vayas a buscarlo</li>
-        <li>Soporte por WhatsApp durante el proceso</li>
-        <li>Llamada de 15 min incluida para hablarlo todo</li>
+        <li>Todo lo incluido en Búsqueda + Rentabilidad</li>
+        <li>Negociación directa con vendedores europeos</li>
+        <li>Gestión completa de la comunicación</li>
+        <li>Soporte por WhatsApp y llamada durante todo el proceso</li>
+        <li>Llamada incluida para hablarlo todo</li>
       </ul>
       <div class="card-price">
         <span class="price-amount">247</span>
         <span class="price-currency">€</span>
         <span class="price-note">Lo que negocio puede cubrir mi fee</span>
       </div>
-      <a href="https://tidycal.com" target="_blank" class="btn-primary">Contratar ahora</a>
-    </div>
-
-    <!-- Matriculación -->
-    <div class="card fade-up" id="matriculacion">
-      <span class="card-icon">📋</span>
-      <h3 class="card-title">Matriculación Sin Gestor</h3>
-      <p class="card-desc">Te guío paso a paso para matricular tu vehículo importado sin pagar de más.<br>Desde ITV y COC hasta recibir tus matrículas definitivas.</p>
-      <ul class="card-features">
-        <li>Rellenar y pagar el modelo 576 (impuesto de matriculación)</li>
-        <li>Cálculo exacto de tasas (sin sorpresas)</li>
-        <li>Tramitación DGT incluida</li>
-        <li>Ahorra 500€+ vs. gestor tradicional</li>
-        <li>Llamada de 15 min incluida para hablarlo todo</li>
-      </ul>
-      <div class="card-price">
-        <span class="price-amount">197</span>
-        <span class="price-currency">€</span>
-        <span class="price-note">precio fijo, sin extras</span>
-      </div>
       <a href="https://tidycal.com" target="_blank" class="btn-secondary">Contratar ahora</a>
     </div>
+  </div>
+</section>
+
+<!-- ORIENTACIÓN GRATUITA -->
+<section style="background:#0d0d0d;padding:4rem;text-align:center;border-top:1px solid #1a1a1a;border-bottom:1px solid #1a1a1a;">
+  <div class="fade-up">
+    <span class="section-tag" style="display:block;text-align:center;">Sin compromiso</span>
+    <h2 class="section-title" style="margin-bottom:0.8rem;">¿No sabes por dónde empezar?</h2>
+    <p style="color:#888;font-size:1rem;max-width:480px;margin:0 auto 2.5rem;font-weight:300;line-height:1.7;">Hablamos 5 minutos. Me cuentas tu situación y te digo exactamente qué puedes hacer — qué servicio necesitas, qué pasos seguir y qué errores evitar. Sin coste, sin rodeos.</p>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;align-items:center;">
+      <a href="https://tidycal.com/pogrebnyakivan123/llamada-de-orientacion-gratuita-5-min" target="_blank" class="btn-primary" style="font-size:0.9rem;padding:0.9rem 2rem;">
+        Agenda llamada gratuita — 5 min
+      </a>
+      <a href="#llamadas" class="btn-secondary" style="font-size:0.9rem;padding:0.9rem 2rem;">
+        Prefiero una consulta completa
+      </a>
+    </div>
+    <p style="font-size:0.75rem;color:#444;margin-top:1.2rem;">Solo 5 plazas diarias · Sin compromiso de compra</p>
   </div>
 </section>
 
@@ -1211,17 +1290,17 @@
   <div class="llamadas-grid">
     <div class="llamada-card fade-up">
       <div class="llamada-duration">15</div>
-      <span class="llamada-unit">Minutos</span>
-      <p class="llamada-desc">Ideal para dudas puntuales. ¿Es buen precio ese coche? ¿Cuánto cuesta importar? Te respondo sin rodeos.</p>
+      <span class="llamada-unit">Minutos · Consulta Exprés</span>
+      <p class="llamada-desc">¿A punto de tomar una decisión importante? En 15 minutos te doy una opinión clara y directa — importación, matriculación, compra, venta, subastas. Sin rodeos.</p>
       <div class="llamada-price">30€</div>
-      <a href="https://tidycal.com" target="_blank" class="btn-secondary">Reservar llamada</a>
+      <a href="https://tidycal.com/pogrebnyakivan123/llamada-15-minutos" target="_blank" class="btn-secondary">Reservar llamada</a>
     </div>
     <div class="llamada-card fade-up">
       <div class="llamada-duration">45</div>
-      <span class="llamada-unit">Minutos</span>
-      <p class="llamada-desc">Para casos más completos. Analizamos tu situación, calculamos rentabilidad, y trazamos un plan de acción concreto.</p>
+      <span class="llamada-unit">Minutos · Consultoría Completa</span>
+      <p class="llamada-desc">Analizamos tu caso en profundidad. Búsqueda, importación, matriculación, subastas, márgenes. Terminas con un plan concreto adaptado a tu situación. Solo 1 plaza diaria.</p>
       <div class="llamada-price">70€</div>
-      <a href="https://tidycal.com" target="_blank" class="btn-secondary">Reservar llamada</a>
+      <a href="https://tidycal.com/pogrebnyakivan123/consultoria-completa" target="_blank" class="btn-secondary">Reservar llamada</a>
     </div>
   </div>
 </section>
@@ -1285,10 +1364,10 @@
 <section class="sobre-mi" id="sobre-mi">
   <div class="sobre-visual fade-up">
     <div class="sobre-box">
-      <p class="sobre-quote">Empecé en este sector desde abajo — pagando de más, confiando en quien no debía. Con el tiempo aprendí cómo funciona el sistema de verdad: los costes reales, los trucos del mercado, y cómo conseguir el mejor precio sin intermediarios. Hoy llevo más de 7 años haciéndolo, y ese conocimiento es exactamente lo que pongo a tu disposición.</p>
-      <p class="sobre-author">— Iván, Especialista en Importación de Vehículos</p>
+      <p class="sobre-quote">Empecé trabajando en una compraventa, donde aprendí desde dentro cómo funciona realmente este mundo: documentación, ventas, importación desde Europa, matriculaciones y trato con clientes. Cuando acumulé suficiente experiencia, decidí empezar por mi cuenta. Y ahí fue cuando realmente empezó todo — y también los errores.<br><br>Aprendí que cada error cuesta dinero. Elegir mal un coche, no revisar un documento, no saber negociar o pagar de más por una matriculación que puedes hacer tú mismo puede costarte cientos o miles de euros.<br><br>Hoy sé cómo encontrar gangas en subastas, qué coches tienen margen, dónde arriesgarse y dónde no, y cómo moverme por Europa para conseguir el mejor precio. Estoy aquí para que tú no cometas los errores que yo ya cometí.<br><br><em>"La diferencia no está en cómo vendes, sino en cómo compras."</em></p>
+      <p class="sobre-author">— Ivan, Especialista en Importación de Vehículos</p>
     </div>
-    <a href="https://tiktok.com" target="_blank" class="sobre-tiktok">
+    <a href="https://tiktok.com/@ivan.imports" target="_blank" class="sobre-tiktok">
       <span class="tiktok-icon">🎵</span>
       <div class="tiktok-text">
         <strong>@ivan.imports en TikTok</strong>
@@ -1334,12 +1413,16 @@
   </div>
   <div class="faq-grid">
     <div class="faq-item fade-up">
+      <p class="faq-q">¿Qué pasa si el coche no es como lo anunciaban?</p>
+      <p class="faq-a">Ivan selecciona y negocia basándose en el anuncio, el historial del vehículo y su experiencia. Antes de cerrar la compra, siempre recomendamos una inspección presencial — y te orientamos sobre cómo hacerla y qué comprobar exactamente para no llevarte sorpresas.</p>
+    </div>
+    <div class="faq-item fade-up">
       <p class="faq-q">¿Por qué es mejor que usar un gestor?</p>
-      <p class="faq-a">Porque un gestor tradicional te cobra sus honorarios (200-500€) encima de inflarte las tasas reales. Con Iván pagas un precio fijo y sabes exactamente a qué va destinado cada euro.</p>
+      <p class="faq-a">Porque un gestor tradicional te cobra sus honorarios (200-500€) encima de inflarte las tasas reales. Con Ivan pagas un precio fijo y sabes exactamente a qué va destinado cada euro.</p>
     </div>
     <div class="faq-item fade-up">
       <p class="faq-q">¿Puedo importar aunque no hable el idioma?</p>
-      <p class="faq-a">Sí, precisamente para eso existe el servicio Llave en Mano. Iván gestiona todo en inglés directamente con los vendedores de Alemania, Holanda o Bélgica — y ese poder de negociación a menudo cubre el coste del servicio.</p>
+      <p class="faq-a">Sí, precisamente para eso existe el servicio Llave en Mano. Ivan gestiona todo en inglés directamente con los vendedores de Alemania, Holanda o Bélgica — y ese poder de negociación a menudo cubre el coste del servicio.</p>
     </div>
     <div class="faq-item fade-up">
       <p class="faq-q">¿Cuánto tiempo tarda el proceso?</p>
@@ -1365,7 +1448,7 @@
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-logo">Iván<span>.</span>Imports</div>
+  <div class="footer-logo">Ivan<span>.</span>Imports</div>
   <div class="footer-text">© 2026 · Especialista en Importación de Vehículos · España</div>
   <div class="footer-text">Hecho con honestidad 🚗</div>
 </footer>
