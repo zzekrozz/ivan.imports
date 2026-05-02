@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iván | Importación de Vehículos sin Sorpresas</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --white: #f5f2ec;
+    --red: #e8001d;
+    --red-dark: #b80018;
+    --grey: #1a1a1a;
+    --grey-mid: #2e2e2e;
+    --grey-light: #888;
+    --accent: #f0c040;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0.4;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 4rem;
+    background: rgba(10,10,10,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid #1f1f1f;
+  }
+
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.08em;
+    color: var(--white);
+  }
+  .nav-logo span { color: var(--red); }
+
+  nav a {
+    color: var(--grey-light);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  nav a:hover { color: var(--white); }
+  nav ul { display: flex; gap: 2rem; list-style: none; }
+
+  .nav-cta {
+    background: var(--red);
+    color: var(--white) !important;
+    padding: 0.5rem 1.2rem;
+    border-radius: 2px;
+  }
+  .nav-cta:hover { background: var(--red-dark); color: var(--white) !important; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding-top: 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 6rem 4rem 6rem 4rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  .hero-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--red);
+    border: 1px solid var(--red);
+    padding: 0.3rem 0.8rem;
+    margin-bottom: 2rem;
+    width: fit-content;
+  }
+
+  .hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3.5rem, 6vw, 6rem);
+    line-height: 0.95;
+    letter-spacing: 0.02em;
+    margin-bottom: 1.8rem;
+  }
+
+  .hero h1 .line-accent {
+    color: var(--red);
+    display: block;
+  }
+
+  .hero-sub {
+    font-size: 1.05rem;
+    color: #aaa;
+    max-width: 440px;
+    margin-bottom: 2.5rem;
+    font-weight: 300;
+    line-height: 1.7;
+  }
+
+  .hero-sub strong {
+    color: var(--white);
+    font-weight: 500;
+  }
+
+  .hero-btns {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    background: var(--red);
+    color: var(--white);
+    padding: 0.9rem 2rem;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .btn-primary:hover { background: var(--red-dark); transform: translateY(-2px); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--white);
+    padding: 0.9rem 2rem;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 0.9rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid #333;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+  .btn-secondary:hover { border-color: #666; transform: translateY(-2px); }
+
+  .hero-stats {
+    display: flex;
+    gap: 2.5rem;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid #1f1f1f;
+  }
+
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    color: var(--white);
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--grey-light);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 0.2rem;
+  }
+
+  /* ── HERO RIGHT ── */
+  .hero-right {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-right::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #0a0a0a 0%, transparent 40%);
+    z-index: 1;
+  }
+
+  .hero-bg-text {
+    position: absolute;
+    bottom: -2rem;
+    right: -1rem;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18vw;
+    color: transparent;
+    -webkit-text-stroke: 1px #1a1a1a;
+    line-height: 1;
+    z-index: 0;
+    user-select: none;
+  }
+
+  .hero-visual {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(160deg, #161616 0%, #0a0a0a 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .car-icon-wrap {
+    position: relative;
+    z-index: 2;
+  }
+
+  .car-svg {
+    width: 420px;
+    max-width: 90%;
+    filter: drop-shadow(0 20px 60px rgba(232,0,29,0.15));
+    animation: float 4s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-12px); }
+  }
+
+  .red-glow {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(232,0,29,0.12) 0%, transparent 70%);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+  }
+
+  /* ── ALERT BANNER ── */
+  .alert-banner {
+    background: #1a0000;
+    border-top: 1px solid #3a0000;
+    border-bottom: 1px solid #3a0000;
+    padding: 1.2rem 4rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .alert-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .alert-text {
+    font-size: 0.95rem;
+    color: #ccc;
+  }
+
+  .alert-text strong {
+    color: #ff4455;
+  }
+
+  /* ── SECTION BASE ── */
+  section {
+    padding: 6rem 4rem;
+  }
+
+  .section-tag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.5rem, 4vw, 3.8rem);
+    line-height: 1;
+    letter-spacing: 0.02em;
+    margin-bottom: 1rem;
+  }
+
+  .section-sub {
+    color: #888;
+    font-size: 1rem;
+    max-width: 520px;
+    font-weight: 300;
+    line-height: 1.7;
+  }
+
+  /* ── PROBLEMA SECTION ── */
+  .problema {
+    background: var(--grey);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: center;
+  }
+
+  .problema-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    margin-top: 2rem;
+  }
+
+  .problema-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.2rem;
+    background: #111;
+    border-left: 3px solid var(--red);
+  }
+
+  .problema-list .icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  .problema-list .text {
+    font-size: 0.95rem;
+    color: #bbb;
+    line-height: 1.5;
+  }
+
+  .problema-list .text strong { color: var(--white); }
+
+  .problema-right {
+    position: relative;
+  }
+
+  .price-compare {
+    background: #111;
+    border: 1px solid #222;
+    padding: 2rem;
+  }
+
+  .price-compare-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--grey-light);
+    margin-bottom: 1.5rem;
+  }
+
+  .price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.9rem 0;
+    border-bottom: 1px solid #1a1a1a;
+  }
+
+  .price-row:last-of-type { border-bottom: none; }
+
+  .price-label { font-size: 0.9rem; color: #aaa; }
+  .price-gestor { font-weight: 700; color: #ff4455; }
+  .price-ivan { font-weight: 700; color: #4caf7d; }
+
+  .price-saving {
+    margin-top: 1.5rem;
+    background: rgba(76,175,125,0.08);
+    border: 1px solid rgba(76,175,125,0.2);
+    padding: 1rem 1.2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .price-saving-label { font-size: 0.85rem; color: #4caf7d; font-weight: 500; }
+  .price-saving-amount { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: #4caf7d; }
+
+  /* ── SERVICIOS ── */
+  .servicios { background: var(--black); }
+
+  .servicios-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 3.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5px;
+    background: #1a1a1a;
+  }
+
+  .card {
+    background: var(--black);
+    padding: 2.5rem;
+    position: relative;
+    transition: background 0.25s;
+    cursor: default;
+  }
+
+  .card:hover { background: #0f0f0f; }
+
+  .card.featured {
+    background: #100505;
+    border-top: 3px solid var(--red);
+  }
+
+  .card-badge {
+    position: absolute;
+    top: 2.5rem;
+    right: 2.5rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    background: var(--red);
+    color: white;
+    padding: 0.25rem 0.6rem;
+  }
+
+  .card-icon {
+    font-size: 2rem;
+    margin-bottom: 1.2rem;
+    display: block;
+  }
+
+  .card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.6rem;
+  }
+
+  .card-desc {
+    font-size: 0.9rem;
+    color: #888;
+    line-height: 1.6;
+    margin-bottom: 1.8rem;
+    font-weight: 300;
+  }
+
+  .card-features {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .card-features li {
+    font-size: 0.85rem;
+    color: #bbb;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .card-features li::before {
+    content: '→';
+    color: var(--red);
+    font-size: 0.8rem;
+    flex-shrink: 0;
+  }
+
+  .card-price {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .price-amount {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.8rem;
+    color: var(--white);
+    line-height: 1;
+  }
+
+  .price-currency {
+    font-size: 1.2rem;
+    color: var(--grey-light);
+    font-weight: 300;
+  }
+
+  .price-note {
+    font-size: 0.75rem;
+    color: var(--grey-light);
+    margin-left: 0.3rem;
+  }
+
+  .card .btn-primary, .card .btn-secondary {
+    width: 100%;
+    text-align: center;
+    font-size: 0.8rem;
+  }
+
+  /* ── LLAMADAS ── */
+  .llamadas {
+    background: var(--grey);
+  }
+
+  .llamadas-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5px;
+    background: #2a2a2a;
+    margin-top: 3rem;
+  }
+
+  .llamada-card {
+    background: #1a1a1a;
+    padding: 2.5rem;
+    transition: background 0.2s;
+  }
+
+  .llamada-card:hover { background: #1f1f1f; }
+
+  .llamada-duration {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3.5rem;
+    color: var(--red);
+    line-height: 1;
+  }
+
+  .llamada-unit {
+    font-size: 0.85rem;
+    color: var(--grey-light);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  .llamada-desc {
+    font-size: 0.9rem;
+    color: #888;
+    line-height: 1.6;
+    font-weight: 300;
+    margin-bottom: 2rem;
+  }
+
+  .llamada-price {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    margin-bottom: 1.2rem;
+  }
+
+  /* ── FORMACION ── */
+  .formacion {
+    background: #0d0d0d;
+    border-top: 1px solid #1a1a1a;
+    border-bottom: 1px solid #1a1a1a;
+  }
+
+  .formacion-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: center;
+  }
+
+  .formacion-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-top: 2rem;
+  }
+
+  .step {
+    display: flex;
+    gap: 1.2rem;
+    padding: 1.2rem 0;
+    border-bottom: 1px solid #1a1a1a;
+    align-items: flex-start;
+  }
+
+  .step-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    color: var(--red);
+    line-height: 1;
+    min-width: 2rem;
+  }
+
+  .step-content h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+  }
+
+  .step-content p {
+    font-size: 0.85rem;
+    color: #777;
+    font-weight: 300;
+  }
+
+  .formacion-cta-box {
+    background: #111;
+    border: 1px solid #222;
+    padding: 3rem;
+    text-align: center;
+  }
+
+  .formacion-cta-box .section-tag { justify-content: center; display: block; text-align: center; }
+
+  .formacion-price {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 4rem;
+    color: var(--white);
+    line-height: 1;
+    margin: 1rem 0 0.3rem;
+  }
+
+  .formacion-price-note {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 2rem;
+  }
+
+  .formacion-includes {
+    list-style: none;
+    text-align: left;
+    margin-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .formacion-includes li {
+    font-size: 0.9rem;
+    color: #aaa;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .formacion-includes li::before {
+    content: '✓';
+    color: #4caf7d;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* ── SOBRE MI ── */
+  .sobre-mi {
+    background: var(--black);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: center;
+  }
+
+  .sobre-visual {
+    position: relative;
+  }
+
+  .sobre-box {
+    background: var(--grey);
+    padding: 3rem;
+    border: 1px solid #222;
+    position: relative;
+  }
+
+  .sobre-box::before {
+    content: '"';
+    position: absolute;
+    top: -1rem;
+    left: 2rem;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 6rem;
+    color: var(--red);
+    line-height: 1;
+  }
+
+  .sobre-quote {
+    font-size: 1.1rem;
+    color: #ccc;
+    line-height: 1.7;
+    font-style: italic;
+    font-weight: 300;
+    padding-top: 2rem;
+  }
+
+  .sobre-author {
+    margin-top: 1.5rem;
+    font-size: 0.85rem;
+    color: var(--grey-light);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+
+  .sobre-tiktok {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-top: 2rem;
+    padding: 0.8rem 1rem;
+    background: #111;
+    border: 1px solid #1f1f1f;
+    text-decoration: none;
+    transition: border-color 0.2s;
+  }
+
+  .sobre-tiktok:hover { border-color: #333; }
+
+  .tiktok-icon { font-size: 1.2rem; }
+  .tiktok-text { font-size: 0.85rem; color: #888; }
+  .tiktok-text strong { color: var(--white); display: block; font-size: 0.9rem; }
+
+  .sobre-puntos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 2.5rem;
+  }
+
+  .sobre-punto {
+    padding: 1.2rem;
+    background: #111;
+    border: 1px solid #1a1a1a;
+  }
+
+  .sobre-punto .num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    color: var(--red);
+    line-height: 1;
+  }
+
+  .sobre-punto .label {
+    font-size: 0.75rem;
+    color: var(--grey-light);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 0.2rem;
+  }
+
+  /* ── FAQ ── */
+  .faq {
+    background: var(--grey);
+  }
+
+  .faq-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: #2a2a2a;
+    margin-top: 3rem;
+  }
+
+  .faq-item {
+    background: #1a1a1a;
+    padding: 2rem;
+  }
+
+  .faq-q {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.7rem;
+    color: var(--white);
+  }
+
+  .faq-a {
+    font-size: 0.88rem;
+    color: #888;
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  /* ── CTA FINAL ── */
+  .cta-final {
+    background: var(--red);
+    text-align: center;
+    padding: 6rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-final::before {
+    content: 'IMPORTA';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20vw;
+    color: rgba(0,0,0,0.08);
+    white-space: nowrap;
+    letter-spacing: 0.1em;
+    user-select: none;
+  }
+
+  .cta-final .section-title {
+    color: var(--white);
+    position: relative;
+    z-index: 1;
+  }
+
+  .cta-final .section-sub {
+    color: rgba(255,255,255,0.75);
+    margin: 1rem auto 2.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .cta-final .btn-primary {
+    background: var(--white);
+    color: var(--red);
+    position: relative;
+    z-index: 1;
+  }
+
+  .cta-final .btn-primary:hover { background: #e8e4dd; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: #050505;
+    padding: 2rem 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #111;
+  }
+
+  .footer-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 0.08em;
+  }
+  .footer-logo span { color: var(--red); }
+
+  .footer-text {
+    font-size: 0.8rem;
+    color: #444;
+  }
+
+  /* ── SCROLL ANIMATIONS ── */
+  .fade-up {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .fade-up.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── TICKER ── */
+  .ticker-wrap {
+    background: var(--red);
+    overflow: hidden;
+    padding: 0.6rem 0;
+    white-space: nowrap;
+  }
+
+  .ticker {
+    display: inline-block;
+    animation: ticker 20s linear infinite;
+  }
+
+  .ticker span {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.15em;
+    margin: 0 2rem;
+    color: rgba(255,255,255,0.9);
+  }
+
+  @keyframes ticker {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    nav { padding: 1rem 1.5rem; }
+    nav ul { display: none; }
+    section { padding: 4rem 1.5rem; }
+    .hero { grid-template-columns: 1fr; min-height: auto; }
+    .hero-left { padding: 6rem 1.5rem 3rem; }
+    .hero-right { display: none; }
+    .hero-stats { gap: 1.5rem; }
+    .problema, .formacion-inner, .sobre-mi { grid-template-columns: 1fr; gap: 3rem; }
+    .alert-banner { padding: 1rem 1.5rem; }
+    .llamadas-grid, .faq-grid { grid-template-columns: 1fr; }
+    footer { flex-direction: column; gap: 1rem; text-align: center; }
+    .sobre-puntos { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Iván<span>.</span>Imports</div>
+  <ul>
+    <li><a href="#servicios">Servicios</a></li>
+    <li><a href="#matriculacion">Matriculación</a></li>
+    <li><a href="#sobre-mi">Sobre mí</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li><a href="#contacto" class="nav-cta">Contratar</a></li>
+  </ul>
+</nav>
+
+<!-- TICKER -->
+<div class="ticker-wrap" style="margin-top:60px;">
+  <div class="ticker">
+    <span>IMPORTACIÓN DESDE EUROPA</span>
+    <span>•</span>
+    <span>MATRICULACIÓN SIN GESTOR</span>
+    <span>•</span>
+    <span>AHORRA MÁS DE 500€</span>
+    <span>•</span>
+    <span>+7 AÑOS DE EXPERIENCIA</span>
+    <span>•</span>
+    <span>IMPORTACIÓN DESDE EUROPA</span>
+    <span>•</span>
+    <span>MATRICULACIÓN SIN GESTOR</span>
+    <span>•</span>
+    <span>AHORRA MÁS DE 500€</span>
+    <span>•</span>
+    <span>+7 AÑOS DE EXPERIENCIA</span>
+    <span>•</span>
+    <span>IMPORTACIÓN DESDE EUROPA</span>
+    <span>•</span>
+    <span>MATRICULACIÓN SIN GESTOR</span>
+    <span>•</span>
+    <span>AHORRA MÁS DE 500€</span>
+    <span>•</span>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero" style="padding:0;">
+  <div class="hero-left">
+    <div class="hero-tag">Especialista en Importación · España</div>
+    <h1>
+      Importa tu coche<br>
+      <span class="line-accent">sin que te timen.</span>
+    </h1>
+    <p class="hero-sub">
+      Los gestores te cobran <strong>+500€ de más</strong> por procesos que puedes hacer tú mismo — muchas veces bastante más. O que yo hago por una fracción del precio. <strong>+7 años importando vehículos por Europa.</strong>
+    </p>
+    <div class="hero-btns">
+      <a href="#servicios" class="btn-primary">Ver servicios</a>
+      <a href="#sobre-mi" class="btn-secondary">Quién soy</a>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="stat-num">+7</div>
+        <div class="stat-label">Años de experiencia</div>
+      </div>
+      <div>
+        <div class="stat-num">700€</div>
+        <div class="stat-label">Ahorro medio en matrícula</div>
+      </div>
+      <div>
+        <div class="stat-num">100%</div>
+        <div class="stat-label">Online y sin sorpresas</div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-visual">
+      <div class="red-glow"></div>
+      <div class="car-icon-wrap">
+        <svg class="car-svg" viewBox="0 0 500 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Car body -->
+          <path d="M60 140 L80 90 Q100 60 140 55 L280 50 Q330 48 360 70 L440 90 L460 140 Z" fill="#1a1a1a" stroke="#333" stroke-width="1.5"/>
+          <!-- Roof -->
+          <path d="M130 90 Q160 45 200 40 L290 38 Q330 40 355 70 L370 90 Z" fill="#222" stroke="#333" stroke-width="1"/>
+          <!-- Windows -->
+          <path d="M145 88 L170 48 L210 44 L210 88 Z" fill="#0d1a2a" stroke="#1a3a5a" stroke-width="1"/>
+          <path d="M218 88 L218 43 L280 43 L285 88 Z" fill="#0d1a2a" stroke="#1a3a5a" stroke-width="1"/>
+          <path d="M292 88 L290 45 L335 65 L348 88 Z" fill="#0d1a2a" stroke="#1a3a5a" stroke-width="1"/>
+          <!-- Body bottom -->
+          <rect x="55" y="138" width="410" height="20" rx="2" fill="#111" stroke="#333" stroke-width="1"/>
+          <!-- Front bumper -->
+          <path d="M440 140 L458 140 Q475 140 476 155 L476 165 Q476 170 470 170 L440 170 Z" fill="#1a1a1a" stroke="#333" stroke-width="1"/>
+          <!-- Rear bumper -->
+          <path d="M60 140 L42 140 Q25 140 24 155 L24 165 Q24 170 30 170 L60 170 Z" fill="#1a1a1a" stroke="#333" stroke-width="1"/>
+          <!-- Headlights -->
+          <path d="M450 120 L470 125 L472 138 L448 138 Z" fill="#e8001d" opacity="0.9"/>
+          <path d="M30 120 L50 138 L28 138 L26 125 Z" fill="#f0c040" opacity="0.8"/>
+          <!-- Front grille -->
+          <rect x="445" y="145" width="25" height="18" rx="1" fill="#111" stroke="#333" stroke-width="0.5"/>
+          <line x1="452" y1="145" x2="452" y2="163" stroke="#333" stroke-width="0.5"/>
+          <line x1="459" y1="145" x2="459" y2="163" stroke="#333" stroke-width="0.5"/>
+          <line x1="445" y1="153" x2="470" y2="153" stroke="#333" stroke-width="0.5"/>
+          <!-- Wheels -->
+          <circle cx="140" cy="170" r="38" fill="#111" stroke="#444" stroke-width="2"/>
+          <circle cx="140" cy="170" r="28" fill="#0a0a0a" stroke="#555" stroke-width="1.5"/>
+          <circle cx="140" cy="170" r="10" fill="#1a1a1a" stroke="#e8001d" stroke-width="2"/>
+          <!-- Wheel spokes -->
+          <line x1="140" y1="142" x2="140" y2="155" stroke="#555" stroke-width="2"/>
+          <line x1="140" y1="185" x2="140" y2="198" stroke="#555" stroke-width="2"/>
+          <line x1="112" y1="170" x2="125" y2="170" stroke="#555" stroke-width="2"/>
+          <line x1="155" y1="170" x2="168" y2="170" stroke="#555" stroke-width="2"/>
+          <line x1="120" y1="150" x2="129" y2="159" stroke="#555" stroke-width="1.5"/>
+          <line x1="151" y1="181" x2="160" y2="190" stroke="#555" stroke-width="1.5"/>
+          <line x1="120" y1="190" x2="129" y2="181" stroke="#555" stroke-width="1.5"/>
+          <line x1="151" y1="159" x2="160" y2="150" stroke="#555" stroke-width="1.5"/>
+
+          <circle cx="370" cy="170" r="38" fill="#111" stroke="#444" stroke-width="2"/>
+          <circle cx="370" cy="170" r="28" fill="#0a0a0a" stroke="#555" stroke-width="1.5"/>
+          <circle cx="370" cy="170" r="10" fill="#1a1a1a" stroke="#e8001d" stroke-width="2"/>
+          <line x1="370" y1="142" x2="370" y2="155" stroke="#555" stroke-width="2"/>
+          <line x1="370" y1="185" x2="370" y2="198" stroke="#555" stroke-width="2"/>
+          <line x1="342" y1="170" x2="355" y2="170" stroke="#555" stroke-width="2"/>
+          <line x1="385" y1="170" x2="398" y2="170" stroke="#555" stroke-width="2"/>
+          <line x1="350" y1="150" x2="359" y2="159" stroke="#555" stroke-width="1.5"/>
+          <line x1="381" y1="181" x2="390" y2="190" stroke="#555" stroke-width="1.5"/>
+          <line x1="350" y1="190" x2="359" y2="181" stroke="#555" stroke-width="1.5"/>
+          <line x1="381" y1="159" x2="390" y2="150" stroke="#555" stroke-width="1.5"/>
+          <!-- Door line -->
+          <line x1="215" y1="60" x2="215" y2="158" stroke="#333" stroke-width="1"/>
+          <!-- Door handle -->
+          <rect x="225" y="100" width="18" height="5" rx="2" fill="#333" stroke="#444" stroke-width="0.5"/>
+          <rect x="165" y="100" width="18" height="5" rx="2" fill="#333" stroke="#444" stroke-width="0.5"/>
+          <!-- Shadow ground -->
+          <ellipse cx="250" cy="210" rx="200" ry="10" fill="rgba(232,0,29,0.06)"/>
+        </svg>
+      </div>
+      <div class="hero-bg-text">DE</div>
+    </div>
+  </div>
+</section>
+
+<!-- ALERT BANNER -->
+<div class="alert-banner">
+  <div class="alert-icon">⚠️</div>
+  <div class="alert-text">
+    <strong>Lo que los gestores no quieren que sepas:</strong> matricular un vehículo importado de media cuesta entre 250-400€ en tasas reales. Te están cobrando hasta 1.200€ por el mismo proceso.
+  </div>
+</div>
+
+<!-- PROBLEMA -->
+<section class="problema" id="problema">
+  <div class="problema-left fade-up">
+    <span class="section-tag">El Problema</span>
+    <h2 class="section-title">El sector está lleno de gente que se aprovecha.</h2>
+    <p class="section-sub">Desde gestores que inflan precios hasta vendedores que ocultan defectos. Si no sabes lo que haces, pierdes miles de euros.</p>
+    <ul class="problema-list">
+      <li>
+        <span class="icon">💸</span>
+        <div class="text"><strong>Gestores con precios inflados:</strong> te cobran x3 o x5 el coste real de la matriculación, más sus honorarios.</div>
+      </li>
+      <li>
+        <span class="icon">🔧</span>
+        <div class="text"><strong>Gastos inventados:</strong> placas cuestan 20€, te cobran 100€. La tasa oficial son 99,77€, te facturan 300€. Se inventan conceptos que directamente no existen.</div>
+      </li>
+      <li>
+        <span class="icon">🚗</span>
+        <div class="text"><strong>Coches malos a precios de buenos:</strong> sin saber qué buscar, es fácil pagar de más por un vehículo con historial problemático.</div>
+      </li>
+      <li>
+        <span class="icon">🌍</span>
+        <div class="text"><strong>Barrera del idioma:</strong> negociar en inglés marca la diferencia. Sin eso, pagas el precio de lista siempre.</div>
+      </li>
+    </ul>
+  </div>
+  <div class="problema-right fade-up">
+    <div class="price-compare">
+      <div class="price-compare-title">Comparativa real de costes — Matriculación</div>
+      <div class="price-row">
+        <span class="price-label">Tasas de matriculación (DGT)</span>
+        <span class="price-gestor">Te dicen: 300€</span>
+        <span class="price-ivan">Real: 99,77€</span>
+      </div>
+      <div class="price-row">
+        <span class="price-label">Placas de matrícula</span>
+        <span class="price-gestor">Te cobran: 100€</span>
+        <span class="price-ivan">Real: 30€</span>
+      </div>
+      <div class="price-row">
+        <span class="price-label">Honorarios del gestor</span>
+        <span class="price-gestor">200 — 500€</span>
+        <span class="price-ivan">Con Iván: 197€ todo</span>
+      </div>
+      <div class="price-saving">
+        <span class="price-saving-label">Ahorro medio con Iván</span>
+        <span class="price-saving-amount">+500€</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICIOS -->
+<section class="servicios" id="servicios">
+  <div class="servicios-header fade-up">
+    <div>
+      <span class="section-tag">Servicios</span>
+      <h2 class="section-title">Elige lo que necesitas.</h2>
+    </div>
+    <p class="section-sub">Sin letra pequeña, sin sorpresas. Precio fijo, trabajo real.</p>
+  </div>
+
+  <div class="cards-grid">
+    <!-- Búsqueda Estándar -->
+    <div class="card fade-up">
+      <span class="card-icon">🔍</span>
+      <h3 class="card-title">Búsqueda + Rentabilidad</h3>
+      <p class="card-desc">Te busco los 5 mejores coches del mercado europeo para tu presupuesto, y te calculo exactamente cuánto te va a costar y cuánto puedes ganar.</p>
+      <ul class="card-features">
+        <li>5 vehículos seleccionados a mano</li>
+        <li>Cálculo de costes totales (vuelos, transporte, matriculación)</li>
+        <li>Estimación de rentabilidad real</li>
+        <li>Informe PDF detallado</li>
+        <li>Llamada de 15 min incluida para hablarlo todo</li>
+      </ul>
+      <div class="card-price">
+        <span class="price-amount">147</span>
+        <span class="price-currency">€</span>
+      </div>
+      <a href="https://tidycal.com" target="_blank" class="btn-secondary">Contratar ahora</a>
+    </div>
+
+    <!-- Llave en mano -->
+    <div class="card featured fade-up">
+      <span class="card-badge">Más popular</span>
+      <span class="card-icon">🔑</span>
+      <h3 class="card-title">Llave en Mano</h3>
+      <p class="card-desc">Me encargo de todo. Busco, analizo, negocio directamente con los vendedores europeos en inglés y te dejo el coche listo para recoger. Lo que consiga bajar del precio puede cubrir mi servicio.</p>
+      <ul class="card-features">
+        <li>Todo lo del plan anterior</li>
+        <li>Negociación directa con vendedores europeos en inglés</li>
+        <li>Gestión de comunicación completa</li>
+        <li>Coche listo para que solo vayas a buscarlo</li>
+        <li>Soporte por WhatsApp durante el proceso</li>
+        <li>Llamada de 15 min incluida para hablarlo todo</li>
+      </ul>
+      <div class="card-price">
+        <span class="price-amount">247</span>
+        <span class="price-currency">€</span>
+        <span class="price-note">Lo que negocio puede cubrir mi fee</span>
+      </div>
+      <a href="https://tidycal.com" target="_blank" class="btn-primary">Contratar ahora</a>
+    </div>
+
+    <!-- Matriculación -->
+    <div class="card fade-up" id="matriculacion">
+      <span class="card-icon">📋</span>
+      <h3 class="card-title">Matriculación Sin Gestor</h3>
+      <p class="card-desc">Te guío paso a paso para matricular tu vehículo importado sin pagar de más.<br>Desde ITV y COC hasta recibir tus matrículas definitivas.</p>
+      <ul class="card-features">
+        <li>Rellenar y pagar el modelo 576 (impuesto de matriculación)</li>
+        <li>Cálculo exacto de tasas (sin sorpresas)</li>
+        <li>Tramitación DGT incluida</li>
+        <li>Ahorra 500€+ vs. gestor tradicional</li>
+        <li>Llamada de 15 min incluida para hablarlo todo</li>
+      </ul>
+      <div class="card-price">
+        <span class="price-amount">197</span>
+        <span class="price-currency">€</span>
+        <span class="price-note">precio fijo, sin extras</span>
+      </div>
+      <a href="https://tidycal.com" target="_blank" class="btn-secondary">Contratar ahora</a>
+    </div>
+  </div>
+</section>
+
+<!-- LLAMADAS -->
+<section class="llamadas" id="llamadas">
+  <div class="fade-up">
+    <span class="section-tag">Asesoramiento</span>
+    <h2 class="section-title">Habla conmigo directamente.</h2>
+    <p class="section-sub">¿Tienes dudas concretas? Reserva una llamada y te las resuelvo sin rodeos. Calculamos números reales juntos.</p>
+  </div>
+  <div class="llamadas-grid">
+    <div class="llamada-card fade-up">
+      <div class="llamada-duration">15</div>
+      <span class="llamada-unit">Minutos</span>
+      <p class="llamada-desc">Ideal para dudas puntuales. ¿Es buen precio ese coche? ¿Cuánto cuesta importar? Te respondo sin rodeos.</p>
+      <div class="llamada-price">30€</div>
+      <a href="https://tidycal.com" target="_blank" class="btn-secondary">Reservar llamada</a>
+    </div>
+    <div class="llamada-card fade-up">
+      <div class="llamada-duration">45</div>
+      <span class="llamada-unit">Minutos</span>
+      <p class="llamada-desc">Para casos más completos. Analizamos tu situación, calculamos rentabilidad, y trazamos un plan de acción concreto.</p>
+      <div class="llamada-price">70€</div>
+      <a href="https://tidycal.com" target="_blank" class="btn-secondary">Reservar llamada</a>
+    </div>
+  </div>
+</section>
+
+<!-- FORMACIÓN -->
+<section class="formacion" id="formacion">
+  <div class="formacion-inner">
+    <div class="fade-up">
+      <span class="section-tag">Formación</span>
+      <h2 class="section-title">Aprende a matricular tú mismo.</h2>
+      <p class="section-sub">El proceso que los gestores no quieren que conozcas, explicado en 4-6 pasos claros. Una vez lo sabes, lo haces para siempre.</p>
+      <div class="formacion-steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <div class="step-content">
+            <h4>Documentación del vehículo</h4>
+            <p>Qué necesitas exactamente y cómo conseguirlo desde Europa</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <div class="step-content">
+            <h4>ITV de Matriculación y COC</h4>
+            <p>El paso que más confunde — explicado de forma simple</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <div class="step-content">
+            <h4>Tasas reales y dónde pagarlas</h4>
+            <p>Números exactos, sin inflaciones ni costes inventados</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">04</div>
+          <div class="step-content">
+            <h4>DGT y entrega de placas</h4>
+            <p>El proceso final, paso a paso, sin sorpresas</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="formacion-cta-box fade-up">
+      <span class="section-tag">Próximamente</span>
+      <div class="formacion-price">97€</div>
+      <p class="formacion-price-note">Acceso de por vida · Actualizado</p>
+      <ul class="formacion-includes">
+        <li>Guía paso a paso completa</li>
+        <li>Calculadora de tasas reales</li>
+        <li>Plantillas de documentación</li>
+        <li>Acceso a futuras actualizaciones</li>
+        <li>1 consulta de 15 min incluida</li>
+      </ul>
+      <a href="#llamadas" class="btn-primary" style="width:100%;text-align:center;display:block;">Avísame cuando salga</a>
+      <p style="font-size:0.75rem;color:#555;margin-top:1rem;">Apúntate a la lista y tendrás precio de lanzamiento</p>
+    </div>
+  </div>
+</section>
+
+<!-- SOBRE MÍ -->
+<section class="sobre-mi" id="sobre-mi">
+  <div class="sobre-visual fade-up">
+    <div class="sobre-box">
+      <p class="sobre-quote">Empecé en este sector desde abajo — pagando de más, confiando en quien no debía. Con el tiempo aprendí cómo funciona el sistema de verdad: los costes reales, los trucos del mercado, y cómo conseguir el mejor precio sin intermediarios. Hoy llevo más de 7 años haciéndolo, y ese conocimiento es exactamente lo que pongo a tu disposición.</p>
+      <p class="sobre-author">— Iván, Especialista en Importación de Vehículos</p>
+    </div>
+    <a href="https://tiktok.com" target="_blank" class="sobre-tiktok">
+      <span class="tiktok-icon">🎵</span>
+      <div class="tiktok-text">
+        <strong>@ivan.imports en TikTok</strong>
+        Más de 50K vistas · Cálculos reales, sin filtros
+      </div>
+    </a>
+  </div>
+  <div class="fade-up">
+    <span class="section-tag">Sobre mí</span>
+    <h2 class="section-title">No soy una agencia. Soy una persona que sabe lo que hace.</h2>
+    <p class="section-sub">+7 años en el sector. He comprado, vendido, importado y matriculado vehículos — y también furgonetas. Un mercado en auge que poca gente conoce de verdad.</p>
+    <div style="margin-top:1.5rem;padding:1.5rem 1.8rem;background:#111;border-left:3px solid var(--red);font-size:0.9rem;color:#bbb;line-height:1.7;">
+      <span style="display:block;font-size:0.65rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--red);margin-bottom:0.6rem;">Especialidad · Furgonetas</span>
+      <span style="color:var(--white);font-weight:600;font-size:0.95rem;">Desde hace 2 años, también opero en el mercado de furgonetas.</span>
+      <span style="display:block;margin-top:0.5rem;">Un mercado en claro crecimiento, con márgenes que doblan a los del turismo — y donde muy pocos saben realmente lo que hacen. Conozco los puntos críticos: homologación europea, documentación técnica, y todo lo que puede convertir una buena oportunidad en un error caro.</span>
+    </div>
+    <div class="sobre-puntos">
+      <div class="sobre-punto">
+        <div class="num">+7</div>
+        <div class="label">Años en el sector</div>
+      </div>
+      <div class="sobre-punto">
+        <div class="num">100%</div>
+        <div class="label">Trabajo online</div>
+      </div>
+      <div class="sobre-punto">
+        <div class="num" style="font-size:0.85rem;line-height:1.8;color:var(--red);letter-spacing:0.1em;font-family:'Bebas Neue',sans-serif;">DE · NL · BE · IT · FR · DK</div>
+        <div class="label">Mercado europeo</div>
+      </div>
+      <div class="sobre-punto">
+        <div class="num">0€</div>
+        <div class="label">Costes ocultos</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq" id="faq">
+  <div class="fade-up" style="text-align:center;margin-bottom:1rem;">
+    <span class="section-tag">Preguntas frecuentes</span>
+    <h2 class="section-title">Lo que todo el mundo pregunta.</h2>
+  </div>
+  <div class="faq-grid">
+    <div class="faq-item fade-up">
+      <p class="faq-q">¿Por qué es mejor que usar un gestor?</p>
+      <p class="faq-a">Porque un gestor tradicional te cobra sus honorarios (200-500€) encima de inflarte las tasas reales. Con Iván pagas un precio fijo y sabes exactamente a qué va destinado cada euro.</p>
+    </div>
+    <div class="faq-item fade-up">
+      <p class="faq-q">¿Puedo importar aunque no hable el idioma?</p>
+      <p class="faq-a">Sí, precisamente para eso existe el servicio Llave en Mano. Iván gestiona todo en inglés directamente con los vendedores de Alemania, Holanda o Bélgica — y ese poder de negociación a menudo cubre el coste del servicio.</p>
+    </div>
+    <div class="faq-item fade-up">
+      <p class="faq-q">¿Cuánto tiempo tarda el proceso?</p>
+      <p class="faq-a">La búsqueda y análisis de vehículos suele entregarse en 48-72h. La matriculación depende de la DGT, pero normalmente se resuelve en 1-3 semanas.</p>
+    </div>
+    <div class="faq-item fade-up">
+      <p class="faq-q">¿Cómo sé que el servicio merece la pena?</p>
+      <p class="faq-a">La primera señal es la matemática: si el servicio de búsqueda cuesta 147€ y encuentro un coche 500€ más barato de lo que lo habrías comprado tú, ya has ganado. Sin contar el tiempo y los errores evitados.</p>
+    </div>
+    <div class="faq-item fade-up">
+      <p class="faq-q">¿Tengo que pagar algo por adelantado?</p>
+      <p class="faq-a">Sí, el servicio se paga al contratar. Así trabajo de forma profesional y tú tienes la seguridad de que hay un compromiso real por ambas partes.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-final" id="contacto">
+  <h2 class="section-title">Deja de pagar de más.<br>Empieza hoy.</h2>
+  <p class="section-sub">Reserva una llamada o contrata directamente el servicio que necesitas. Sin burocracia, sin sorpresas.</p>
+  <a href="#servicios" class="btn-primary" style="font-size:1rem;padding:1rem 2.5rem;">Ver todos los servicios</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Iván<span>.</span>Imports</div>
+  <div class="footer-text">© 2026 · Especialista en Importación de Vehículos · España</div>
+  <div class="footer-text">Hecho con honestidad 🚗</div>
+</footer>
+
+<script>
+  // Scroll animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
