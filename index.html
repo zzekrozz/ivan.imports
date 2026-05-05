@@ -587,6 +587,324 @@
   .fade-up { opacity: 0; transform: translateY(22px); transition: opacity 0.6s ease, transform 0.6s ease; }
   .fade-up.visible { opacity: 1; transform: translateY(0); }
 
+  /* BÚSQUEDA / COMPRA CARDS */
+  .busq-card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.8rem;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.25s;
+    position: relative;
+  }
+
+  .busq-card:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-3px);
+  }
+
+  .busq-featured {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    border-width: 2px;
+  }
+
+  .busq-featured:hover { background: #dceaf5; }
+
+  .busq-badge {
+    position: absolute;
+    top: -11px;
+    left: 1.4rem;
+    background: var(--accent);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.8rem;
+    border-radius: 100px;
+  }
+
+  .busq-icon {
+    width: 44px;
+    height: 44px;
+    background: var(--accent-light);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+
+  .busq-featured .busq-icon { background: white; }
+
+  .busq-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+  }
+
+  .busq-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 1.2rem;
+  }
+
+  .busq-includes-prev {
+    font-size: 0.78rem;
+    color: var(--accent);
+    font-weight: 600;
+    background: white;
+    padding: 0.6rem 0.9rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 1.2rem;
+    line-height: 1.4;
+    border-left: 3px solid var(--accent);
+  }
+
+  .busq-feat {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.3rem;
+    flex-grow: 1;
+  }
+
+  .feat-group {
+    margin-bottom: 1.2rem;
+  }
+
+  .feat-group:last-of-type {
+    margin-bottom: 1.3rem;
+  }
+
+  .feat-group .busq-feat {
+    margin-bottom: 0;
+    flex-grow: 0;
+  }
+
+  .feat-group-title {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.6rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid rgba(29,111,164,0.15);
+  }
+
+  .busq-feat li {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    line-height: 1.45;
+  }
+
+  .busq-feat li::before {
+    content: '';
+    width: 16px;
+    height: 16px;
+    background-color: var(--green);
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 0.18rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white' stroke-width='3.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M5 13l4 4L19 7'/%3E%3C/svg%3E");
+    background-size: 11px;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  .busq-highlight {
+    background: #fef3c7;
+    border: 1px solid #fde68a;
+    border-radius: var(--radius-sm);
+    padding: 0.8rem 1rem;
+    font-size: 0.82rem;
+    color: #92400e;
+    line-height: 1.5;
+    margin-bottom: 1.3rem;
+    font-weight: 500;
+  }
+
+  .busq-featured .busq-highlight {
+    background: white;
+    border-color: var(--accent);
+    color: var(--accent-dark);
+  }
+
+  .busq-price-block {
+    border-top: 1px solid var(--border);
+    padding-top: 1.2rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .busq-featured .busq-price-block { border-top-color: rgba(29,111,164,0.2); }
+
+  .busq-price {
+    font-family: 'Fraunces', serif;
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 0.3rem;
+  }
+
+  .busq-price-note {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  /* VIP CARD - Premium look */
+  .busq-vip {
+    background: linear-gradient(180deg, #f8fafc 0%, #eef4f9 100%);
+    border: 2px solid var(--accent);
+    box-shadow: 0 8px 32px rgba(29,111,164,0.10);
+    position: relative;
+  }
+
+  .busq-vip::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius);
+    padding: 2px;
+    background: linear-gradient(135deg, var(--accent) 0%, #2d8bc4 50%, var(--accent-dark) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0.35;
+  }
+
+  .busq-badge-vip {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+    color: white;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.35rem 0.9rem;
+    border-radius: 100px;
+    margin-bottom: 1rem;
+    width: fit-content;
+    box-shadow: 0 2px 8px rgba(29,111,164,0.3);
+  }
+
+  .busq-icon-vip {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 12px rgba(29,111,164,0.25);
+  }
+
+  .btn-vip {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+    color: white;
+    box-shadow: 0 4px 14px rgba(29,111,164,0.3);
+  }
+  .btn-vip:hover {
+    background: linear-gradient(135deg, var(--accent-dark) 0%, #0f4a72 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(29,111,164,0.4);
+  }
+
+  /* Caja destacada de negociación */
+  .busq-negotiation {
+    background: white;
+    border: 1.5px solid var(--accent);
+    border-radius: var(--radius-sm);
+    padding: 0.9rem 1rem;
+    margin-bottom: 1.3rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+  }
+
+  .busq-negotiation-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    margin-top: 0.05rem;
+  }
+
+  /* REVISIÓN CARD - Layout horizontal alternativo */
+  .busq-revision {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    padding: 2.2rem;
+  }
+
+  .busq-revision:hover {
+    border-color: var(--accent);
+    transform: none;
+  }
+
+  .busq-badge-alt {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.8rem;
+    border-radius: 100px;
+    margin-bottom: 1.2rem;
+    width: fit-content;
+  }
+
+  /* BLOQUE DE DUDAS */
+  .dudas-block {
+    margin-top: 2.5rem;
+    padding: 2rem 2.5rem;
+    background: var(--accent-light);
+    border-radius: var(--radius);
+    text-align: center;
+  }
+
+  .dudas-title {
+    font-family: 'Fraunces', serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.6rem;
+    letter-spacing: -0.01em;
+  }
+
+  .dudas-text {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    max-width: 540px;
+    margin: 0 auto 1.5rem;
+    line-height: 1.65;
+  }
+
+  .dudas-btns {
+    display: flex;
+    gap: 0.8rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
   /* MOBILE */
   @media (max-width: 900px) {
     .servicios-grid { grid-template-columns: 1fr; }
@@ -615,6 +933,13 @@
     .para-quien-grid { grid-template-columns: 1fr; }
     .pasos-grid { grid-template-columns: 1fr 1fr; }
     .curso-card { flex-direction: column; align-items: flex-start; }
+    .busqueda-grid { grid-template-columns: 1fr !important; }
+    .familia-grid { grid-template-columns: 1fr !important; }
+    .revision-grid { grid-template-columns: 1fr !important; gap: 1.2rem !important; }
+    .dudas-block { padding: 1.8rem 1.2rem; }
+    .busq-revision { padding: 1.6rem; }
+    .dudas-btns { flex-direction: column; align-items: stretch; }
+    .dudas-btns .btn { width: 100%; }
     .cierre { padding: 60px 1.2rem 80px; }
     footer { flex-direction: column; text-align: center; padding: 1.5rem 1.2rem; }
   }
@@ -787,14 +1112,173 @@
             <span style="font-weight:700;font-size:0.98rem;">Acompañamiento para Matriculación</span>
             <span style="background:var(--accent-light);color:var(--accent);font-size:0.65rem;font-weight:700;padding:0.18rem 0.6rem;border-radius:100px;text-transform:uppercase;letter-spacing:0.05em;">Precio fijo</span>
           </div>
-          <p style="font-size:0.85rem;color:var(--text-muted);line-height:1.65;max-width:520px;">Te guío paso a paso para que entiendas qué documentos necesitas, qué impuestos pagar y cómo avanzar en el proceso de matriculación en España — con una explicación clara del proceso, costes y documentación necesaria.</p>
-          <p style="font-size:0.75rem;color:#9ca3af;margin-top:0.6rem;line-height:1.5;">No incluye tasas oficiales, ITV, impuestos, placas ni costes externos.</p>
+          <p style="font-size:0.85rem;color:var(--text-muted);line-height:1.65;max-width:520px;">No te explico cómo hacerlo y te dejo solo. Estaré contigo en cada paso: por WhatsApp, compartiendo pantalla, diciéndote qué rellenar, dónde presentarlo y qué hacer en cada momento — hasta que tengas el coche o furgoneta matriculado en España.</p>
+          <p style="font-size:0.75rem;color:#9ca3af;margin-top:0.6rem;line-height:1.5;">No incluye tasas oficiales, ITV, impuestos, placas ni costes externos. ¿Tienes dudas? <a href="https://tidycal.com/pogrebnyakivan123/llamada-de-orientacion-gratuita-5-min" target="_blank" style="color:var(--accent);text-decoration:none;font-weight:600;">Reserva una llamada gratis.</a></p>
         </div>
       </div>
       <div class="mat-right">
         <div class="mat-price">197€</div>
         <p class="mat-note">Asesoría completa · precio fijo</p>
         <a href="https://buy.stripe.com/4gM9AU0ta1nh8Mb3EY8N200" target="_blank" class="btn btn-primary" style="font-size:0.82rem;padding:0.65rem 1.3rem;white-space:normal;text-align:center;line-height:1.4;">Quiero ayuda con mi matriculación</a>
+      </div>
+    </div>
+
+    <!-- FAMILIA 1: Yo te ayudo a buscar/comprar -->
+    <div style="margin-top:2rem;" class="fade-up">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:0.4rem;flex-wrap:wrap;">
+        <span class="section-label" style="margin-bottom:0;">Yo te ayudo a buscar y comprar</span>
+        <span style="font-size:0.78rem;color:var(--text-muted);">2 niveles según el acompañamiento que necesites</span>
+      </div>
+      <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:1.4rem;max-width:600px;">¿No tienes coche todavía? Yo me encargo de buscarlo en el mercado europeo según lo que necesitas — desde una preselección con números reales hasta un acompañamiento completo durante la compra.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1.05fr;gap:1.2rem;" class="familia-grid">
+
+        <!-- 1. Búsqueda + Rentabilidad -->
+        <div class="busq-card fade-up">
+          <div class="busq-icon">🔍</div>
+          <div class="busq-title">Búsqueda + Rentabilidad</div>
+          <p class="busq-desc">Te busco 3 vehículos del mercado europeo según tus características — o te aconsejo yo qué buscar. Para cada uno calculo costes reales y rentabilidad estimada para que sepas si vale la pena antes de moverte.</p>
+
+          <ul class="busq-feat">
+            <li>3 vehículos seleccionados a mano</li>
+            <li>Cálculo de costes totales reales</li>
+            <li>Estimación de rentabilidad por opción</li>
+            <li>Informe detallado de cada uno</li>
+            <li>Llamada incluida para hablarlo todo</li>
+          </ul>
+
+          <div class="busq-price-block">
+            <div class="busq-price">147€</div>
+            <p class="busq-price-note">precio fijo · entrega hasta en 7 días</p>
+          </div>
+
+          <a href="https://buy.stripe.com/6oU9AU2Bi1nh0fF1wQ8N202" target="_blank" class="btn btn-primary btn-full">Quiero que me busques coches</a>
+        </div>
+
+        <!-- 2. Compra Acompañada VIP -->
+        <div class="busq-card busq-vip fade-up">
+          <span class="busq-badge-vip">
+            <svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24" style="vertical-align:-1px;margin-right:0.3rem;"><path d="M5 16L3 7l5.5 5L12 5l3.5 7L21 7l-2 9H5zm0 2h14v2H5v-2z"/></svg>
+            Servicio VIP · Más completo
+          </span>
+          <div class="busq-icon-vip">
+            <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 16L3 7l5.5 5L12 5l3.5 7L21 7l-2 9H5zm0 2h14v2H5v-2z"/></svg>
+          </div>
+          <div class="busq-title">Compra Acompañada VIP</div>
+          <p class="busq-desc">Para quien quiere comprar un vehículo en Europa con acompañamiento real antes de pagar o viajar. Busco opciones, calculo costes, reviso documentación, hablo con el vendedor, intento negociar el precio y te acompaño durante el proceso para que tomes la decisión con más seguridad.</p>
+
+          <div class="busq-negotiation">
+            <div class="busq-negotiation-icon">💬</div>
+            <div>
+              <div style="font-weight:700;font-size:0.85rem;color:var(--text);margin-bottom:0.15rem;">Negociación del precio incluida</div>
+              <p style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;">En el 92% de los casos consigo bajar el precio. Y en la mayoría, el coche te sale más barato de lo que cuesta mi servicio.</p>
+            </div>
+          </div>
+
+          <div class="feat-group">
+            <span class="feat-group-title">Búsqueda y análisis</span>
+            <ul class="busq-feat">
+              <li>3 vehículos seleccionados a mano</li>
+              <li>Cálculo de costes totales reales</li>
+              <li>Estimación de rentabilidad por opción</li>
+              <li>Informe detallado de cada uno</li>
+              <li>Revisión del anuncio y del precio</li>
+            </ul>
+          </div>
+
+          <div class="feat-group">
+            <span class="feat-group-title">Negociación y vendedor</span>
+            <ul class="busq-feat">
+              <li>Revisión de documentación disponible</li>
+              <li>Solicitud y revisión de mantenimientos</li>
+              <li>Comunicación con el vendedor europeo</li>
+              <li>Cita coordinada con el vendedor si decides ir a verlo</li>
+            </ul>
+          </div>
+
+          <div class="feat-group">
+            <span class="feat-group-title">Acompañamiento</span>
+            <ul class="busq-feat">
+              <li>Llamada incluida para hablarlo todo</li>
+              <li>Soporte por WhatsApp durante el proceso</li>
+              <li>Posibilidad de llamarme cuando estés con el vendedor</li>
+              <li>Opinión sincera: si no lo veo claro, te lo digo</li>
+            </ul>
+          </div>
+
+          <div class="busq-price-block">
+            <div class="busq-price">347€</div>
+            <p class="busq-price-note">precio fijo · acompañamiento completo</p>
+          </div>
+
+          <a href="https://buy.stripe.com/3cI14oek06HBfaz2AU8N204" target="_blank" class="btn btn-vip btn-full">Quiero comprar acompañado</a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SEPARADOR FAMILIA 2 -->
+    <div style="margin:2.5rem 0 1.5rem;display:flex;align-items:center;gap:1rem;" class="fade-up">
+      <div style="flex:1;height:1px;background:var(--border);"></div>
+      <span style="font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);">o también</span>
+      <div style="flex:1;height:1px;background:var(--border);"></div>
+    </div>
+
+    <!-- FAMILIA 2: Tú ya tienes coches vistos -->
+    <div class="fade-up">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:0.4rem;flex-wrap:wrap;">
+        <span class="section-label" style="margin-bottom:0;">Ya tienes coches en mente</span>
+        <span style="font-size:0.78rem;color:var(--text-muted);">Servicio independiente de análisis</span>
+      </div>
+      <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:1.4rem;max-width:600px;">Si ya has visto varios vehículos y necesitas saber cuál merece la pena, este servicio es diferente — yo no busco, tú me los traes y los analizo.</p>
+
+      <!-- 3. Revisión de hasta 5 coches -->
+      <div class="busq-card busq-revision fade-up">
+        <span class="busq-badge-alt">Ya tienes coches vistos</span>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start;" class="revision-grid">
+          <div>
+            <div class="busq-icon">📊</div>
+            <div class="busq-title">Revisión de hasta 5 coches</div>
+            <p class="busq-desc">Para quien ya tiene varios coches en mente y necesita saber cuál merece la pena antes de comprar, viajar o pagar una señal. Analizo hasta 5 vehículos, reviso anuncios, documentación, mantenimientos, costes aproximados en España y te doy una recomendación final.</p>
+
+            <div class="busq-negotiation">
+              <div class="busq-negotiation-icon">💬</div>
+              <div>
+                <div style="font-weight:700;font-size:0.85rem;color:var(--text);margin-bottom:0.15rem;">Negociación del precio incluida</div>
+                <p style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;">En el 92% de los casos consigo bajar el precio. Y en la mayoría, el coche te sale más barato de lo que cuesta mi servicio.</p>
+              </div>
+            </div>
+          </div>
+          <div>
+            <ul class="busq-feat">
+              <li>Revisión de hasta 5 anuncios</li>
+              <li>Análisis de precio y mercado</li>
+              <li>Revisión de documentación disponible</li>
+              <li>Solicitud y revisión de mantenimientos</li>
+              <li>Cálculo orientativo del coste total en España</li>
+              <li>Opinión sincera sobre cada vehículo</li>
+              <li>Recomendación final sobre cuál merece más la pena</li>
+            </ul>
+
+            <div class="busq-price-block">
+              <div class="busq-price">237€</div>
+              <p class="busq-price-note">precio fijo · entrega hasta en 7 días</p>
+            </div>
+
+            <!-- Stripe: https://buy.stripe.com/9B63cw5Nu2rl3rRcbu8N203 -->
+            <a href="https://buy.stripe.com/9B63cw5Nu2rl3rRcbu8N203" target="_blank" class="btn btn-primary btn-full">Quiero revisar mis coches</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOQUE DE DUDAS -->
+    <div class="dudas-block fade-up">
+      <h3 class="dudas-title">¿Tienes dudas sobre qué servicio elegir?</h3>
+      <p class="dudas-text">Reserva una llamada gratuita de 5 minutos y te digo cuál encaja mejor con tu caso. Si prefieres resolver una duda concreta, también puedes reservar una consulta de 15 minutos.</p>
+      <div class="dudas-btns">
+        <a href="https://tidycal.com/pogrebnyakivan123/llamada-de-orientacion-gratuita-5-min" target="_blank" class="btn btn-green">Llamada gratis · 5 min</a>
+        <a href="https://tidycal.com/pogrebnyakivan123/llamada-15-minutos" target="_blank" class="btn btn-secondary">Consulta · 15 min · 30€</a>
       </div>
     </div>
 
