@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ivan Imports · Asesor en Importación y Matriculación de Vehículos</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f8f7f4;
+    --white: #ffffff;
+    --text: #1a1a2e;
+    --text-muted: #6b7280;
+    --accent: #1d6fa4;
+    --accent-light: #e8f3fb;
+    --accent-dark: #155d8a;
+    --green: #16a34a;
+    --border: #e5e7eb;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.10);
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(248,247,244,0.95);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-logo {
+    font-family: 'Fraunces', serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    text-decoration: none;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--text); }
+
+  .nav-cta {
+    background: var(--accent) !important;
+    color: white !important;
+    padding: 0.5rem 1.2rem;
+    border-radius: 100px;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+  }
+  .nav-cta:hover { background: var(--accent-dark) !important; }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.8rem;
+    border-radius: 100px;
+    font-family: 'Sora', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-primary { background: var(--accent); color: white; box-shadow: 0 4px 14px rgba(29,111,164,0.25); }
+  .btn-primary:hover { background: var(--accent-dark); transform: translateY(-2px); }
+
+  .btn-secondary { background: var(--white); color: var(--text); border: 1.5px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+
+  .btn-green { background: var(--green); color: white; box-shadow: 0 4px 14px rgba(22,163,74,0.2); }
+  .btn-green:hover { background: #15803d; transform: translateY(-2px); }
+
+  .btn-white { background: white; color: var(--accent); font-weight: 700; }
+  .btn-white:hover { background: #f0f7ff; transform: translateY(-2px); }
+
+  .btn-outline-white { background: transparent; color: white; border: 1.5px solid rgba(255,255,255,0.4); font-weight: 600; }
+  .btn-outline-white:hover { background: rgba(255,255,255,0.1); }
+
+  .btn-lg { padding: 1rem 2.2rem; font-size: 1rem; }
+  .btn-full { width: 100%; }
+
+  /* HERO */
+  .hero {
+    padding: 140px 2rem 80px;
+    max-width: 780px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.4rem 1rem;
+    border-radius: 100px;
+    margin-bottom: 2rem;
+    letter-spacing: 0.02em;
+  }
+
+  .hero h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(2.2rem, 5.5vw, 3.6rem);
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.2rem;
+  }
+
+  .hero h1 em { font-style: italic; color: var(--accent); }
+
+  .hero-sub {
+    font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+    color: var(--text-muted);
+    max-width: 560px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.75;
+  }
+
+  .hero-btns {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 3rem;
+  }
+
+  .hero-trust {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .trust-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .trust-check { width: 16px; height: 16px; color: var(--green); flex-shrink: 0; }
+
+  /* LAYOUT */
+  .divider { height: 1px; background: var(--border); }
+
+  .section {
+    padding: 80px 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.8rem;
+    display: block;
+  }
+
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(1.7rem, 3.5vw, 2.5rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin-bottom: 1rem;
+  }
+
+  .section-sub {
+    font-size: 1rem;
+    color: var(--text-muted);
+    max-width: 500px;
+    line-height: 1.7;
+  }
+
+  /* SOBRE MÍ */
+  .sobre-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 5rem;
+    align-items: center;
+  }
+
+  .foto-placeholder {
+    background: var(--white);
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    aspect-ratio: 4/5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+
+  .foto-placeholder svg { width: 40px; height: 40px; opacity: 0.25; }
+
+  .sobre-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.5rem; }
+
+  .chip { background: var(--white); border: 1.5px solid var(--border); border-radius: 100px; padding: 0.35rem 0.9rem; font-size: 0.78rem; font-weight: 500; color: var(--text-muted); }
+  .chip.blue { background: var(--accent-light); border-color: transparent; color: var(--accent); }
+
+  .sobre-quote {
+    margin-top: 2rem;
+    padding: 1.4rem 1.6rem;
+    background: var(--bg);
+    border-radius: var(--radius);
+    border-left: 3px solid var(--accent);
+    font-size: 0.92rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+    font-style: italic;
+  }
+
+  /* CÓMO FUNCIONA */
+  .pasos-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+    margin-top: 3rem;
+    position: relative;
+  }
+
+  .pasos-grid::before {
+    content: '';
+    position: absolute;
+    top: 27px;
+    left: 12%;
+    right: 12%;
+    height: 1px;
+    background: var(--border);
+    z-index: 0;
+  }
+
+  .paso { text-align: center; position: relative; z-index: 1; }
+
+  .paso-num {
+    width: 54px;
+    height: 54px;
+    background: var(--accent);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0 auto 1rem;
+    border: 3px solid var(--white);
+    box-shadow: 0 0 0 1px var(--border);
+  }
+
+  .paso-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .paso-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
+
+  /* SERVICIOS */
+  .servicios-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.2rem;
+    margin-top: 3rem;
+  }
+
+  .servicio-card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.8rem;
+    transition: all 0.25s;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .servicio-card:hover { border-color: var(--accent); box-shadow: var(--shadow-lg); transform: translateY(-3px); }
+
+  .servicio-card.featured { background: var(--accent); border-color: var(--accent); color: white; }
+  .servicio-card.featured .servicio-desc,
+  .servicio-card.featured .servicio-price-note,
+  .servicio-card.featured .feat-item { color: rgba(255,255,255,0.78); }
+  .servicio-card.featured .servicio-price { color: white; }
+  .servicio-card.featured .servicio-label { color: rgba(255,255,255,0.65); }
+  .servicio-card.featured .feat-item::before { color: rgba(255,255,255,0.7); }
+
+  .servicio-tag {
+    position: absolute;
+    top: -11px; left: 1.4rem;
+    background: var(--green);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.7rem;
+    border-radius: 100px;
+  }
+
+  .servicio-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.6rem; display: block; }
+  .servicio-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; line-height: 1.3; }
+  .servicio-desc { font-size: 0.83rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.2rem; flex-grow: 1; }
+
+  .servicio-price { font-family: 'Fraunces', serif; font-size: 1.9rem; font-weight: 600; color: var(--text); line-height: 1; margin-bottom: 0.25rem; }
+  .servicio-price-note { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.3rem; }
+
+  .feat-list { list-style: none; display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 1.5rem; }
+  .feat-item { font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: flex-start; gap: 0.45rem; line-height: 1.4; }
+  .feat-item::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; }
+
+  /* MATRICULACIÓN */
+  .matriculacion-card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    margin-top: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    transition: border-color 0.2s;
+  }
+
+  .matriculacion-card:hover { border-color: var(--accent); }
+
+  .mat-left { display: flex; align-items: flex-start; gap: 1.2rem; flex: 1; }
+  .mat-icon { width: 48px; height: 48px; background: var(--accent-light); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+  .mat-right { text-align: right; flex-shrink: 0; }
+  .mat-price { font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 600; line-height: 1; }
+  .mat-note { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 1rem; }
+
+  /* CURSO */
+  .curso-card {
+    background: var(--accent-light);
+    border-radius: var(--radius);
+    padding: 1.5rem 2rem;
+    margin-top: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  /* PARA QUIÉN */
+  .para-quien-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: 3rem;
+  }
+
+  .pq-card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    transition: all 0.2s;
+  }
+
+  .pq-card:hover { border-color: var(--accent); box-shadow: var(--shadow); transform: translateY(-2px); }
+
+  .pq-num {
+    width: 28px; height: 28px;
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  .pq-text { font-size: 0.88rem; color: var(--text); line-height: 1.55; font-weight: 500; }
+
+  /* CONVERSION */
+  .conversion-block {
+    background: linear-gradient(135deg, #1d6fa4 0%, #155d8a 100%);
+    border-radius: 24px;
+    padding: 4rem 3rem;
+    text-align: center;
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .conversion-block::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 240px; height: 240px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 50%;
+  }
+
+  .conversion-title {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(1.6rem, 4vw, 2.3rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.8rem;
+    position: relative; z-index: 1;
+  }
+
+  .conversion-sub {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.8);
+    max-width: 460px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.7;
+    position: relative; z-index: 1;
+  }
+
+  .conversion-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; position: relative; z-index: 1; }
+
+  /* ERRORES */
+  .errores-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.2rem;
+    margin-top: 3rem;
+  }
+
+  .error-card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    transition: box-shadow 0.2s;
+  }
+
+  .error-card:hover { box-shadow: var(--shadow); }
+
+  .error-icon {
+    width: 40px; height: 40px;
+    background: var(--accent-light);
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .error-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 0.3rem; line-height: 1.4; }
+  .error-desc { font-size: 0.81rem; color: var(--text-muted); line-height: 1.55; }
+
+  /* FAQ */
+  .faq-list {
+    margin-top: 3rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--white);
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .faq-item { border-bottom: 1px solid var(--border); }
+  .faq-item:last-child { border-bottom: none; }
+
+  .faq-q {
+    padding: 1.2rem 1.5rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    transition: background 0.15s;
+    user-select: none;
+    line-height: 1.4;
+  }
+
+  .faq-q:hover { background: var(--bg); }
+  .faq-q.open { color: var(--accent); }
+
+  .faq-arrow { width: 18px; height: 18px; flex-shrink: 0; transition: transform 0.25s; color: var(--text-muted); }
+  .faq-q.open .faq-arrow { transform: rotate(180deg); color: var(--accent); }
+
+  .faq-a {
+    padding: 0 1.5rem;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  .faq-a.open { max-height: 300px; padding: 0 1.5rem 1.3rem; }
+
+  /* CIERRE */
+  .cierre {
+    text-align: center;
+    padding: 80px 2rem 100px;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .cierre h2 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(1.7rem, 4vw, 2.5rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+  }
+
+  .cierre p { font-size: 1rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 2.5rem; }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1100px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .footer-logo { font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 600; }
+  .footer-text { font-size: 0.8rem; color: var(--text-muted); }
+
+  /* ANIMATIONS */
+  .fade-up { opacity: 0; transform: translateY(22px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+  /* MOBILE */
+  @media (max-width: 900px) {
+    .servicios-grid { grid-template-columns: 1fr; }
+    .para-quien-grid { grid-template-columns: 1fr 1fr; }
+    .pasos-grid { grid-template-columns: repeat(2, 1fr); }
+    .pasos-grid::before { display: none; }
+  }
+
+  @media (max-width: 768px) {
+    nav { padding: 0 1.2rem; }
+    .nav-links { display: none; }
+    .hero { padding: 100px 1.2rem 60px; }
+    .hero-btns { flex-direction: column; align-items: stretch; }
+    .hero-btns .btn { width: 100%; }
+    .hero-trust { gap: 1rem; justify-content: flex-start; }
+    .section { padding: 60px 1.2rem; }
+    .sobre-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+    .foto-placeholder { aspect-ratio: 3/2; }
+    .matriculacion-card { flex-direction: column; align-items: flex-start; }
+    .mat-right { text-align: left; width: 100%; }
+    .mat-right .btn { width: 100%; }
+    .conversion-block { padding: 2.5rem 1.5rem; border-radius: var(--radius); }
+    .conversion-btns { flex-direction: column; align-items: stretch; }
+    .conversion-btns .btn { width: 100%; }
+    .errores-grid { grid-template-columns: 1fr; }
+    .para-quien-grid { grid-template-columns: 1fr; }
+    .pasos-grid { grid-template-columns: 1fr 1fr; }
+    .curso-card { flex-direction: column; align-items: flex-start; }
+    .cierre { padding: 60px 1.2rem 80px; }
+    footer { flex-direction: column; text-align: center; padding: 1.5rem 1.2rem; }
+  }
+
+  @media (max-width: 480px) {
+    .hero h1 { font-size: 1.9rem; }
+    .section-title { font-size: 1.6rem; }
+    .pasos-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Ivan Imports</a>
+  <ul class="nav-links">
+    <li><a href="#sobre-mi">Sobre mí</a></li>
+    <li><a href="#servicios">Servicios</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li><a href="https://tidycal.com/pogrebnyakivan123/llamada-de-orientacion-gratuita-5-min" target="_blank" class="nav-cta">Llamada gratis</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge fade-up">
+    Importación · Matriculación · Vehículos comerciales
+  </div>
+  <h1 class="fade-up">Importa y matricula tu vehículo con <em>más claridad</em> y menos errores</h1>
+  <p class="hero-sub fade-up">Asesoría personalizada para importar vehículos desde Europa, entender el proceso de matriculación y tomar mejores decisiones antes de comprar.</p>
+  <div class="hero-btns fade-up">
+    <a href="https://tidycal.com/pogrebnyakivan123/llamada-de-orientacion-gratuita-5-min" target="_blank" class="btn btn-green btn-lg">Llamada gratis · 5 min</a>
+    <a href="https://tidycal.com/pogrebnyakivan123/consultoria-completa" target="_blank" class="btn btn-secondary btn-lg">Consultoría completa · 45 min</a>
+  </div>
+  <div class="hero-trust fade-up">
+    <div class="trust-item">
+      <svg class="trust-check" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+      Experiencia real en compraventa, importación y matriculación
+    </div>
+    <div class="trust-item">
+      <svg class="trust-check" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+      100% online
+    </div>
+    <div class="trust-item">
+      <svg class="trust-check" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+      Asesoría directa y personalizada
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- SOBRE MÍ -->
+<div class="section" id="sobre-mi" style="padding-top:60px;padding-bottom:60px;">
+  <div style="max-width:700px;margin:0 auto;text-align:center;" class="fade-up">
+    <span class="section-label">Sobre mí</span>
+    <h2 class="section-title">Experiencia real en importación, matriculación y compraventa de vehículos.</h2>
+    <p style="color:var(--text-muted);font-size:0.95rem;line-height:1.8;margin-bottom:1rem;">Empecé trabajando en una compraventa y aprendí el proceso completo desde dentro: documentación, importación desde Europa, matriculación y trato con clientes.</p>
+    <p style="color:var(--text-muted);font-size:0.95rem;line-height:1.8;margin-bottom:1rem;">Con el tiempo empecé por mi cuenta, y ahí entendí realmente qué decisiones marcan la diferencia y cuáles cuestan dinero.</p>
+    <p style="color:var(--text-muted);font-size:0.95rem;line-height:1.8;margin-bottom:2rem;">Hoy trabajo con vehículos importados, subastas, furgonetas y procesos reales de matriculación en España. Mi objetivo es que tomes decisiones con criterio desde el principio.</p>
+    <div class="sobre-chips" style="justify-content:center;">
+      <span class="chip blue">Importación Europa</span>
+      <span class="chip blue">Matriculación</span>
+      <span class="chip blue">Subastas</span>
+      <span class="chip blue">Furgonetas</span>
+      <span class="chip">Compraventa</span>
+      <span class="chip">DE · NL · BE · FR · España</span>
+    </div>
+    <div class="sobre-quote" style="text-align:center;">"La diferencia no está en cómo vendes, sino en cómo compras."</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CÓMO FUNCIONA -->
+<div style="background:var(--white);border-bottom:1px solid var(--border);">
+  <div class="section">
+    <div class="fade-up" style="text-align:center;max-width:520px;margin:0 auto;">
+      <span class="section-label">Cómo funciona</span>
+      <h2 class="section-title">Un proceso simple y claro</h2>
+      <p class="section-sub" style="margin:0 auto;">De la duda al plan de acción en una sola sesión.</p>
+    </div>
+    <div class="pasos-grid">
+      <div class="paso fade-up">
+        <div class="paso-num">1</div>
+        <div class="paso-title">Reservas una llamada</div>
+        <p class="paso-desc">Elige el formato que mejor se adapte a tu situación — gratis, 15 min o 45 min.</p>
+      </div>
+      <div class="paso fade-up">
+        <div class="paso-num">2</div>
+        <div class="paso-title">Me cuentas tu caso</div>
+        <p class="paso-desc">Qué vehículo buscas, de dónde viene, qué dudas tienes o en qué punto del proceso estás.</p>
+      </div>
+      <div class="paso fade-up">
+        <div class="paso-num">3</div>
+        <div class="paso-title">Revisamos opciones y costes</div>
+        <p class="paso-desc">Analizamos documentación, impuestos, plazos y cualquier punto que necesites entender bien.</p>
+      </div>
+      <div class="paso fade-up">
+        <div class="paso-num">4</div>
+        <div class="paso-title">Sales con un plan claro</div>
+        <p class="paso-desc">Sabes exactamente qué pasos seguir, qué documentos necesitas y qué errores evitar.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SERVICIOS -->
+<div style="border-bottom:1px solid var(--border);">
+  <div class="section" id="servicios">
+    <div class="fade-up" style="text-align:center;max-width:560px;margin:0 auto;">
+      <span class="section-label">Servicios</span>
+      <h2 class="section-title">Elige cómo quieres que te ayude</h2>
+      <p class="section-sub" style="margin:0 auto;">Cada servicio tiene un objetivo claro y un precio fijo. Sin sorpresas.</p>
+    </div>
+
+    <div class="servicios-grid">
+      <div class="servicio-card fade-up">
+        <span class="servicio-label">Sin coste</span>
+        <div class="servicio-title">Llamada de orientación</div>
+        <p class="servicio-desc">No sabes por dónde empezar o qué servicio necesitas. Me cuentas tu situación y te oriento sin compromiso.</p>
+        <div class="servicio-price">Gratis</div>
+        <p class="servicio-price-note">5 minutos · Sin compromiso · 5 plazas diarias</p>
+        <ul class="feat-list">
+          <li class="feat-item">Orientación personalizada</li>
+          <li class="feat-item">Te digo qué pasos seguir</li>
+          <li class="feat-item">Sin coste, sin rodeos</li>
+        </ul>
+        <a href="https://tidycal.com/pogrebnyakivan123/llamada-de-orientacion-gratuita-5-min" target="_blank" class="btn btn-green btn-full">Reservar ahora</a>
+      </div>
+
+      <div class="servicio-card fade-up">
+        <span class="servicio-label">Consulta rápida</span>
+        <div class="servicio-title">Consulta Exprés</div>
+        <p class="servicio-desc">Tienes una duda concreta sobre importación, matriculación o compraventa. Te la resuelvo con información real y directa.</p>
+        <div class="servicio-price">30€</div>
+        <p class="servicio-price-note">15 minutos · Respuesta concreta</p>
+        <ul class="feat-list">
+          <li class="feat-item">Análisis de tu caso específico</li>
+          <li class="feat-item">Importación, matrícula, subastas</li>
+          <li class="feat-item">Información clara y accionable</li>
+        </ul>
+        <a href="https://tidycal.com/pogrebnyakivan123/llamada-15-minutos" target="_blank" class="btn btn-primary btn-full">Reservar llamada</a>
+      </div>
+
+      <div class="servicio-card featured fade-up">
+        <span class="servicio-tag">Más completo</span>
+        <span class="servicio-label">Sesión completa</span>
+        <div class="servicio-title">Consultoría Completa</div>
+        <p class="servicio-desc">Analizamos todo tu caso en profundidad. Terminas con un plan claro, realista y adaptado a tu situación exacta.</p>
+        <div class="servicio-price">70€</div>
+        <p class="servicio-price-note">45 minutos · 1 plaza diaria</p>
+        <ul class="feat-list">
+          <li class="feat-item">Sesión privada personalizada</li>
+          <li class="feat-item">Búsqueda, importación, matriculación</li>
+          <li class="feat-item">Subastas, márgenes y estrategia</li>
+          <li class="feat-item">Plan de acción concreto</li>
+        </ul>
+        <a href="https://tidycal.com/pogrebnyakivan123/consultoria-completa" target="_blank" class="btn btn-white btn-full">Reservar consultoría</a>
+      </div>
+    </div>
+
+    <!-- Matriculación -->
+    <div class="matriculacion-card fade-up">
+      <div class="mat-left">
+        <div class="mat-icon">📋</div>
+        <div>
+          <div style="display:flex;align-items:center;gap:0.7rem;margin-bottom:0.4rem;flex-wrap:wrap;">
+            <span style="font-weight:700;font-size:0.98rem;">Acompañamiento para Matriculación</span>
+            <span style="background:var(--accent-light);color:var(--accent);font-size:0.65rem;font-weight:700;padding:0.18rem 0.6rem;border-radius:100px;text-transform:uppercase;letter-spacing:0.05em;">Precio fijo</span>
+          </div>
+          <p style="font-size:0.85rem;color:var(--text-muted);line-height:1.65;max-width:520px;">Te guío paso a paso para que entiendas qué documentos necesitas, qué impuestos pagar y cómo avanzar en el proceso de matriculación en España — con una explicación clara del proceso, costes y documentación necesaria.</p>
+          <p style="font-size:0.75rem;color:#9ca3af;margin-top:0.6rem;line-height:1.5;">No incluye tasas oficiales, ITV, impuestos, placas ni costes externos.</p>
+        </div>
+      </div>
+      <div class="mat-right">
+        <div class="mat-price">197€</div>
+        <p class="mat-note">Asesoría completa · precio fijo</p>
+        <a href="https://buy.stripe.com/4gM9AU0ta1nh8Mb3EY8N200" target="_blank" class="btn btn-primary" style="font-size:0.82rem;padding:0.65rem 1.3rem;white-space:normal;text-align:center;line-height:1.4;">Quiero ayuda con mi matriculación</a>
+      </div>
+    </div>
+
+    <!-- Curso -->
+    <div class="curso-card fade-up">
+      <div style="display:flex;align-items:center;gap:1rem;">
+        <span style="font-size:1.1rem;">🎓</span>
+        <div>
+          <div style="font-weight:700;font-size:0.93rem;color:var(--text);">Curso de Matriculación — Próximamente</div>
+          <div style="font-size:0.8rem;color:var(--accent);">Aprende el proceso completo paso a paso · Precio estimado de lanzamiento · lista de espera</div>
+        </div>
+      </div>
+      <form action="https://formspree.io/f/xqenaogw" method="POST" id="curso-form" style="display:flex;gap:0.6rem;flex-wrap:wrap;">
+        <input type="hidden" name="_subject" value="Lista de espera curso — Ivan Imports">
+        <input type="email" name="email" placeholder="Tu email" required style="padding:0.6rem 1rem;border:1.5px solid var(--border);border-radius:100px;font-family:'Sora',sans-serif;font-size:0.82rem;outline:none;background:white;min-width:180px;flex:1;">
+        <button type="submit" class="btn btn-primary" style="font-size:0.82rem;padding:0.6rem 1.2rem;">Avísame</button>
+      </form>
+      <div id="curso-ok" style="display:none;font-size:0.85rem;color:var(--green);font-weight:600;">✓ Apuntado. Te avisamos primero.</div>
+    </div>
+  </div>
+</div>
+
+<!-- CONVERSION -->
+<div class="section">
+  <div class="conversion-block fade-up">
+    <h2 class="conversion-title">¿No sabes por dónde empezar?</h2>
+    <p class="conversion-sub">Reserva una llamada de 5 minutos. Me cuentas tu situación y te digo exactamente qué hacer en tu caso — sin compromiso.</p>
+    <div class="conversion-btns">
+      <a href="https://tidycal.com/pogrebnyakivan123/llamada-de-orientacion-gratuita-5-min" target="_blank" class="btn btn-white btn-lg">Llamada gratis · 5 min</a>
+      <a href="https://tidycal.com/pogrebnyakivan123/consultoria-completa" target="_blank" class="btn btn-outline-white btn-lg">Consultoría completa · 45 min</a>
+    </div>
+  </div>
+</div>
+
+<!-- DECISIONES -->
+<div style="background:var(--white);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="section">
+    <div class="fade-up">
+      <span class="section-label">Por qué importa</span>
+      <h2 class="section-title">Decisiones que conviene tomar con información</h2>
+      <p class="section-sub">Conocer el proceso con antelación ayuda a evitar retrasos, costes inesperados y errores difíciles de revertir.</p>
+    </div>
+    <div class="errores-grid">
+      <div class="error-card fade-up">
+        <div class="error-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:20px;height:20px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        </div>
+        <div>
+          <div class="error-title">Calcular mal los costes reales</div>
+          <p class="error-desc">El precio del vehículo es solo una parte. Transporte, ITV, impuestos y tasas pueden variar significativamente según el coche y su origen.</p>
+        </div>
+      </div>
+      <div class="error-card fade-up">
+        <div class="error-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:20px;height:20px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        </div>
+        <div>
+          <div class="error-title">Comprar sin revisar la documentación</div>
+          <p class="error-desc">El COC, el historial del vehículo y los permisos de circulación son esenciales. Un documento que falta puede complicar todo el proceso.</p>
+        </div>
+      </div>
+      <div class="error-card fade-up">
+        <div class="error-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:20px;height:20px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        </div>
+        <div>
+          <div class="error-title">No comprobar la homologación europea</div>
+          <p class="error-desc">Especialmente relevante en furgonetas y vehículos comerciales. Sin la homologación correcta, el proceso posterior puede ser considerablemente más costoso.</p>
+        </div>
+      </div>
+      <div class="error-card fade-up">
+        <div class="error-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:20px;height:20px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div>
+          <div class="error-title">Desconocer plazos y pasos de matriculación</div>
+          <p class="error-desc">El proceso tiene un orden concreto. Empezar por el paso equivocado o saltarse alguno puede generar retrasos innecesarios y fácilmente evitables.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PARA QUIÉN -->
+<div class="section">
+  <div class="fade-up" style="text-align:center;max-width:560px;margin:0 auto;">
+    <span class="section-label">Para quién es</span>
+    <h2 class="section-title">¿Esta asesoría es para ti?</h2>
+    <p class="section-sub" style="margin:0 auto;">Si te identificas con alguna de estas situaciones, puedo ayudarte.</p>
+  </div>
+  <div class="para-quien-grid">
+    <div class="pq-card fade-up">
+      <div class="pq-num">1</div>
+      <p class="pq-text">Quieres importar un coche desde Alemania, Holanda, Bélgica o Francia y no sabes bien por dónde empezar.</p>
+    </div>
+    <div class="pq-card fade-up">
+      <div class="pq-num">2</div>
+      <p class="pq-text">Has comprado un vehículo en el extranjero y necesitas entender cómo matricularlo en España.</p>
+    </div>
+    <div class="pq-card fade-up">
+      <div class="pq-num">3</div>
+      <p class="pq-text">Estás valorando una furgoneta o vehículo comercial y quieres asegurarte de revisar los puntos clave antes de comprar.</p>
+    </div>
+    <div class="pq-card fade-up">
+      <div class="pq-num">4</div>
+      <p class="pq-text">Quieres aprender el proceso de importación o matriculación para hacerlo tú mismo con confianza.</p>
+    </div>
+    <div class="pq-card fade-up">
+      <div class="pq-num">5</div>
+      <p class="pq-text">Trabajas o quieres empezar en compraventa de vehículos y buscas orientación real basada en experiencia directa.</p>
+    </div>
+    <div class="pq-card fade-up" style="background:var(--accent-light);border-color:transparent;flex-direction:column;gap:1rem;">
+      <p class="pq-text">Si tu caso encaja, el primer paso es una llamada gratuita de 5 minutos.</p>
+      <a href="https://tidycal.com/pogrebnyakivan123/llamada-de-orientacion-gratuita-5-min" target="_blank" class="btn btn-green" style="font-size:0.82rem;padding:0.65rem 1.3rem;">Reservar llamada gratis</a>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div style="background:var(--white);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="section" id="faq">
+    <div class="fade-up" style="text-align:center;">
+      <span class="section-label">Preguntas frecuentes</span>
+      <h2 class="section-title">Lo que todo el mundo pregunta</h2>
+    </div>
+    <div class="faq-list fade-up">
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">¿Cuánto cuesta matricular un coche importado?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+        <div class="faq-a">El coste total varía según el vehículo, sus emisiones y el tipo de ITV necesaria. El proceso incluye la tasa de matriculación, las placas, la ITV de importación y el impuesto de matriculación (modelo 576), que depende directamente de las emisiones del vehículo. En la consultoría calculamos el coste orientativo para tu caso concreto.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">¿Puedo traer el coche conduciendo desde Europa?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+        <div class="faq-a">Sí, es posible. Necesitas un seguro válido para circular y la documentación del vehículo en regla. Existe un plazo para matricularlo en España desde que entra en el país, por lo que conviene tener todo preparado antes de salir. En la consultoría revisamos exactamente qué necesitas según tu caso.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">¿Cuánto tarda el proceso de matriculación?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+        <div class="faq-a">Depende de la disponibilidad de la ITV en tu zona, si la documentación está completa desde el inicio y el tipo de vehículo. Con todo en orden, el proceso suele resolverse en pocas semanas. Tener claro el orden de los pasos antes de empezar es lo que más ayuda a agilizarlo.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">¿Necesito un gestor para matricular?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+        <div class="faq-a">No es obligatorio. El proceso lo puede gestionar cualquier persona con la documentación correcta y siguiendo los pasos en el orden adecuado. Si prefieres entender bien qué implica antes de decidir cómo proceder, eso es exactamente para lo que sirve la asesoría.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">¿Qué pasa si el vehículo tiene problemas al llegar?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+        <div class="faq-a">Por eso siempre recomiendo revisar el vehículo antes de cerrar cualquier compra. En la consultoría te explico qué aspectos comprobar y cómo hacerlo, o cómo coordinar una inspección con alguien de confianza en el país de origen si no puedes desplazarte.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">¿También asesoras sobre furgonetas y vehículos comerciales?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+        <div class="faq-a">Sí. Es un área donde tengo experiencia directa. El mercado de vehículos comerciales tiene particularidades propias — homologación, documentación técnica, normativa — que conviene conocer antes de comprar. Si estás valorando una furgoneta importada, tiene sentido revisarlo antes de comprometerte.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CIERRE -->
+<div class="cierre">
+  <h2 class="fade-up">Habla conmigo antes de tomar cualquier decisión</h2>
+  <p class="fade-up">Una conversación de 5 minutos puede ahorrarte tiempo y ayudarte a entender exactamente qué pasos seguir. Sin compromiso.</p>
+  <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;" class="fade-up">
+    <a href="https://tidycal.com/pogrebnyakivan123/llamada-de-orientacion-gratuita-5-min" target="_blank" class="btn btn-green btn-lg">Reservar llamada gratis</a>
+    <a href="https://tidycal.com/pogrebnyakivan123/llamada-15-minutos" target="_blank" class="btn btn-secondary btn-lg">Consulta · 15 min · 30€</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div style="border-top:1px solid var(--border);">
+  <footer>
+    <div class="footer-logo">Ivan Imports</div>
+    <div class="footer-text">Especialista en Importación y Matriculación de Vehículos · España</div>
+    <div class="footer-text" style="width:100%;text-align:center;font-size:0.72rem;color:#9ca3af;padding-top:0.5rem;border-top:1px solid var(--border);">Asesoría informativa. Los costes oficiales pueden variar según vehículo, ITV, ayuntamiento y normativa aplicable.</div>
+    <div class="footer-text">© 2026 · Todos los derechos reservados</div>
+  </footer>
+</div>
+
+<script>
+  function toggleFaq(el) {
+    const answer = el.nextElementSibling;
+    const isOpen = el.classList.contains('open');
+    document.querySelectorAll('.faq-q').forEach(q => {
+      q.classList.remove('open');
+      q.nextElementSibling.classList.remove('open');
+    });
+    if (!isOpen) {
+      el.classList.add('open');
+      answer.classList.add('open');
+    }
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 70);
+      }
+    });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  document.getElementById('curso-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const form = e.target;
+    try {
+      const res = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { 'Accept': 'application/json' } });
+      if (res.ok) {
+        form.style.display = 'none';
+        document.getElementById('curso-ok').style.display = 'block';
+      }
+    } catch(err) { form.submit(); }
+  });
+</script>
+</body>
+</html>
