@@ -905,93 +905,236 @@
     flex-wrap: wrap;
   }
 
-  /* FIX OVERFLOW MOBILE */
-  html,
-  body {
+  /* ============================================
+     OVERFLOW FIX & RESPONSIVE — DEFINITIVO
+     ============================================ */
+
+  /* Reset global de overflow — siempre activo, no solo móvil */
+  html {
     width: 100%;
     max-width: 100%;
     overflow-x: hidden;
   }
 
-  img,
-  svg,
-  video,
-  iframe {
+  body {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Cualquier elemento que pueda desbordar */
+  *, *::before, *::after {
     max-width: 100%;
   }
 
-  input,
-  button,
-  textarea,
-  select {
-    max-width: 100%;
-  }
-
-  section,
-  div,
-  nav,
-  footer {
+  /* Permitir que flex/grid items se encojan correctamente */
+  .busq-card,
+  .servicio-card,
+  .matriculacion-card,
+  .error-card,
+  .pq-card,
+  .conversion-block,
+  .dudas-block,
+  .curso-card,
+  .feat-group,
+  .busq-feat,
+  .busq-feat li,
+  .busq-negotiation,
+  .busq-price-block,
+  .mat-left,
+  .mat-right,
+  .hero-btns,
+  .hero-trust,
+  .trust-item,
+  .conversion-btns,
+  .dudas-btns,
+  .servicios-grid,
+  .familia-grid,
+  .revision-grid,
+  .pasos-grid,
+  .errores-grid,
+  .para-quien-grid {
     min-width: 0;
   }
 
-  /* MOBILE */
+  /* Imágenes y media nunca rebasan */
+  img, svg, video, iframe, picture {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Inputs y botones tampoco */
+  input, button, textarea, select {
+    max-width: 100%;
+  }
+
+  /* Texto con palabras largas se rompe */
+  p, h1, h2, h3, h4, .busq-feat li, .busq-desc {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+  }
+
+  /* MOBILE — TABLET */
   @media (max-width: 900px) {
     .servicios-grid { grid-template-columns: 1fr; }
     .para-quien-grid { grid-template-columns: 1fr 1fr; }
     .pasos-grid { grid-template-columns: repeat(2, 1fr); }
     .pasos-grid::before { display: none; }
+    .familia-grid { grid-template-columns: 1fr; }
+    .revision-grid { grid-template-columns: 1fr; }
   }
 
+  /* MOBILE — TELÉFONO */
   @media (max-width: 768px) {
+    /* Nav */
     nav { padding: 0 1.2rem; }
     .nav-links { display: none; }
+
+    /* Hero */
     .hero { padding: 100px 1.2rem 60px; }
     .hero-btns { flex-direction: column; align-items: stretch; }
     .hero-btns .btn { width: 100%; }
-    .hero-trust { gap: 1rem; justify-content: flex-start; width: 100%; overflow-x: hidden; }
-    .trust-item { min-width: 0; max-width: 100%; flex-wrap: wrap; }
+    .hero-trust {
+      gap: 1rem;
+      justify-content: flex-start;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .trust-item {
+      flex-wrap: wrap;
+      width: 100%;
+    }
+
+    /* Secciones */
     .section { padding: 60px 1.2rem; }
     .sobre-grid { grid-template-columns: 1fr; gap: 2.5rem; }
     .foto-placeholder { aspect-ratio: 3/2; }
-    .matriculacion-card { flex-direction: column; align-items: flex-start; }
-    .mat-right { text-align: left; width: 100%; }
-    .mat-right .btn { width: 100%; }
-    .conversion-block { padding: 2.5rem 1.5rem; border-radius: var(--radius); }
-    .conversion-btns { flex-direction: column; align-items: stretch; }
-    .conversion-btns .btn { width: 100%; }
-    .errores-grid { grid-template-columns: 1fr; }
-    .para-quien-grid { grid-template-columns: 1fr; }
-    .pasos-grid { grid-template-columns: 1fr 1fr; }
-    .curso-card { flex-direction: column; align-items: flex-start; }
-    .curso-card form { width: 100%; flex-direction: column; }
-    .curso-card input,
-    .curso-card button { width: 100%; min-width: 0 !important; }
-    .busqueda-grid { grid-template-columns: 1fr !important; }
-    .familia-grid { grid-template-columns: 1fr !important; }
-    .revision-grid { grid-template-columns: 1fr !important; gap: 1.2rem !important; }
-    .dudas-block { padding: 1.8rem 1.2rem; }
-    .busq-revision { padding: 1.6rem; }
-    .dudas-btns { flex-direction: column; align-items: stretch; }
-    .dudas-btns .btn { width: 100%; }
-    .cierre { padding: 60px 1.2rem 80px; }
-    footer { flex-direction: column; text-align: center; padding: 1.5rem 1.2rem; }
 
-    /* OVERFLOW FIXES MOBILE */
-    nav, .hero, .section, .cierre, footer { max-width: 100%; overflow-x: hidden; }
-    .btn { white-space: normal; text-align: center; }
-    .mat-left { width: 100%; min-width: 0; }
-    .mat-left > div:last-child { min-width: 0; }
-    .busq-negotiation { width: 100%; min-width: 0; max-width: 100%; }
-    .servicios-grid { grid-template-columns: 1fr; }
-    .servicio-card { min-width: 0; max-width: 100%; }
-    .busq-card { min-width: 0; max-width: 100%; }
-    .matriculacion-card { min-width: 0; max-width: 100%; }
+    /* Servicios cards */
+    .servicios-grid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    .servicio-card { padding: 1.5rem; }
+
+    /* Matriculación card */
+    .matriculacion-card {
+      flex-direction: column;
+      align-items: stretch;
+      padding: 1.5rem;
+      gap: 1.2rem;
+    }
+    .mat-left {
+      width: 100%;
+      gap: 0.9rem;
+    }
+    .mat-right {
+      text-align: left;
+      width: 100%;
+    }
+    .mat-right .btn { width: 100%; }
+
+    /* Familia (Búsqueda + VIP) — UNA columna en móvil */
+    .familia-grid {
+      grid-template-columns: 1fr !important;
+      gap: 1.5rem;
+    }
+
+    /* Revisión card */
+    .revision-grid {
+      grid-template-columns: 1fr !important;
+      gap: 1.2rem;
+    }
+    .busq-revision { padding: 1.5rem; }
+
+    /* Cards de búsqueda */
+    .busq-card {
+      padding: 1.5rem;
+    }
+
+    /* Caja de negociación */
+    .busq-negotiation {
+      padding: 0.85rem;
+      gap: 0.6rem;
+    }
+
+    /* Conversion */
+    .conversion-block {
+      padding: 2.5rem 1.5rem;
+      border-radius: var(--radius);
+    }
+    .conversion-btns {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .conversion-btns .btn { width: 100%; }
+
+    /* Errores */
+    .errores-grid { grid-template-columns: 1fr; }
+
+    /* Para quién */
+    .para-quien-grid { grid-template-columns: 1fr; }
+
+    /* Pasos */
+    .pasos-grid { grid-template-columns: 1fr 1fr; }
+
+    /* Curso */
+    .curso-card {
+      flex-direction: column;
+      align-items: stretch;
+      padding: 1.5rem;
+    }
+    .curso-card form {
+      width: 100%;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .curso-card input,
+    .curso-card button {
+      width: 100%;
+    }
+
+    /* Dudas */
+    .dudas-block { padding: 1.8rem 1.2rem; }
+    .dudas-btns {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .dudas-btns .btn { width: 100%; }
+
+    /* Cierre y footer */
+    .cierre { padding: 60px 1.2rem 80px; }
+    footer {
+      flex-direction: column;
+      text-align: center;
+      padding: 1.5rem 1.2rem;
+    }
+
+    /* Botones — texto puede partirse si hace falta */
+    .btn {
+      white-space: normal;
+      text-align: center;
+      line-height: 1.3;
+    }
   }
 
+  /* MOBILE — TELÉFONO PEQUEÑO */
   @media (max-width: 480px) {
     .hero h1 { font-size: 1.9rem; }
     .section-title { font-size: 1.6rem; }
     .pasos-grid { grid-template-columns: 1fr; }
+    .section { padding: 50px 1rem; }
+    .servicio-card,
+    .busq-card,
+    .matriculacion-card,
+    .curso-card,
+    .busq-revision { padding: 1.3rem; }
+    .conversion-block { padding: 2rem 1.2rem; }
+    .dudas-block { padding: 1.5rem 1rem; }
+    .hero { padding: 90px 1rem 50px; }
+    nav { padding: 0 1rem; }
+    .busq-feat li { font-size: 0.8rem; }
   }
 </style>
 </head>
