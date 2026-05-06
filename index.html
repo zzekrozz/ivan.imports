@@ -905,6 +905,35 @@
     flex-wrap: wrap;
   }
 
+  /* FIX OVERFLOW MOBILE */
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  img,
+  svg,
+  video,
+  iframe {
+    max-width: 100%;
+  }
+
+  input,
+  button,
+  textarea,
+  select {
+    max-width: 100%;
+  }
+
+  section,
+  div,
+  nav,
+  footer {
+    min-width: 0;
+  }
+
   /* MOBILE */
   @media (max-width: 900px) {
     .servicios-grid { grid-template-columns: 1fr; }
@@ -919,7 +948,8 @@
     .hero { padding: 100px 1.2rem 60px; }
     .hero-btns { flex-direction: column; align-items: stretch; }
     .hero-btns .btn { width: 100%; }
-    .hero-trust { gap: 1rem; justify-content: flex-start; }
+    .hero-trust { gap: 1rem; justify-content: flex-start; width: 100%; overflow-x: hidden; }
+    .trust-item { min-width: 0; max-width: 100%; flex-wrap: wrap; }
     .section { padding: 60px 1.2rem; }
     .sobre-grid { grid-template-columns: 1fr; gap: 2.5rem; }
     .foto-placeholder { aspect-ratio: 3/2; }
@@ -933,6 +963,9 @@
     .para-quien-grid { grid-template-columns: 1fr; }
     .pasos-grid { grid-template-columns: 1fr 1fr; }
     .curso-card { flex-direction: column; align-items: flex-start; }
+    .curso-card form { width: 100%; flex-direction: column; }
+    .curso-card input,
+    .curso-card button { width: 100%; min-width: 0 !important; }
     .busqueda-grid { grid-template-columns: 1fr !important; }
     .familia-grid { grid-template-columns: 1fr !important; }
     .revision-grid { grid-template-columns: 1fr !important; gap: 1.2rem !important; }
@@ -942,6 +975,17 @@
     .dudas-btns .btn { width: 100%; }
     .cierre { padding: 60px 1.2rem 80px; }
     footer { flex-direction: column; text-align: center; padding: 1.5rem 1.2rem; }
+
+    /* OVERFLOW FIXES MOBILE */
+    nav, .hero, .section, .cierre, footer { max-width: 100%; overflow-x: hidden; }
+    .btn { white-space: normal; text-align: center; }
+    .mat-left { width: 100%; min-width: 0; }
+    .mat-left > div:last-child { min-width: 0; }
+    .busq-negotiation { width: 100%; min-width: 0; max-width: 100%; }
+    .servicios-grid { grid-template-columns: 1fr; }
+    .servicio-card { min-width: 0; max-width: 100%; }
+    .busq-card { min-width: 0; max-width: 100%; }
+    .matriculacion-card { min-width: 0; max-width: 100%; }
   }
 
   @media (max-width: 480px) {
