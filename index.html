@@ -3,1677 +3,989 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ivan Imports · Asesor en Importación y Matriculación de Vehículos</title>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&display=swap" rel="stylesheet">
+<title>Ivan Imports | Revisión, negociación y matriculación de vehículos</title>
+<meta name="description" content="Reviso anuncios, hablo con vendedores, pido documentación, negocio precios y te acompaño en la matriculación de vehículos en España.">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f8f7f4;
-    --white: #ffffff;
-    --text: #1a1a2e;
-    --text-muted: #6b7280;
-    --accent: #1d6fa4;
-    --accent-light: #e8f3fb;
-    --accent-dark: #155d8a;
-    --green: #16a34a;
-    --border: #e5e7eb;
-    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
-    --shadow-lg: 0 8px 32px rgba(0,0,0,0.10);
-    --radius: 14px;
-    --radius-sm: 8px;
+    --bg: #f5f1ea;
+    --surface: #ffffff;
+    --surface-alt: #fbf8f3;
+    --text: #1d1d1b;
+    --muted: #5f646d;
+    --line: #ded8cf;
+    --brand: #b65a2a;
+    --brand-dark: #96471d;
+    --brand-soft: #f7e4d8;
+    --ok: #166534;
+    --ok-soft: #ddf4e2;
+    --shadow: 0 16px 40px rgba(31, 22, 14, 0.08);
+    --radius: 24px;
+    --radius-sm: 16px;
+    --max: 1180px;
   }
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
 
   body {
-    background: var(--bg);
+    background:
+      radial-gradient(circle at top left, rgba(182, 90, 42, 0.12), transparent 28%),
+      linear-gradient(180deg, #f9f4ed 0%, var(--bg) 42%, #f7f2eb 100%);
     color: var(--text);
-    font-family: 'Sora', sans-serif;
-    font-size: 16px;
+    font-family: "Sora", sans-serif;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
   }
 
-  /* NAV */
+  a { color: inherit; }
+
   nav {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 100;
-    background: rgba(248,247,244,0.95);
-    backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--border);
-    padding: 0 2rem;
-    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    backdrop-filter: blur(18px);
+    background: rgba(249, 244, 237, 0.9);
+    border-bottom: 1px solid rgba(222, 216, 207, 0.9);
+  }
+
+  .nav-inner {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 0.95rem 1.2rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 1rem;
   }
 
-  .nav-logo {
-    font-family: 'Fraunces', serif;
-    font-size: 1.25rem;
+  .logo {
+    font-family: "Fraunces", serif;
+    font-size: 1.3rem;
     font-weight: 600;
-    color: var(--text);
-    letter-spacing: -0.02em;
     text-decoration: none;
+    letter-spacing: -0.02em;
   }
 
   .nav-links {
     display: flex;
     align-items: center;
-    gap: 2rem;
+    gap: 1.1rem;
     list-style: none;
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 
   .nav-links a {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--text-muted);
     text-decoration: none;
-    transition: color 0.2s;
+    color: var(--muted);
+    font-size: 0.88rem;
+    font-weight: 600;
   }
-  .nav-links a:hover { color: var(--text); }
 
-  .nav-cta {
-    background: var(--accent) !important;
-    color: white !important;
-    padding: 0.5rem 1.2rem;
-    border-radius: 100px;
-    font-size: 0.82rem !important;
-    font-weight: 600 !important;
-  }
-  .nav-cta:hover { background: var(--accent-dark) !important; }
-
-  /* BUTTONS */
   .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    padding: 0.85rem 1.8rem;
-    border-radius: 100px;
-    font-family: 'Sora', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 600;
+    gap: 0.55rem;
+    border-radius: 999px;
     text-decoration: none;
-    border: none;
+    font-weight: 700;
+    transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
     cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
+    border: 1px solid transparent;
   }
 
-  .btn-primary { background: var(--accent); color: white; box-shadow: 0 4px 14px rgba(29,111,164,0.25); }
-  .btn-primary:hover { background: var(--accent-dark); transform: translateY(-2px); }
-
-  .btn-secondary { background: var(--white); color: var(--text); border: 1.5px solid var(--border); }
-  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
-
-  .btn-green { background: var(--green); color: white; box-shadow: 0 4px 14px rgba(22,163,74,0.2); }
-  .btn-green:hover { background: #15803d; transform: translateY(-2px); }
-
-  .btn-white { background: white; color: var(--accent); font-weight: 700; }
-  .btn-white:hover { background: #f0f7ff; transform: translateY(-2px); }
-
-  .btn-outline-white { background: transparent; color: white; border: 1.5px solid rgba(255,255,255,0.4); font-weight: 600; }
-  .btn-outline-white:hover { background: rgba(255,255,255,0.1); }
-
-  .btn-lg { padding: 1rem 2.2rem; font-size: 1rem; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary {
+    background: var(--brand);
+    color: #fff;
+    padding: 0.95rem 1.45rem;
+    box-shadow: 0 10px 24px rgba(182, 90, 42, 0.2);
+  }
+  .btn-primary:hover { background: var(--brand-dark); }
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--text);
+    border-color: var(--line);
+    padding: 0.95rem 1.45rem;
+  }
+  .btn-secondary:hover { border-color: var(--brand); color: var(--brand); }
   .btn-full { width: 100%; }
 
-  /* HERO */
+  .hero-wrap {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 3rem 1.2rem 1.8rem;
+  }
+
   .hero {
-    padding: 140px 2rem 80px;
-    max-width: 780px;
-    margin: 0 auto;
-    text-align: center;
-  }
-
-  .hero-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: var(--accent-light);
-    color: var(--accent);
-    font-size: 0.78rem;
-    font-weight: 600;
-    padding: 0.4rem 1rem;
-    border-radius: 100px;
-    margin-bottom: 2rem;
-    letter-spacing: 0.02em;
-  }
-
-  .hero h1 {
-    font-family: 'Fraunces', serif;
-    font-size: clamp(2.2rem, 5.5vw, 3.6rem);
-    font-weight: 600;
-    line-height: 1.1;
-    letter-spacing: -0.03em;
-    margin-bottom: 1.2rem;
-  }
-
-  .hero h1 em { font-style: italic; color: var(--accent); }
-
-  .hero-sub {
-    font-size: clamp(0.95rem, 2.5vw, 1.1rem);
-    color: var(--text-muted);
-    max-width: 560px;
-    margin: 0 auto 2.5rem;
-    line-height: 1.75;
-  }
-
-  .hero-btns {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-bottom: 3rem;
-  }
-
-  .hero-trust {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 2rem;
-    flex-wrap: wrap;
-  }
-
-  .trust-item {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.82rem;
-    color: var(--text-muted);
-    font-weight: 500;
-  }
-
-  .trust-check { width: 16px; height: 16px; color: var(--green); flex-shrink: 0; }
-
-  /* LAYOUT */
-  .divider { height: 1px; background: var(--border); }
-
-  .section {
-    padding: 80px 2rem;
-    max-width: 1100px;
-    margin: 0 auto;
-  }
-
-  .section-label {
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 0.8rem;
-    display: block;
-  }
-
-  .section-title {
-    font-family: 'Fraunces', serif;
-    font-size: clamp(1.7rem, 3.5vw, 2.5rem);
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    line-height: 1.15;
-    margin-bottom: 1rem;
-  }
-
-  .section-sub {
-    font-size: 1rem;
-    color: var(--text-muted);
-    max-width: 500px;
-    line-height: 1.7;
-  }
-
-  /* SOBRE MÍ */
-  .sobre-grid {
-    display: grid;
-    grid-template-columns: 1fr 1.4fr;
-    gap: 5rem;
-    align-items: center;
-  }
-
-  .foto-placeholder {
-    background: var(--white);
-    border: 2px dashed var(--border);
-    border-radius: var(--radius);
-    aspect-ratio: 4/5;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.8rem;
-    color: var(--text-muted);
-    font-size: 0.85rem;
-  }
-
-  .foto-placeholder svg { width: 40px; height: 40px; opacity: 0.25; }
-
-  .sobre-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.5rem; }
-
-  .chip { background: var(--white); border: 1.5px solid var(--border); border-radius: 100px; padding: 0.35rem 0.9rem; font-size: 0.78rem; font-weight: 500; color: var(--text-muted); }
-  .chip.blue { background: var(--accent-light); border-color: transparent; color: var(--accent); }
-
-  .sobre-quote {
-    margin-top: 2rem;
-    padding: 1.4rem 1.6rem;
-    background: var(--bg);
-    border-radius: var(--radius);
-    border-left: 3px solid var(--accent);
-    font-size: 0.92rem;
-    color: var(--text-muted);
-    line-height: 1.7;
-    font-style: italic;
-  }
-
-  /* CÓMO FUNCIONA */
-  .pasos-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 2rem;
-    margin-top: 3rem;
-    position: relative;
-  }
-
-  .pasos-grid::before {
-    content: '';
-    position: absolute;
-    top: 27px;
-    left: 12%;
-    right: 12%;
-    height: 1px;
-    background: var(--border);
-    z-index: 0;
-  }
-
-  .paso { text-align: center; position: relative; z-index: 1; }
-
-  .paso-num {
-    width: 54px;
-    height: 54px;
-    background: var(--accent);
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Fraunces', serif;
-    font-size: 1.3rem;
-    font-weight: 600;
-    margin: 0 auto 1rem;
-    border: 3px solid var(--white);
-    box-shadow: 0 0 0 1px var(--border);
-  }
-
-  .paso-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 0.4rem; }
-  .paso-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
-
-  /* SERVICIOS */
-  .servicios-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.2rem;
-    margin-top: 3rem;
-  }
-
-  .servicio-card {
-    background: var(--white);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1.8rem;
-    transition: all 0.25s;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .servicio-card:hover { border-color: var(--accent); box-shadow: var(--shadow-lg); transform: translateY(-3px); }
-
-  .servicio-card.featured { background: var(--accent); border-color: var(--accent); color: white; }
-  .servicio-card.featured .servicio-desc,
-  .servicio-card.featured .servicio-price-note,
-  .servicio-card.featured .feat-item { color: rgba(255,255,255,0.78); }
-  .servicio-card.featured .servicio-price { color: white; }
-  .servicio-card.featured .servicio-label { color: rgba(255,255,255,0.65); }
-  .servicio-card.featured .feat-item::before { color: rgba(255,255,255,0.7); }
-
-  .servicio-tag {
-    position: absolute;
-    top: -11px; left: 1.4rem;
-    background: var(--green);
-    color: white;
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 0.2rem 0.7rem;
-    border-radius: 100px;
-  }
-
-  .servicio-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.6rem; display: block; }
-  .servicio-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; line-height: 1.3; }
-  .servicio-desc { font-size: 0.83rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.2rem; flex-grow: 1; }
-
-  .servicio-price { font-family: 'Fraunces', serif; font-size: 1.9rem; font-weight: 600; color: var(--text); line-height: 1; margin-bottom: 0.25rem; }
-  .servicio-price-note { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.3rem; }
-
-  .feat-list { list-style: none; display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 1.5rem; }
-  .feat-item { font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: flex-start; gap: 0.45rem; line-height: 1.4; }
-  .feat-item::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; }
-
-  /* MATRICULACIÓN */
-  .matriculacion-card {
-    background: var(--white);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 2rem;
-    margin-top: 1.2rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 2rem;
-    transition: border-color 0.2s;
-  }
-
-  .matriculacion-card:hover { border-color: var(--accent); }
-
-  .mat-left { display: flex; align-items: flex-start; gap: 1.2rem; flex: 1; }
-  .mat-icon { width: 48px; height: 48px; background: var(--accent-light); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
-  .mat-right { text-align: right; flex-shrink: 0; }
-  .mat-price { font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 600; line-height: 1; }
-  .mat-note { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 1rem; }
-
-  /* CURSO */
-  .curso-card {
-    background: var(--accent-light);
-    border-radius: var(--radius);
-    padding: 1.5rem 2rem;
-    margin-top: 1.2rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-
-  /* PARA QUIÉN */
-  .para-quien-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    margin-top: 3rem;
-  }
-
-  .pq-card {
-    background: var(--white);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1.5rem;
-    display: flex;
-    align-items: flex-start;
-    gap: 0.9rem;
-    transition: all 0.2s;
-  }
-
-  .pq-card:hover { border-color: var(--accent); box-shadow: var(--shadow); transform: translateY(-2px); }
-
-  .pq-num {
-    width: 28px; height: 28px;
-    background: var(--accent-light);
-    color: var(--accent);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.75rem; font-weight: 700;
-    flex-shrink: 0;
-    margin-top: 0.1rem;
-  }
-
-  .pq-text { font-size: 0.88rem; color: var(--text); line-height: 1.55; font-weight: 500; }
-
-  /* CONVERSION */
-  .conversion-block {
-    background: linear-gradient(135deg, #1d6fa4 0%, #155d8a 100%);
-    border-radius: 24px;
-    padding: 4rem 3rem;
-    text-align: center;
-    color: white;
-    position: relative;
+    background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(247, 235, 226, 0.96));
+    border: 1px solid rgba(222, 216, 207, 0.9);
+    border-radius: 36px;
+    box-shadow: var(--shadow);
     overflow: hidden;
-  }
-
-  .conversion-block::before {
-    content: '';
-    position: absolute;
-    top: -60px; right: -60px;
-    width: 240px; height: 240px;
-    background: rgba(255,255,255,0.04);
-    border-radius: 50%;
-  }
-
-  .conversion-title {
-    font-family: 'Fraunces', serif;
-    font-size: clamp(1.6rem, 4vw, 2.3rem);
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    margin-bottom: 0.8rem;
-    position: relative; z-index: 1;
-  }
-
-  .conversion-sub {
-    font-size: 1rem;
-    color: rgba(255,255,255,0.8);
-    max-width: 460px;
-    margin: 0 auto 2.5rem;
-    line-height: 1.7;
-    position: relative; z-index: 1;
-  }
-
-  .conversion-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; position: relative; z-index: 1; }
-
-  /* ERRORES */
-  .errores-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.2rem;
-    margin-top: 3rem;
-  }
-
-  .error-card {
-    background: var(--white);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1.5rem;
-    display: flex;
-    gap: 1rem;
-    align-items: flex-start;
-    transition: box-shadow 0.2s;
-  }
-
-  .error-card:hover { box-shadow: var(--shadow); }
-
-  .error-icon {
-    width: 40px; height: 40px;
-    background: var(--accent-light);
-    border-radius: var(--radius-sm);
-    display: flex; align-items: center; justify-content: center;
-    color: var(--accent);
-    flex-shrink: 0;
-  }
-
-  .error-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 0.3rem; line-height: 1.4; }
-  .error-desc { font-size: 0.81rem; color: var(--text-muted); line-height: 1.55; }
-
-  /* FAQ */
-  .faq-list {
-    margin-top: 3rem;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    background: var(--white);
-    max-width: 720px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .faq-item { border-bottom: 1px solid var(--border); }
-  .faq-item:last-child { border-bottom: none; }
-
-  .faq-q {
-    padding: 1.2rem 1.5rem;
-    font-size: 0.92rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-    transition: background 0.15s;
-    user-select: none;
-    line-height: 1.4;
-  }
-
-  .faq-q:hover { background: var(--bg); }
-  .faq-q.open { color: var(--accent); }
-
-  .faq-arrow { width: 18px; height: 18px; flex-shrink: 0; transition: transform 0.25s; color: var(--text-muted); }
-  .faq-q.open .faq-arrow { transform: rotate(180deg); color: var(--accent); }
-
-  .faq-a {
-    padding: 0 1.5rem;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease, padding 0.3s ease;
-    font-size: 0.88rem;
-    color: var(--text-muted);
-    line-height: 1.7;
-  }
-
-  .faq-a.open { max-height: 300px; padding: 0 1.5rem 1.3rem; }
-
-  /* CIERRE */
-  .cierre {
-    text-align: center;
-    padding: 80px 2rem 100px;
-    max-width: 640px;
-    margin: 0 auto;
-  }
-
-  .cierre h2 {
-    font-family: 'Fraunces', serif;
-    font-size: clamp(1.7rem, 4vw, 2.5rem);
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    line-height: 1.2;
-    margin-bottom: 1rem;
-  }
-
-  .cierre p { font-size: 1rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 2.5rem; }
-
-  /* FOOTER */
-  footer {
-    border-top: 1px solid var(--border);
-    padding: 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 1100px;
-    margin: 0 auto;
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-
-  .footer-logo { font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 600; }
-  .footer-text { font-size: 0.8rem; color: var(--text-muted); }
-
-  /* ANIMATIONS */
-  .fade-up { opacity: 0; transform: translateY(22px); transition: opacity 0.6s ease, transform 0.6s ease; }
-  .fade-up.visible { opacity: 1; transform: translateY(0); }
-
-  /* BÚSQUEDA / COMPRA CARDS */
-  .busq-card {
-    background: var(--white);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1.8rem;
-    display: flex;
-    flex-direction: column;
-    transition: all 0.25s;
     position: relative;
   }
 
-  .busq-card:hover {
-    border-color: var(--accent);
-    box-shadow: var(--shadow-lg);
-    transform: translateY(-3px);
-  }
-
-  .busq-featured {
-    background: var(--accent-light);
-    border-color: var(--accent);
-    border-width: 2px;
-  }
-
-  .busq-featured:hover { background: #dceaf5; }
-
-  .busq-badge {
+  .hero::after {
+    content: "";
     position: absolute;
-    top: -11px;
-    left: 1.4rem;
-    background: var(--accent);
-    color: white;
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 0.25rem 0.8rem;
-    border-radius: 100px;
-  }
-
-  .busq-icon {
-    width: 44px;
-    height: 44px;
-    background: var(--accent-light);
-    border-radius: var(--radius-sm);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
-  }
-
-  .busq-featured .busq-icon { background: white; }
-
-  .busq-title {
-    font-size: 1.05rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    line-height: 1.3;
-  }
-
-  .busq-desc {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    line-height: 1.6;
-    margin-bottom: 1.2rem;
-  }
-
-  .busq-includes-prev {
-    font-size: 0.78rem;
-    color: var(--accent);
-    font-weight: 600;
-    background: white;
-    padding: 0.6rem 0.9rem;
-    border-radius: var(--radius-sm);
-    margin-bottom: 1.2rem;
-    line-height: 1.4;
-    border-left: 3px solid var(--accent);
-  }
-
-  .busq-feat {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-bottom: 1.3rem;
-    flex-grow: 1;
-  }
-
-  .feat-group {
-    margin-bottom: 1.2rem;
-  }
-
-  .feat-group:last-of-type {
-    margin-bottom: 1.3rem;
-  }
-
-  .feat-group .busq-feat {
-    margin-bottom: 0;
-    flex-grow: 0;
-  }
-
-  .feat-group-title {
-    display: block;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 0.6rem;
-    padding-bottom: 0.4rem;
-    border-bottom: 1px solid rgba(29,111,164,0.15);
-  }
-
-  .busq-feat li {
-    font-size: 0.82rem;
-    color: var(--text-muted);
-    display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
-    line-height: 1.45;
-  }
-
-  .busq-feat li::before {
-    content: '';
-    width: 16px;
-    height: 16px;
-    background-color: var(--green);
-    border-radius: 50%;
-    flex-shrink: 0;
-    margin-top: 0.18rem;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white' stroke-width='3.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M5 13l4 4L19 7'/%3E%3C/svg%3E");
-    background-size: 11px;
-    background-position: center;
-    background-repeat: no-repeat;
-  }
-
-  .busq-highlight {
-    background: #fef3c7;
-    border: 1px solid #fde68a;
-    border-radius: var(--radius-sm);
-    padding: 0.8rem 1rem;
-    font-size: 0.82rem;
-    color: #92400e;
-    line-height: 1.5;
-    margin-bottom: 1.3rem;
-    font-weight: 500;
-  }
-
-  .busq-featured .busq-highlight {
-    background: white;
-    border-color: var(--accent);
-    color: var(--accent-dark);
-  }
-
-  .busq-price-block {
-    border-top: 1px solid var(--border);
-    padding-top: 1.2rem;
-    margin-bottom: 1.2rem;
-  }
-
-  .busq-featured .busq-price-block { border-top-color: rgba(29,111,164,0.2); }
-
-  .busq-price {
-    font-family: 'Fraunces', serif;
-    font-size: 2rem;
-    font-weight: 600;
-    color: var(--text);
-    line-height: 1;
-    margin-bottom: 0.3rem;
-  }
-
-  .busq-price-note {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-  }
-
-  /* VIP CARD - Premium look */
-  .busq-vip {
-    background: linear-gradient(180deg, #f8fafc 0%, #eef4f9 100%);
-    border: 2px solid var(--accent);
-    box-shadow: 0 8px 32px rgba(29,111,164,0.10);
-    position: relative;
-  }
-
-  .busq-vip::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: var(--radius);
-    padding: 2px;
-    background: linear-gradient(135deg, var(--accent) 0%, #2d8bc4 50%, var(--accent-dark) 100%);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
+    inset: auto -80px -110px auto;
+    width: 260px;
+    height: 260px;
+    background: radial-gradient(circle, rgba(182, 90, 42, 0.14), transparent 65%);
     pointer-events: none;
-    opacity: 0.35;
   }
 
-  .busq-badge-vip {
+  .hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+    gap: 2rem;
+    padding: 4rem 3rem;
+    align-items: center;
+  }
+
+  .eyebrow,
+  .section-label {
     display: inline-flex;
     align-items: center;
-    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
-    color: white;
-    font-size: 0.68rem;
+    gap: 0.45rem;
+    background: var(--brand-soft);
+    color: var(--brand-dark);
+    border-radius: 999px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.74rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    padding: 0.35rem 0.9rem;
-    border-radius: 100px;
-    margin-bottom: 1rem;
-    width: fit-content;
-    box-shadow: 0 2px 8px rgba(29,111,164,0.3);
   }
 
-  .busq-icon-vip {
-    width: 48px;
-    height: 48px;
-    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
-    border-radius: var(--radius-sm);
+  h1,
+  h2,
+  h3 {
+    font-family: "Fraunces", serif;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+  }
+
+  h1 {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    margin: 1rem 0 1rem;
+    max-width: 11ch;
+  }
+
+  .hero p {
+    color: var(--muted);
+    font-size: 1.02rem;
+    max-width: 58ch;
+  }
+
+  .hero-actions {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+    margin-top: 1.8rem;
+  }
+
+  .hero-quote {
+    margin-top: 1.6rem;
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .hero-side {
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(222, 216, 207, 0.9);
+    border-radius: 28px;
+    padding: 1.5rem;
+  }
+
+  .hero-side h3 {
+    font-size: 1.35rem;
     margin-bottom: 1rem;
-    box-shadow: 0 4px 12px rgba(29,111,164,0.25);
   }
 
-  .btn-vip {
-    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
-    color: white;
-    box-shadow: 0 4px 14px rgba(29,111,164,0.3);
-  }
-  .btn-vip:hover {
-    background: linear-gradient(135deg, var(--accent-dark) 0%, #0f4a72 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(29,111,164,0.4);
+  .signal-list {
+    list-style: none;
+    display: grid;
+    gap: 0.8rem;
+    margin-bottom: 1.25rem;
   }
 
-  /* Caja destacada de negociación */
-  .busq-negotiation {
-    background: white;
-    border: 1.5px solid var(--accent);
-    border-radius: var(--radius-sm);
-    padding: 0.9rem 1rem;
-    margin-bottom: 1.3rem;
+  .signal-list li {
     display: flex;
     align-items: flex-start;
     gap: 0.7rem;
+    color: var(--muted);
+    font-size: 0.92rem;
   }
 
-  .busq-negotiation-icon {
-    font-size: 1.1rem;
-    flex-shrink: 0;
-    margin-top: 0.05rem;
+  .signal-list li::before {
+    content: "•";
+    color: var(--brand);
+    font-size: 1.4rem;
+    line-height: 1;
+    margin-top: -0.05rem;
   }
 
-  /* REVISIÓN CARD - Layout horizontal alternativo */
-  .busq-revision {
-    background: var(--white);
-    border: 1.5px solid var(--border);
-    padding: 2.2rem;
+  .hero-note {
+    background: var(--surface-alt);
+    border-radius: 18px;
+    padding: 0.95rem 1rem;
+    color: var(--muted);
+    font-size: 0.86rem;
   }
 
-  .busq-revision:hover {
-    border-color: var(--accent);
-    transform: none;
+  .section {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 2rem 1.2rem 4.4rem;
   }
 
-  .busq-badge-alt {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    background: #fef3c7;
-    color: #92400e;
-    font-size: 0.68rem;
+  .section-head {
+    max-width: 720px;
+    margin-bottom: 2rem;
+  }
+
+  .section-head h2 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    margin: 1rem 0 0.8rem;
+  }
+
+  .section-head p {
+    color: var(--muted);
+    font-size: 1rem;
+  }
+
+  .service-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .service-card,
+  .matricula-panel,
+  .alpha-panel,
+  .about-panel,
+  .legal-panel,
+  .final-cta {
+    background: rgba(255,255,255,0.94);
+    border: 1px solid rgba(222, 216, 207, 0.95);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+
+  .service-card {
+    padding: 1.6rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+  }
+
+  .service-step {
+    color: var(--brand);
+    font-size: 0.78rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    padding: 0.3rem 0.8rem;
-    border-radius: 100px;
+    margin-bottom: 0.5rem;
+  }
+
+  .service-name {
+    font-size: 1.45rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .service-desc,
+  .service-small,
+  .price-note,
+  .alpha-copy,
+  .about-copy,
+  .legal-text {
+    color: var(--muted);
+  }
+
+  .service-desc {
+    font-size: 0.95rem;
     margin-bottom: 1.2rem;
-    width: fit-content;
   }
 
-  /* BLOQUE DE DUDAS */
-  .dudas-block {
-    margin-top: 2.5rem;
-    padding: 2rem 2.5rem;
-    background: var(--accent-light);
-    border-radius: var(--radius);
-    text-align: center;
+  .list-title {
+    font-size: 0.84rem;
+    font-weight: 700;
+    margin-bottom: 0.7rem;
   }
 
-  .dudas-title {
-    font-family: 'Fraunces', serif;
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 0.6rem;
-    letter-spacing: -0.01em;
+  .feature-list,
+  .price-list {
+    list-style: none;
+    display: grid;
+    gap: 0.65rem;
   }
 
-  .dudas-text {
+  .feature-list {
+    margin-bottom: 1.35rem;
+  }
+
+  .feature-list li {
+    padding-left: 1.2rem;
+    position: relative;
+    color: var(--muted);
     font-size: 0.9rem;
-    color: var(--text-muted);
-    max-width: 540px;
-    margin: 0 auto 1.5rem;
+  }
+
+  .feature-list li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--ok);
+    font-weight: 700;
+  }
+
+  .pricing-box {
+    margin-top: auto;
+    padding: 1rem;
+    background: var(--surface-alt);
+    border-radius: 18px;
+    border: 1px solid var(--line);
+  }
+
+  .price-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .price-list strong {
+    color: var(--text);
+    font-weight: 700;
+  }
+
+  .price-note {
+    font-size: 0.82rem;
+    margin-top: 0.8rem;
+    line-height: 1.5;
+  }
+
+  .service-small {
+    font-size: 0.82rem;
+    margin: 0.8rem 0 1rem;
+    line-height: 1.5;
+  }
+
+  .service-card .btn {
+    margin-top: 1.1rem;
+  }
+
+  .step-card {
+    padding: 1.4rem;
+    background: rgba(255,255,255,0.94);
+    border: 1px solid rgba(222, 216, 207, 0.95);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+
+  .step-number {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--brand-soft);
+    color: var(--brand-dark);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .step-card h3 {
+    font-size: 1.12rem;
+    margin-bottom: 0.55rem;
+  }
+
+  .step-card p {
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  .matricula-panel,
+  .alpha-panel,
+  .about-panel,
+  .legal-panel,
+  .final-cta {
+    padding: 2rem;
+  }
+
+  .matricula-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(240px, 0.85fr);
+    gap: 1.5rem;
+    align-items: center;
+  }
+
+  .matricula-price {
+    background: linear-gradient(180deg, #fff5ef, #fff);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: 1.4rem;
+  }
+
+  .matricula-price-value {
+    font-family: "Fraunces", serif;
+    font-size: clamp(2.1rem, 4vw, 3rem);
+    line-height: 1;
+    margin: 0.45rem 0;
+  }
+
+  .support-note,
+  .alpha-note {
+    margin-top: 1rem;
+    padding: 0.95rem 1rem;
+    border-radius: 16px;
+    font-size: 0.88rem;
+    line-height: 1.55;
+  }
+
+  .support-note {
+    background: var(--ok-soft);
+    color: #1f5130;
+  }
+
+  .alpha-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(240px, 0.95fr);
+    gap: 1.5rem;
+    align-items: center;
+  }
+
+  .price-stack {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .alpha-price-now {
+    font-family: "Fraunces", serif;
+    font-size: 2.7rem;
+    line-height: 1;
+  }
+
+  .alpha-price-later {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  .alpha-price-later span {
+    text-decoration: line-through;
+    text-decoration-thickness: 2px;
+  }
+
+  .about-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  .about-copy {
+    display: grid;
+    gap: 0.9rem;
+    font-size: 0.95rem;
+  }
+
+  .about-points {
+    list-style: none;
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .about-points li {
+    background: var(--surface-alt);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 0.9rem 1rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .faq-list {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .faq-item {
+    background: rgba(255,255,255,0.94);
+    border: 1px solid rgba(222, 216, 207, 0.95);
+    border-radius: 18px;
+    overflow: hidden;
+  }
+
+  .faq-q {
+    width: 100%;
+    cursor: pointer;
+    padding: 1.15rem 1.25rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .faq-arrow {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    transition: transform 0.18s ease;
+  }
+
+  .faq-q.open .faq-arrow { transform: rotate(180deg); }
+
+  .faq-a {
+    display: none;
+    padding: 0 1.25rem 1.2rem;
+    color: var(--muted);
+    font-size: 0.92rem;
     line-height: 1.65;
   }
 
-  .dudas-btns {
+  .faq-a.open { display: block; }
+
+  .final-cta {
+    text-align: center;
+    padding: 2.3rem 1.6rem;
+  }
+
+  .final-cta h2 {
+    font-size: clamp(1.9rem, 4vw, 2.8rem);
+    margin-bottom: 0.9rem;
+  }
+
+  .final-cta p {
+    color: var(--muted);
+    max-width: 56ch;
+    margin: 0 auto 1.4rem;
+  }
+
+  .cta-actions {
     display: flex;
-    gap: 0.8rem;
     justify-content: center;
     flex-wrap: wrap;
+    gap: 0.9rem;
   }
 
-  /* ============================================
-     OVERFLOW FIX & RESPONSIVE — DEFINITIVO
-     ============================================ */
-
-  /* Reset global de overflow — siempre activo, no solo móvil */
-  html {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
+  footer {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 0 1.2rem 2.5rem;
   }
 
-  body {
-    width: 100%;
-    max-width: 100vw;
-    overflow-x: hidden;
-    position: relative;
+  .footer-box {
+    border-top: 1px solid var(--line);
+    padding-top: 1.4rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    color: var(--muted);
+    font-size: 0.82rem;
   }
 
-  /* Cualquier elemento que pueda desbordar */
-  *, *::before, *::after {
-    max-width: 100%;
+  .fade-up {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
   }
 
-  /* Permitir que flex/grid items se encojan correctamente */
-  .busq-card,
-  .servicio-card,
-  .matriculacion-card,
-  .error-card,
-  .pq-card,
-  .conversion-block,
-  .dudas-block,
-  .curso-card,
-  .feat-group,
-  .busq-feat,
-  .busq-feat li,
-  .busq-negotiation,
-  .busq-price-block,
-  .mat-left,
-  .mat-right,
-  .hero-btns,
-  .hero-trust,
-  .trust-item,
-  .conversion-btns,
-  .dudas-btns,
-  .servicios-grid,
-  .familia-grid,
-  .revision-grid,
-  .pasos-grid,
-  .errores-grid,
-  .para-quien-grid {
-    min-width: 0;
+  .fade-up.visible {
+    opacity: 1;
+    transform: translateY(0);
   }
 
-  /* Imágenes y media nunca rebasan */
-  img, svg, video, iframe, picture {
-    max-width: 100%;
-    height: auto;
-  }
-
-  /* Inputs y botones tampoco */
-  input, button, textarea, select {
-    max-width: 100%;
-  }
-
-  /* Texto con palabras largas se rompe */
-  p, h1, h2, h3, h4, .busq-feat li, .busq-desc {
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-  }
-
-  /* MOBILE — TABLET */
-  @media (max-width: 900px) {
-    .servicios-grid { grid-template-columns: 1fr; }
-    .para-quien-grid { grid-template-columns: 1fr 1fr; }
-    .pasos-grid { grid-template-columns: repeat(2, 1fr); }
-    .pasos-grid::before { display: none; }
-    .familia-grid { grid-template-columns: 1fr; }
-    .revision-grid { grid-template-columns: 1fr; }
-  }
-
-  /* MOBILE — TELÉFONO */
-  @media (max-width: 768px) {
-    /* Nav */
-    nav { padding: 0 1.2rem; }
-    .nav-links { display: none; }
-
-    /* Hero */
-    .hero { padding: 100px 1.2rem 60px; }
-    .hero-btns { flex-direction: column; align-items: stretch; }
-    .hero-btns .btn { width: 100%; }
-    .hero-trust {
-      gap: 1rem;
-      justify-content: flex-start;
-      flex-direction: column;
-      align-items: flex-start;
-    }
-    .trust-item {
-      flex-wrap: wrap;
-      width: 100%;
-    }
-
-    /* Secciones */
-    .section { padding: 60px 1.2rem; }
-    .sobre-grid { grid-template-columns: 1fr; gap: 2.5rem; }
-    .foto-placeholder { aspect-ratio: 3/2; }
-
-    /* Servicios cards */
-    .servicios-grid {
+  @media (max-width: 980px) {
+    .hero-grid,
+    .steps-grid,
+    .service-grid,
+    .matricula-panel,
+    .alpha-panel,
+    .about-panel {
       grid-template-columns: 1fr;
-      gap: 1rem;
-    }
-    .servicio-card { padding: 1.5rem; }
-
-    /* Matriculación card */
-    .matriculacion-card {
-      flex-direction: column;
-      align-items: stretch;
-      padding: 1.5rem;
-      gap: 1.2rem;
-    }
-    .mat-left {
-      width: 100%;
-      gap: 0.9rem;
-    }
-    .mat-right {
-      text-align: left;
-      width: 100%;
-    }
-    .mat-right .btn { width: 100%; }
-
-    /* Familia (Búsqueda + VIP) — UNA columna en móvil */
-    .familia-grid {
-      grid-template-columns: 1fr !important;
-      gap: 1.5rem;
     }
 
-    /* Revisión card */
-    .revision-grid {
-      grid-template-columns: 1fr !important;
-      gap: 1.2rem;
-    }
-    .busq-revision { padding: 1.5rem; }
-
-    /* Cards de búsqueda */
-    .busq-card {
-      padding: 1.5rem;
-    }
-
-    /* Caja de negociación */
-    .busq-negotiation {
-      padding: 0.85rem;
-      gap: 0.6rem;
-    }
-
-    /* Conversion */
-    .conversion-block {
-      padding: 2.5rem 1.5rem;
-      border-radius: var(--radius);
-    }
-    .conversion-btns {
-      flex-direction: column;
-      align-items: stretch;
-    }
-    .conversion-btns .btn { width: 100%; }
-
-    /* Errores */
-    .errores-grid { grid-template-columns: 1fr; }
-
-    /* Para quién */
-    .para-quien-grid { grid-template-columns: 1fr; }
-
-    /* Pasos */
-    .pasos-grid { grid-template-columns: 1fr 1fr; }
-
-    /* Curso */
-    .curso-card {
-      flex-direction: column;
-      align-items: stretch;
-      padding: 1.5rem;
-    }
-    .curso-card form {
-      width: 100%;
-      flex-direction: column;
-      gap: 0.6rem;
-    }
-    .curso-card input,
-    .curso-card button {
-      width: 100%;
-    }
-
-    /* Dudas */
-    .dudas-block { padding: 1.8rem 1.2rem; }
-    .dudas-btns {
-      flex-direction: column;
-      align-items: stretch;
-    }
-    .dudas-btns .btn { width: 100%; }
-
-    /* Cierre y footer */
-    .cierre { padding: 60px 1.2rem 80px; }
-    footer {
-      flex-direction: column;
-      text-align: center;
-      padding: 1.5rem 1.2rem;
-    }
-
-    /* Botones — texto puede partirse si hace falta */
-    .btn {
-      white-space: normal;
-      text-align: center;
-      line-height: 1.3;
-    }
+    .hero-grid { padding: 2.5rem 1.5rem; }
+    .matricula-price { order: -1; }
   }
 
-  /* MOBILE — TELÉFONO PEQUEÑO */
-  @media (max-width: 480px) {
-    .hero h1 { font-size: 1.9rem; }
-    .section-title { font-size: 1.6rem; }
-    .pasos-grid { grid-template-columns: 1fr; }
-    .section { padding: 50px 1rem; }
-    .servicio-card,
-    .busq-card,
-    .matriculacion-card,
-    .curso-card,
-    .busq-revision { padding: 1.3rem; }
-    .conversion-block { padding: 2rem 1.2rem; }
-    .dudas-block { padding: 1.5rem 1rem; }
-    .hero { padding: 90px 1rem 50px; }
-    nav { padding: 0 1rem; }
-    .busq-feat li { font-size: 0.8rem; }
+  @media (max-width: 740px) {
+    .nav-inner {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .nav-links {
+      width: 100%;
+      gap: 0.8rem;
+      justify-content: flex-start;
+    }
+
+    .hero-wrap { padding-top: 1.3rem; }
+    .hero-grid { padding: 2rem 1.2rem; }
+    .section { padding: 1.5rem 1rem 3.3rem; }
+    .matricula-panel,
+    .alpha-panel,
+    .about-panel,
+    .legal-panel,
+    .final-cta { padding: 1.4rem; }
+  }
+
+  @media (max-width: 520px) {
+    h1 { max-width: none; }
+    .hero-actions,
+    .cta-actions { flex-direction: column; }
+    .btn-primary,
+    .btn-secondary { width: 100%; }
+    .price-list li { font-size: 0.9rem; }
   }
 </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav>
-  <a href="#" class="nav-logo">Ivan Imports</a>
-  <ul class="nav-links">
-    <li><a href="#sobre-mi">Sobre mí</a></li>
-    <li><a href="#servicios">Servicios</a></li>
-    <li><a href="#faq">FAQ</a></li>
-    <li><a href="https://tidycal.com/pogrebnyakivan123/llamada-de-orientacion-gratuita-5-min" target="_blank" class="nav-cta">Llamada gratis</a></li>
-  </ul>
+  <div class="nav-inner">
+    <a href="#" class="logo">Ivan Imports</a>
+    <ul class="nav-links">
+      <li><a href="#servicios">Servicios</a></li>
+      <li><a href="#matriculacion">Matriculación</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+  </div>
 </nav>
 
-<!-- HERO -->
-<div class="hero">
-  <div class="hero-badge fade-up">
-    Importación · Matriculación · Vehículos comerciales
-  </div>
-  <h1 class="fade-up">Importa y matricula tu vehículo con <em>más claridad</em> y menos errores</h1>
-  <p class="hero-sub fade-up">Asesoría personalizada para importar vehículos desde Europa, entender el proceso de matriculación y tomar mejores decisiones antes de comprar.</p>
-  <div class="hero-btns fade-up">
-    <a href="https://tidycal.com/pogrebnyakivan123/llamada-de-orientacion-gratuita-5-min" target="_blank" class="btn btn-green btn-lg">Llamada gratis · 5 min</a>
-    <a href="https://tidycal.com/pogrebnyakivan123/consultoria-completa" target="_blank" class="btn btn-secondary btn-lg">Consultoría completa · 45 min</a>
-  </div>
-  <div class="hero-trust fade-up">
-    <div class="trust-item">
-      <svg class="trust-check" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-      Experiencia real en compraventa, importación y matriculación
-    </div>
-    <div class="trust-item">
-      <svg class="trust-check" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-      100% online
-    </div>
-    <div class="trust-item">
-      <svg class="trust-check" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-      Asesoría directa y personalizada
-    </div>
-  </div>
-</div>
-
-<div class="divider"></div>
-
-<!-- SOBRE MÍ -->
-<div class="section" id="sobre-mi" style="padding-top:60px;padding-bottom:60px;">
-  <div style="max-width:700px;margin:0 auto;text-align:center;" class="fade-up">
-    <span class="section-label">Sobre mí</span>
-    <h2 class="section-title">Experiencia real en importación, matriculación y compraventa de vehículos.</h2>
-    <p style="color:var(--text-muted);font-size:0.95rem;line-height:1.8;margin-bottom:1rem;">Empecé trabajando en una compraventa y aprendí el proceso completo desde dentro: documentación, importación desde Europa, matriculación y trato con clientes.</p>
-    <p style="color:var(--text-muted);font-size:0.95rem;line-height:1.8;margin-bottom:1rem;">Con el tiempo empecé por mi cuenta, y ahí entendí realmente qué decisiones marcan la diferencia y cuáles cuestan dinero.</p>
-    <p style="color:var(--text-muted);font-size:0.95rem;line-height:1.8;margin-bottom:2rem;">Hoy trabajo con vehículos importados, subastas, furgonetas y procesos reales de matriculación en España. Mi objetivo es que tomes decisiones con criterio desde el principio.</p>
-    <div class="sobre-chips" style="justify-content:center;">
-      <span class="chip blue">Importación Europa</span>
-      <span class="chip blue">Matriculación</span>
-      <span class="chip blue">Subastas</span>
-      <span class="chip blue">Furgonetas</span>
-      <span class="chip">Compraventa</span>
-      <span class="chip">DE · NL · BE · FR · España</span>
-    </div>
-    <div class="sobre-quote" style="text-align:center;">"La diferencia no está en cómo vendes, sino en cómo compras."</div>
-  </div>
-</div>
-
-<div class="divider"></div>
-
-<!-- CÓMO FUNCIONA -->
-<div style="background:var(--white);border-bottom:1px solid var(--border);">
-  <div class="section">
-    <div class="fade-up" style="text-align:center;max-width:520px;margin:0 auto;">
-      <span class="section-label">Cómo funciona</span>
-      <h2 class="section-title">Un proceso simple y claro</h2>
-      <p class="section-sub" style="margin:0 auto;">De la duda al plan de acción en una sola sesión.</p>
-    </div>
-    <div class="pasos-grid">
-      <div class="paso fade-up">
-        <div class="paso-num">1</div>
-        <div class="paso-title">Reservas una llamada</div>
-        <p class="paso-desc">Elige el formato que mejor se adapte a tu situación — gratis, 15 min o 45 min.</p>
+<div class="hero-wrap">
+  <section class="hero fade-up">
+    <div class="hero-grid">
+      <div>
+        <span class="eyebrow">Servicios claros y directos</span>
+        <h1>Antes de comprar un coche importado, revisamos si merece la pena.</h1>
+        <p>Te ayudo a revisar anuncios, hablar con vendedores, pedir documentación, calcular gastos reales y negociar antes de que pagues o viajes.</p>
+        <div class="hero-actions">
+          <a href="#servicios" class="btn btn-primary">Ver servicios</a>
+          <a href="#faq" class="btn btn-secondary">Resolver dudas</a>
+        </div>
+        <div class="hero-quote">No pagas por una llamada. Pagas por no comprar a ciegas.</div>
       </div>
-      <div class="paso fade-up">
-        <div class="paso-num">2</div>
-        <div class="paso-title">Me cuentas tu caso</div>
-        <p class="paso-desc">Qué vehículo buscas, de dónde viene, qué dudas tienes o en qué punto del proceso estás.</p>
-      </div>
-      <div class="paso fade-up">
-        <div class="paso-num">3</div>
-        <div class="paso-title">Revisamos opciones y costes</div>
-        <p class="paso-desc">Analizamos documentación, impuestos, plazos y cualquier punto que necesites entender bien.</p>
-      </div>
-      <div class="paso fade-up">
-        <div class="paso-num">4</div>
-        <div class="paso-title">Sales con un plan claro</div>
-        <p class="paso-desc">Sabes exactamente qué pasos seguir, qué documentos necesitas y qué errores evitar.</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- SERVICIOS -->
-<div style="border-bottom:1px solid var(--border);">
-  <div class="section" id="servicios">
-    <div class="fade-up" style="text-align:center;max-width:560px;margin:0 auto;">
-      <span class="section-label">Servicios</span>
-      <h2 class="section-title">Elige cómo quieres que te ayude</h2>
-      <p class="section-sub" style="margin:0 auto;">Cada servicio tiene un objetivo claro y un precio fijo. Sin sorpresas.</p>
-    </div>
-
-    <div class="servicios-grid">
-      <div class="servicio-card fade-up">
-        <span class="servicio-label">Sin coste</span>
-        <div class="servicio-title">Llamada de orientación</div>
-        <p class="servicio-desc">No sabes por dónde empezar o qué servicio necesitas. Me cuentas tu situación y te oriento sin compromiso.</p>
-        <div class="servicio-price">Gratis</div>
-        <p class="servicio-price-note">5 minutos · Sin compromiso · 5 plazas diarias</p>
-        <ul class="feat-list">
-          <li class="feat-item">Orientación personalizada</li>
-          <li class="feat-item">Te digo qué pasos seguir</li>
-          <li class="feat-item">Sin coste, sin rodeos</li>
+      <aside class="hero-side">
+        <h3>Te ayudo antes de que pagues</h3>
+        <ul class="signal-list">
+          <li>Revisar si el anuncio tiene señales raras.</li>
+          <li>Hablar con el vendedor y pedir papeles.</li>
+          <li>Calcular gastos reales en España.</li>
+          <li>Negociar el precio antes de comprar.</li>
         </ul>
-        <a href="https://tidycal.com/pogrebnyakivan123/llamada-de-orientacion-gratuita-5-min" target="_blank" class="btn btn-green btn-full">Reservar ahora</a>
-      </div>
+        <div class="hero-note">Ideal si estás mirando coches en Alemania, Holanda, Bélgica, Francia o España y no quieres comprar a ciegas.</div>
+      </aside>
+    </div>
+  </section>
+</div>
 
-      <div class="servicio-card fade-up">
-        <span class="servicio-label">Consulta rápida</span>
-        <div class="servicio-title">Consulta Exprés</div>
-        <p class="servicio-desc">Tienes una duda concreta sobre importación, matriculación o compraventa. Te la resuelvo con información real y directa.</p>
-        <div class="servicio-price">30€</div>
-        <p class="servicio-price-note">15 minutos · Respuesta concreta</p>
-        <ul class="feat-list">
-          <li class="feat-item">Análisis de tu caso específico</li>
-          <li class="feat-item">Importación, matrícula, subastas</li>
-          <li class="feat-item">Información clara y accionable</li>
+<section class="section">
+  <div class="section-head fade-up">
+    <span class="section-label">Cómo funciona</span>
+    <h2>Un proceso claro antes de tomar decisiones</h2>
+    <p>Te acompaño desde el primer anuncio hasta el siguiente paso, sin rodeos y con una explicación fácil de seguir.</p>
+  </div>
+
+  <div class="steps-grid">
+    <article class="step-card fade-up">
+      <div class="step-number">1</div>
+      <h3>Me envías el anuncio o la documentación</h3>
+      <p>Compárteme el enlace, fotos, papeles o dudas que tengas sobre el vehículo.</p>
+    </article>
+    <article class="step-card fade-up">
+      <div class="step-number">2</div>
+      <h3>Reviso el caso y te digo qué servicio encaja</h3>
+      <p>Valoro en qué punto estás y qué tipo de ayuda necesitas antes de avanzar.</p>
+    </article>
+    <article class="step-card fade-up">
+      <div class="step-number">3</div>
+      <h3>Hago la revisión, contacto o negociación</h3>
+      <p>Según el servicio, reviso anuncios, hablo con el vendedor o preparo la negociación.</p>
+    </article>
+    <article class="step-card fade-up">
+      <div class="step-number">4</div>
+      <h3>Recibes un resumen claro</h3>
+      <p>Te llevas riesgos, costes orientativos y el siguiente paso explicado de forma simple.</p>
+    </article>
+  </div>
+</section>
+
+<section class="section" id="servicios">
+  <div class="section-head fade-up">
+    <span class="section-label">Elige tu situación</span>
+    <h2>Elige en qué punto estás</h2>
+    <p>Selecciona el servicio según lo que necesitas ahora mismo.</p>
+  </div>
+
+  <div class="service-grid">
+    <article class="service-card fade-up">
+      <div class="service-step">Estoy mirando varios anuncios</div>
+      <h3 class="service-name">Filtro de anuncios</h3>
+      <p class="service-desc">Reviso varios coches y te digo cuáles merecen la pena, cuáles tienen riesgos y cuáles descartaría.</p>
+      <div class="list-title">Qué incluye</div>
+      <ul class="feature-list">
+        <li>Revisión de fotos.</li>
+        <li>Revisión de descripción.</li>
+        <li>Coherencia de precio.</li>
+        <li>Kilómetros, año, motor y equipamiento.</li>
+        <li>Señales raras.</li>
+        <li>Riesgos iniciales para matriculación en España.</li>
+        <li>Ranking final: mejor opción, cuidado o descartar.</li>
+      </ul>
+      <div class="pricing-box">
+        <div class="list-title">Precios</div>
+        <ul class="price-list">
+          <li><span>Hasta 3 anuncios</span> <strong>29 €</strong></li>
+          <li><span>Hasta 5 anuncios</span> <strong>39 €</strong></li>
         </ul>
-        <a href="https://tidycal.com/pogrebnyakivan123/llamada-15-minutos" target="_blank" class="btn btn-primary btn-full">Reservar llamada</a>
+        <p class="price-note">Ideal si estás comparando coches y no sabes cuál elegir.</p>
       </div>
+      <p class="service-small">No sustituye inspección mecánica presencial ni garantía sobre el estado real del vehículo.</p>
+    </article>
 
-      <div class="servicio-card featured fade-up">
-        <span class="servicio-tag">Más completo</span>
-        <span class="servicio-label">Sesión completa</span>
-        <div class="servicio-title">Consultoría Completa</div>
-        <p class="servicio-desc">Analizamos todo tu caso en profundidad. Terminas con un plan claro, realista y adaptado a tu situación exacta.</p>
-        <div class="servicio-price">70€</div>
-        <p class="servicio-price-note">45 minutos · 1 plaza diaria</p>
-        <ul class="feat-list">
-          <li class="feat-item">Sesión privada personalizada</li>
-          <li class="feat-item">Búsqueda, importación, matriculación</li>
-          <li class="feat-item">Subastas, márgenes y estrategia</li>
-          <li class="feat-item">Plan de acción concreto</li>
+    <article class="service-card fade-up">
+      <div class="service-step">Ya tengo coches candidatos</div>
+      <h3 class="service-name">Hablo con el vendedor y reviso papeles</h3>
+      <p class="service-desc">Contacto con el vendedor, hago las preguntas importantes, pido documentación y reviso si todo parece cuadrar antes de que pagues o viajes.</p>
+      <div class="list-title">Qué incluye</div>
+      <ul class="feature-list">
+        <li>Todo lo del Filtro de anuncios.</li>
+        <li>Contacto con el vendedor.</li>
+        <li>Preguntas clave sobre el estado real del vehículo.</li>
+        <li>Petición de documentación.</li>
+        <li>Revisión de COC si existe.</li>
+        <li>Revisión de documentación extranjera.</li>
+        <li>Revisión de libro o historial de mantenimiento si lo aporta.</li>
+        <li>Confirmación de datos importantes.</li>
+        <li>Riesgos visibles para matriculación en España.</li>
+        <li>Resumen claro por email o por escrito.</li>
+      </ul>
+      <div class="pricing-box">
+        <div class="list-title">Precios</div>
+        <ul class="price-list">
+          <li><span>1 vehículo</span> <strong>79 €</strong></li>
+          <li><span>Hasta 3 vehículos</span> <strong>99 €</strong></li>
+          <li><span>Hasta 5 vehículos</span> <strong>149 €</strong></li>
         </ul>
-        <a href="https://tidycal.com/pogrebnyakivan123/consultoria-completa" target="_blank" class="btn btn-white btn-full">Reservar consultoría</a>
+        <p class="price-note">Sale a menos de 30 € por vehículo en el paquete de 5.</p>
       </div>
+      <p class="service-small">No sustituye inspección mecánica presencial ni garantía sobre el estado real del vehículo.</p>
+    </article>
+
+    <article class="service-card fade-up">
+      <div class="service-step">Quiero comprar y negociar</div>
+      <h3 class="service-name">Compra preparada + negociación</h3>
+      <p class="service-desc">Hablo con el vendedor, intento negociar el precio y calculo cuánto te puede costar realmente poner el coche en España.</p>
+      <div class="list-title">Qué incluye</div>
+      <ul class="feature-list">
+        <li>Todo lo del servicio anterior.</li>
+        <li>Negociación del precio.</li>
+        <li>Cálculo orientativo completo de gastos finales.</li>
+        <li>Viaje o transporte.</li>
+        <li>ITV.</li>
+        <li>Ficha reducida o COC.</li>
+        <li>DGT.</li>
+        <li>Hacienda o modelo 576 si aplica.</li>
+        <li>Impuesto municipal.</li>
+        <li>Placas y matriculación.</li>
+        <li>Otros posibles gastos según el caso.</li>
+        <li>Recomendación final: comprar, negociar, esperar o descartar.</li>
+      </ul>
+      <div class="pricing-box">
+        <div class="list-title">Precios</div>
+        <ul class="price-list">
+          <li><span>1 vehículo</span> <strong>149 €</strong></li>
+          <li><span>2 vehículos</span> <strong>239 €</strong></li>
+          <li><span>3 vehículos</span> <strong>329 €</strong></li>
+        </ul>
+        <p class="price-note">Si consigo ayudarte a bajar el precio 200 €, el servicio prácticamente ya puede quedar compensado.</p>
+      </div>
+      <p class="service-small">No sustituye inspección mecánica presencial ni garantía sobre el estado real del vehículo.</p>
+      <p class="service-small"><strong>Garantía de valor:</strong> Si no se consigue ninguna rebaja ni mejora útil durante la negociación, podrás aplicar una revisión adicional a otro vehículo similar durante los siguientes 7 días.</p>
+    </article>
+  </div>
+</section>
+
+<section class="section" id="matriculacion">
+  <div class="section-head fade-up">
+    <span class="section-label">Matriculación</span>
+    <h2>¿Ya tienes el coche y quieres matricularlo?</h2>
+    <p>Acompañamiento paso a paso para saber qué hacer con ITV, DGT, Hacienda y documentación hasta dejar el trámite encaminado.</p>
+  </div>
+
+  <div class="matricula-panel fade-up">
+    <div>
+      <h3 class="service-name">Acompañamiento de matriculación</h3>
+      <ul class="feature-list">
+        <li>Orientación personalizada.</li>
+        <li>Revisión de documentos disponibles.</li>
+        <li>Pasos a seguir según tu caso.</li>
+        <li>Resolución de dudas por escrito o llamada.</li>
+        <li>Orientación para ITV.</li>
+        <li>Orientación para DGT.</li>
+        <li>Orientación con Hacienda o modelo 576.</li>
+        <li>Checklist adaptada a tu caso.</li>
+      </ul>
+      <div class="support-note">Objetivo: ayudarte a dejar claro el camino de matriculación lo antes posible, siempre según documentación, citas disponibles y situación concreta del vehículo.</div>
+      <p class="service-small">Recomendado tener certificado digital o firma electrónica para agilizar algunos pasos.</p>
     </div>
-
-    <!-- Matriculación -->
-    <div class="matriculacion-card fade-up">
-      <div class="mat-left">
-        <div class="mat-icon">📋</div>
-        <div>
-          <div style="display:flex;align-items:center;gap:0.7rem;margin-bottom:0.4rem;flex-wrap:wrap;">
-            <span style="font-weight:700;font-size:0.98rem;">Acompañamiento para Matriculación</span>
-            <span style="background:var(--accent-light);color:var(--accent);font-size:0.65rem;font-weight:700;padding:0.18rem 0.6rem;border-radius:100px;text-transform:uppercase;letter-spacing:0.05em;">Precio fijo</span>
-          </div>
-          <p style="font-size:0.85rem;color:var(--text-muted);line-height:1.65;max-width:520px;">No te explico cómo hacerlo y te dejo solo. Estaré contigo en cada paso: por WhatsApp, compartiendo pantalla, diciéndote qué rellenar, dónde presentarlo y qué hacer en cada momento — hasta que tengas el coche o furgoneta matriculado en España.</p>
-          <p style="font-size:0.75rem;color:#9ca3af;margin-top:0.6rem;line-height:1.5;">No incluye tasas oficiales, ITV, impuestos, placas ni costes externos. ¿Tienes dudas? <a href="https://tidycal.com/pogrebnyakivan123/llamada-de-orientacion-gratuita-5-min" target="_blank" style="color:var(--accent);text-decoration:none;font-weight:600;">Reserva una llamada gratis.</a></p>
-        </div>
-      </div>
-      <div class="mat-right">
-        <div class="mat-price">197€</div>
-        <p class="mat-note">Asesoría completa · precio fijo</p>
-        <a href="https://buy.stripe.com/4gM9AU0ta1nh8Mb3EY8N200" target="_blank" class="btn btn-primary" style="font-size:0.82rem;padding:0.65rem 1.3rem;white-space:normal;text-align:center;line-height:1.4;">Quiero ayuda con mi matriculación</a>
-      </div>
-    </div>
-
-    <!-- FAMILIA 1: Yo te ayudo a buscar/comprar -->
-    <div style="margin-top:2rem;" class="fade-up">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:0.4rem;flex-wrap:wrap;">
-        <span class="section-label" style="margin-bottom:0;">Yo te ayudo a buscar y comprar</span>
-        <span style="font-size:0.78rem;color:var(--text-muted);">2 niveles según el acompañamiento que necesites</span>
-      </div>
-      <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:1.4rem;max-width:600px;">¿No tienes coche todavía? Yo me encargo de buscarlo en el mercado europeo según lo que necesitas — desde una preselección con números reales hasta un acompañamiento completo durante la compra.</p>
-
-      <div style="display:grid;grid-template-columns:1fr 1.05fr;gap:1.2rem;" class="familia-grid">
-
-        <!-- 1. Búsqueda + Rentabilidad -->
-        <div class="busq-card fade-up">
-          <div class="busq-icon">🔍</div>
-          <div class="busq-title">Búsqueda + Rentabilidad</div>
-          <p class="busq-desc">Te busco 3 vehículos del mercado europeo según tus características — o te aconsejo yo qué buscar. Para cada uno calculo costes reales y rentabilidad estimada para que sepas si vale la pena antes de moverte.</p>
-
-          <ul class="busq-feat">
-            <li>3 vehículos seleccionados a mano</li>
-            <li>Cálculo de costes totales reales</li>
-            <li>Estimación de rentabilidad por opción</li>
-            <li>Informe detallado de cada uno</li>
-            <li>Llamada incluida para hablarlo todo</li>
-          </ul>
-
-          <div class="busq-price-block">
-            <div class="busq-price">147€</div>
-            <p class="busq-price-note">precio fijo · entrega hasta en 7 días</p>
-          </div>
-
-          <a href="https://buy.stripe.com/6oU9AU2Bi1nh0fF1wQ8N202" target="_blank" class="btn btn-primary btn-full">Quiero que me busques coches</a>
-        </div>
-
-        <!-- 2. Compra Acompañada VIP -->
-        <div class="busq-card busq-vip fade-up">
-          <span class="busq-badge-vip">
-            <svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24" style="vertical-align:-1px;margin-right:0.3rem;"><path d="M5 16L3 7l5.5 5L12 5l3.5 7L21 7l-2 9H5zm0 2h14v2H5v-2z"/></svg>
-            Servicio VIP · Más completo
-          </span>
-          <div class="busq-icon-vip">
-            <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 16L3 7l5.5 5L12 5l3.5 7L21 7l-2 9H5zm0 2h14v2H5v-2z"/></svg>
-          </div>
-          <div class="busq-title">Compra Acompañada VIP</div>
-          <p class="busq-desc">Para quien quiere comprar un vehículo en Europa con acompañamiento real antes de pagar o viajar. Busco opciones, calculo costes, reviso documentación, hablo con el vendedor, intento negociar el precio y te acompaño durante el proceso para que tomes la decisión con más seguridad.</p>
-
-          <div class="busq-negotiation">
-            <div class="busq-negotiation-icon">💬</div>
-            <div>
-              <div style="font-weight:700;font-size:0.85rem;color:var(--text);margin-bottom:0.15rem;">Negociación del precio incluida</div>
-              <p style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;">En el 92% de los casos consigo bajar el precio. Y en la mayoría, el coche te sale más barato de lo que cuesta mi servicio.</p>
-            </div>
-          </div>
-
-          <div class="feat-group">
-            <span class="feat-group-title">Búsqueda y análisis</span>
-            <ul class="busq-feat">
-              <li>3 vehículos seleccionados a mano</li>
-              <li>Cálculo de costes totales reales</li>
-              <li>Estimación de rentabilidad por opción</li>
-              <li>Informe detallado de cada uno</li>
-              <li>Revisión del anuncio y del precio</li>
-            </ul>
-          </div>
-
-          <div class="feat-group">
-            <span class="feat-group-title">Negociación y vendedor</span>
-            <ul class="busq-feat">
-              <li>Revisión de documentación disponible</li>
-              <li>Solicitud y revisión de mantenimientos</li>
-              <li>Comunicación con el vendedor europeo</li>
-              <li>Cita coordinada con el vendedor si decides ir a verlo</li>
-            </ul>
-          </div>
-
-          <div class="feat-group">
-            <span class="feat-group-title">Acompañamiento</span>
-            <ul class="busq-feat">
-              <li>Llamada incluida para hablarlo todo</li>
-              <li>Soporte por WhatsApp durante el proceso</li>
-              <li>Posibilidad de llamarme cuando estés con el vendedor</li>
-              <li>Opinión sincera: si no lo veo claro, te lo digo</li>
-            </ul>
-          </div>
-
-          <div class="busq-price-block">
-            <div class="busq-price">347€</div>
-            <p class="busq-price-note">precio fijo · acompañamiento completo</p>
-          </div>
-
-          <a href="https://buy.stripe.com/3cI14oek06HBfaz2AU8N204" target="_blank" class="btn btn-vip btn-full">Quiero comprar acompañado</a>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- SEPARADOR FAMILIA 2 -->
-    <div style="margin:2.5rem 0 1.5rem;display:flex;align-items:center;gap:1rem;" class="fade-up">
-      <div style="flex:1;height:1px;background:var(--border);"></div>
-      <span style="font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);">o también</span>
-      <div style="flex:1;height:1px;background:var(--border);"></div>
-    </div>
-
-    <!-- FAMILIA 2: Tú ya tienes coches vistos -->
-    <div class="fade-up">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:0.4rem;flex-wrap:wrap;">
-        <span class="section-label" style="margin-bottom:0;">Ya tienes coches en mente</span>
-        <span style="font-size:0.78rem;color:var(--text-muted);">Servicio independiente de análisis</span>
-      </div>
-      <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:1.4rem;max-width:600px;">Si ya has visto varios vehículos y necesitas saber cuál merece la pena, este servicio es diferente — yo no busco, tú me los traes y los analizo.</p>
-
-      <!-- 3. Revisión de hasta 5 coches -->
-      <div class="busq-card busq-revision fade-up">
-        <span class="busq-badge-alt">Ya tienes coches vistos</span>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start;" class="revision-grid">
-          <div>
-            <div class="busq-icon">📊</div>
-            <div class="busq-title">Revisión de hasta 5 coches</div>
-            <p class="busq-desc">Para quien ya tiene varios coches en mente y necesita saber cuál merece la pena antes de comprar, viajar o pagar una señal. Analizo hasta 5 vehículos, reviso anuncios, documentación, mantenimientos, costes aproximados en España y te doy una recomendación final.</p>
-
-            <div class="busq-negotiation">
-              <div class="busq-negotiation-icon">💬</div>
-              <div>
-                <div style="font-weight:700;font-size:0.85rem;color:var(--text);margin-bottom:0.15rem;">Negociación del precio incluida</div>
-                <p style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;">En el 92% de los casos consigo bajar el precio. Y en la mayoría, el coche te sale más barato de lo que cuesta mi servicio.</p>
-              </div>
-            </div>
-          </div>
-          <div>
-            <ul class="busq-feat">
-              <li>Revisión de hasta 5 anuncios</li>
-              <li>Análisis de precio y mercado</li>
-              <li>Revisión de documentación disponible</li>
-              <li>Solicitud y revisión de mantenimientos</li>
-              <li>Cálculo orientativo del coste total en España</li>
-              <li>Opinión sincera sobre cada vehículo</li>
-              <li>Recomendación final sobre cuál merece más la pena</li>
-            </ul>
-
-            <div class="busq-price-block">
-              <div class="busq-price">237€</div>
-              <p class="busq-price-note">precio fijo · entrega hasta en 7 días</p>
-            </div>
-
-            <!-- Stripe: https://buy.stripe.com/9B63cw5Nu2rl3rRcbu8N203 -->
-            <a href="https://buy.stripe.com/9B63cw5Nu2rl3rRcbu8N203" target="_blank" class="btn btn-primary btn-full">Quiero revisar mis coches</a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- BLOQUE DE DUDAS -->
-    <div class="dudas-block fade-up">
-      <h3 class="dudas-title">¿Tienes dudas sobre qué servicio elegir?</h3>
-      <p class="dudas-text">Reserva una llamada gratuita de 5 minutos y te digo cuál encaja mejor con tu caso. Si prefieres resolver una duda concreta, también puedes reservar una consulta de 15 minutos.</p>
-      <div class="dudas-btns">
-        <a href="https://tidycal.com/pogrebnyakivan123/llamada-de-orientacion-gratuita-5-min" target="_blank" class="btn btn-green">Llamada gratis · 5 min</a>
-        <a href="https://tidycal.com/pogrebnyakivan123/llamada-15-minutos" target="_blank" class="btn btn-secondary">Consulta · 15 min · 30€</a>
-      </div>
-    </div>
-
-    <!-- Curso -->
-    <div class="curso-card fade-up">
-      <div style="display:flex;align-items:center;gap:1rem;">
-        <span style="font-size:1.1rem;">🎓</span>
-        <div>
-          <div style="font-weight:700;font-size:0.93rem;color:var(--text);">Curso de Matriculación — Próximamente</div>
-          <div style="font-size:0.8rem;color:var(--accent);">Aprende el proceso completo paso a paso · Precio estimado de lanzamiento · lista de espera</div>
-        </div>
-      </div>
-      <form action="https://formspree.io/f/xqenaogw" method="POST" id="curso-form" style="display:flex;gap:0.6rem;flex-wrap:wrap;">
-        <input type="hidden" name="_subject" value="Lista de espera curso — Ivan Imports">
-        <input type="email" name="email" placeholder="Tu email" required style="padding:0.6rem 1rem;border:1.5px solid var(--border);border-radius:100px;font-family:'Sora',sans-serif;font-size:0.82rem;outline:none;background:white;min-width:180px;flex:1;">
-        <button type="submit" class="btn btn-primary" style="font-size:0.82rem;padding:0.6rem 1.2rem;">Avísame</button>
-      </form>
-      <div id="curso-ok" style="display:none;font-size:0.85rem;color:var(--green);font-weight:600;">✓ Apuntado. Te avisamos primero.</div>
+    <div class="matricula-price">
+      <div class="service-step">Precio fijo</div>
+      <div class="matricula-price-value">250 €</div>
+      <p class="price-note">Servicio de orientación y acompañamiento práctico.</p>
     </div>
   </div>
-</div>
+</section>
 
-<!-- CONVERSION -->
-<div class="section">
-  <div class="conversion-block fade-up">
-    <h2 class="conversion-title">¿No sabes por dónde empezar?</h2>
-    <p class="conversion-sub">Reserva una llamada de 5 minutos. Me cuentas tu situación y te digo exactamente qué hacer en tu caso — sin compromiso.</p>
-    <div class="conversion-btns">
-      <a href="https://tidycal.com/pogrebnyakivan123/llamada-de-orientacion-gratuita-5-min" target="_blank" class="btn btn-white btn-lg">Llamada gratis · 5 min</a>
-      <a href="https://tidycal.com/pogrebnyakivan123/consultoria-completa" target="_blank" class="btn btn-outline-white btn-lg">Consultoría completa · 45 min</a>
-    </div>
+<section class="section">
+  <div class="section-head fade-up">
+    <span class="section-label">MatriculaPRO Alpha</span>
+    <h2>¿Quieres hacerlo tú con una guía paso a paso?</h2>
+    <p>MatriculaPRO Alpha conecta con los servicios para quien prefiere avanzar por su cuenta, con apoyo estructurado y sin depender de una llamada para cada paso.</p>
   </div>
-</div>
 
-<!-- DECISIONES -->
-<div style="background:var(--white);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
-  <div class="section">
-    <div class="fade-up">
-      <span class="section-label">Por qué importa</span>
-      <h2 class="section-title">Decisiones que conviene tomar con información</h2>
-      <p class="section-sub">Conocer el proceso con antelación ayuda a evitar retrasos, costes inesperados y errores difíciles de revertir.</p>
+  <div class="alpha-panel fade-up">
+    <div>
+      <h3 class="service-name">MatriculaPRO Alpha</h3>
+      <p class="alpha-copy">MatriculaPRO Alpha es la herramienta que estoy construyendo para quienes prefieren avanzar por su cuenta. Incluye rutas, checklists, simuladores y guías prácticas para entender la matriculación de vehículos en España.</p>
+      <p class="alpha-note">El acceso Alpha incluye la base inicial de la herramienta y las mejoras que se vayan añadiendo durante el desarrollo.</p>
     </div>
-    <div class="errores-grid">
-      <div class="error-card fade-up">
-        <div class="error-icon">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:20px;height:20px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-        </div>
-        <div>
-          <div class="error-title">Calcular mal los costes reales</div>
-          <p class="error-desc">El precio del vehículo es solo una parte. Transporte, ITV, impuestos y tasas pueden variar significativamente según el coche y su origen.</p>
-        </div>
-      </div>
-      <div class="error-card fade-up">
-        <div class="error-icon">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:20px;height:20px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-        </div>
-        <div>
-          <div class="error-title">Comprar sin revisar la documentación</div>
-          <p class="error-desc">El COC, el historial del vehículo y los permisos de circulación son esenciales. Un documento que falta puede complicar todo el proceso.</p>
-        </div>
-      </div>
-      <div class="error-card fade-up">
-        <div class="error-icon">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:20px;height:20px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-        </div>
-        <div>
-          <div class="error-title">No comprobar la homologación europea</div>
-          <p class="error-desc">Especialmente relevante en furgonetas y vehículos comerciales. Sin la homologación correcta, el proceso posterior puede ser considerablemente más costoso.</p>
-        </div>
-      </div>
-      <div class="error-card fade-up">
-        <div class="error-icon">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:20px;height:20px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        </div>
-        <div>
-          <div class="error-title">Desconocer plazos y pasos de matriculación</div>
-          <p class="error-desc">El proceso tiene un orden concreto. Empezar por el paso equivocado o saltarse alguno puede generar retrasos innecesarios y fácilmente evitables.</p>
-        </div>
+    <div class="price-stack">
+      <div class="pricing-box">
+        <div class="list-title">Ahora</div>
+        <div class="alpha-price-now">49 €</div>
+        <div class="alpha-price-later">Precio previsto versión completa: <span>199 €</span></div>
       </div>
     </div>
   </div>
-</div>
+</section>
 
-<!-- PARA QUIÉN -->
-<div class="section">
-  <div class="fade-up" style="text-align:center;max-width:560px;margin:0 auto;">
-    <span class="section-label">Para quién es</span>
-    <h2 class="section-title">¿Esta asesoría es para ti?</h2>
-    <p class="section-sub" style="margin:0 auto;">Si te identificas con alguna de estas situaciones, puedo ayudarte.</p>
-  </div>
-  <div class="para-quien-grid">
-    <div class="pq-card fade-up">
-      <div class="pq-num">1</div>
-      <p class="pq-text">Quieres importar un coche desde Alemania, Holanda, Bélgica o Francia y no sabes bien por dónde empezar.</p>
+<section class="section">
+  <div class="about-panel fade-up" id="sobre-mi">
+    <div>
+      <span class="section-label">Sobre mí</span>
+      <h2>Experiencia real para revisar mejor antes de comprar</h2>
     </div>
-    <div class="pq-card fade-up">
-      <div class="pq-num">2</div>
-      <p class="pq-text">Has comprado un vehículo en el extranjero y necesitas entender cómo matricularlo en España.</p>
-    </div>
-    <div class="pq-card fade-up">
-      <div class="pq-num">3</div>
-      <p class="pq-text">Estás valorando una furgoneta o vehículo comercial y quieres asegurarte de revisar los puntos clave antes de comprar.</p>
-    </div>
-    <div class="pq-card fade-up">
-      <div class="pq-num">4</div>
-      <p class="pq-text">Quieres aprender el proceso de importación o matriculación para hacerlo tú mismo con confianza.</p>
-    </div>
-    <div class="pq-card fade-up">
-      <div class="pq-num">5</div>
-      <p class="pq-text">Trabajas o quieres empezar en compraventa de vehículos y buscas orientación real basada en experiencia directa.</p>
-    </div>
-    <div class="pq-card fade-up" style="background:var(--accent-light);border-color:transparent;flex-direction:column;gap:1rem;">
-      <p class="pq-text">Si tu caso encaja, el primer paso es una llamada gratuita de 5 minutos.</p>
-      <a href="https://tidycal.com/pogrebnyakivan123/llamada-de-orientacion-gratuita-5-min" target="_blank" class="btn btn-green" style="font-size:0.82rem;padding:0.65rem 1.3rem;">Reservar llamada gratis</a>
+    <div class="about-copy">
+      <p>Empecé trabajando en compraventa y aprendí desde dentro cómo se cruzan documentación, decisiones de compra y trámites posteriores.</p>
+      <p>Hoy acompaño casos reales de revisión, negociación y matriculación para que tomes decisiones con más criterio y menos improvisación.</p>
+      <p>La historia va después del servicio porque aquí lo importante es que entiendas rápido qué puedes contratar.</p>
+      <ul class="about-points">
+        <li>Revisión de anuncios, vendedores y documentación antes de pagar o viajar.</li>
+        <li>Acompañamiento práctico para matricular en España paso a paso.</li>
+        <li>Respuesta pensada para clientes poco técnicos y decisiones con dinero en juego.</li>
+      </ul>
     </div>
   </div>
-</div>
+</section>
 
-<!-- FAQ -->
-<div style="background:var(--white);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
-  <div class="section" id="faq">
-    <div class="fade-up" style="text-align:center;">
-      <span class="section-label">Preguntas frecuentes</span>
-      <h2 class="section-title">Lo que todo el mundo pregunta</h2>
+<section class="section" id="faq">
+  <div class="section-head fade-up">
+    <span class="section-label">Preguntas frecuentes</span>
+    <h2>Respuestas claras antes de contratar</h2>
+    <p>Preguntas sencillas para entender rápido qué cubre el servicio y qué no cubre.</p>
+  </div>
+
+  <div class="faq-list fade-up">
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">¿Esto sustituye a una gestoría?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+      <div class="faq-a">No. Es un servicio de orientación y acompañamiento práctico. Te ayudo a entender qué hacer, qué revisar y cómo avanzar, pero no sustituye una gestoría administrativa, asesoramiento legal o fiscal ni una inspección mecánica profesional.</div>
     </div>
-    <div class="faq-list fade-up">
-      <div class="faq-item">
-        <div class="faq-q" onclick="toggleFaq(this)">¿Cuánto cuesta matricular un coche importado?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
-        <div class="faq-a">El coste total varía según el vehículo, sus emisiones y el tipo de ITV necesaria. El proceso incluye la tasa de matriculación, las placas, la ITV de importación y el impuesto de matriculación (modelo 576), que depende directamente de las emisiones del vehículo. En la consultoría calculamos el coste orientativo para tu caso concreto.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-q" onclick="toggleFaq(this)">¿Puedo traer el coche conduciendo desde Europa?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
-        <div class="faq-a">Sí, es posible. Necesitas un seguro válido para circular y la documentación del vehículo en regla. Existe un plazo para matricularlo en España desde que entra en el país, por lo que conviene tener todo preparado antes de salir. En la consultoría revisamos exactamente qué necesitas según tu caso.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-q" onclick="toggleFaq(this)">¿Cuánto tarda el proceso de matriculación?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
-        <div class="faq-a">Depende de la disponibilidad de la ITV en tu zona, si la documentación está completa desde el inicio y el tipo de vehículo. Con todo en orden, el proceso suele resolverse en pocas semanas. Tener claro el orden de los pasos antes de empezar es lo que más ayuda a agilizarlo.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-q" onclick="toggleFaq(this)">¿Necesito un gestor para matricular?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
-        <div class="faq-a">No es obligatorio. El proceso lo puede gestionar cualquier persona con la documentación correcta y siguiendo los pasos en el orden adecuado. Si prefieres entender bien qué implica antes de decidir cómo proceder, eso es exactamente para lo que sirve la asesoría.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-q" onclick="toggleFaq(this)">¿Qué pasa si el vehículo tiene problemas al llegar?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
-        <div class="faq-a">Por eso siempre recomiendo revisar el vehículo antes de cerrar cualquier compra. En la consultoría te explico qué aspectos comprobar y cómo hacerlo, o cómo coordinar una inspección con alguien de confianza en el país de origen si no puedes desplazarte.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-q" onclick="toggleFaq(this)">¿También asesoras sobre furgonetas y vehículos comerciales?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
-        <div class="faq-a">Sí. Es un área donde tengo experiencia directa. El mercado de vehículos comerciales tiene particularidades propias — homologación, documentación técnica, normativa — que conviene conocer antes de comprar. Si estás valorando una furgoneta importada, tiene sentido revisarlo antes de comprometerte.</div>
-      </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">¿Puedes garantizar que el coche está perfecto?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+      <div class="faq-a">No. Puedo ayudarte a detectar señales de riesgo, revisar documentación y orientar la compra, pero no sustituye una inspección mecánica presencial.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">¿Qué necesito enviarte?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+      <div class="faq-a">Depende del servicio, pero normalmente enlace del anuncio, fotos, datos del coche, documentación disponible, país, precio y cualquier conversación con el vendedor.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">¿Puedes hablar con el vendedor?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+      <div class="faq-a">Sí. En los servicios de verificación y compra preparada puedo contactar con el vendedor, hacer preguntas clave, pedir documentos y, si procede, intentar negociar.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">¿Cuánto tardas?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+      <div class="faq-a">El plazo habitual es de hasta 24 o 48 horas, según el servicio y la respuesta del vendedor.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">¿Qué pasa si el vendedor no responde?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+      <div class="faq-a">Se intentará contactar de forma razonable. Si no responde, se informará al cliente y se podrá valorar otro vehículo dentro de las condiciones del servicio.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">¿Trabajas solo con coches importados?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+      <div class="faq-a">Principalmente ayudo con vehículos de importación y casos donde hay dudas de documentación, compra o matriculación, pero también puedo revisar coches nacionales si necesitas una segunda opinión antes de comprar.</div>
     </div>
   </div>
-</div>
+</section>
 
-<!-- CIERRE -->
-<div class="cierre">
-  <h2 class="fade-up">Habla conmigo antes de tomar cualquier decisión</h2>
-  <p class="fade-up">Una conversación de 5 minutos puede ahorrarte tiempo y ayudarte a entender exactamente qué pasos seguir. Sin compromiso.</p>
-  <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;" class="fade-up">
-    <a href="https://tidycal.com/pogrebnyakivan123/llamada-de-orientacion-gratuita-5-min" target="_blank" class="btn btn-green btn-lg">Reservar llamada gratis</a>
-    <a href="https://tidycal.com/pogrebnyakivan123/llamada-15-minutos" target="_blank" class="btn btn-secondary btn-lg">Consulta · 15 min · 30€</a>
+<section class="section">
+  <div class="legal-panel fade-up">
+    <span class="section-label">Importante</span>
+    <p class="legal-text">Servicio de orientación y acompañamiento práctico. No sustituye una inspección mecánica profesional, gestoría administrativa, asesoramiento legal o fiscal ni informe oficial de homologación. Las recomendaciones se basan en la información disponible aportada por el cliente y/o vendedor. Las estimaciones de gastos son orientativas y pueden variar según comunidad, ITV, DGT, documentación y vehículo.</p>
   </div>
-</div>
+</section>
 
-<!-- FOOTER -->
-<div style="border-top:1px solid var(--border);">
-  <footer>
-    <div class="footer-logo">Ivan Imports</div>
-    <div class="footer-text">Especialista en Importación y Matriculación de Vehículos · España</div>
-    <div class="footer-text" style="width:100%;text-align:center;font-size:0.72rem;color:#9ca3af;padding-top:0.5rem;border-top:1px solid var(--border);">Asesoría informativa. Los costes oficiales pueden variar según vehículo, ITV, ayuntamiento y normativa aplicable.</div>
-    <div class="footer-text">© 2026 · Todos los derechos reservados</div>
-  </footer>
-</div>
+<section class="section">
+  <div class="final-cta fade-up">
+    <h2>Si ya has visto un coche, el siguiente paso es simple</h2>
+    <p>Revisa los servicios, compara qué encaja mejor con tu caso y avanza con una idea clara antes de comprar o matricular.</p>
+    <div class="cta-actions">
+      <a href="#servicios" class="btn btn-secondary">Volver a servicios</a>
+      <a href="#faq" class="btn btn-primary">Leer FAQ</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-box">
+    <div>Ivan Imports</div>
+    <div>Servicios de revisión, compra y matriculación de vehículos en España</div>
+    <div>© 2026</div>
+  </div>
+</footer>
 
 <script>
   function toggleFaq(el) {
     const answer = el.nextElementSibling;
-    const isOpen = el.classList.contains('open');
-    document.querySelectorAll('.faq-q').forEach(q => {
-      q.classList.remove('open');
-      q.nextElementSibling.classList.remove('open');
+    const isOpen = el.classList.contains("open");
+    document.querySelectorAll(".faq-q").forEach((question) => {
+      question.classList.remove("open");
+      question.nextElementSibling.classList.remove("open");
     });
     if (!isOpen) {
-      el.classList.add('open');
-      answer.classList.add('open');
+      el.classList.add("open");
+      answer.classList.add("open");
     }
   }
 
   const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry, i) => {
+    entries.forEach((entry, index) => {
       if (entry.isIntersecting) {
-        setTimeout(() => entry.target.classList.add('visible'), i * 70);
+        setTimeout(() => entry.target.classList.add("visible"), index * 60);
       }
     });
-  }, { threshold: 0.08 });
-  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  }, { threshold: 0.12 });
 
-  document.getElementById('curso-form').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const form = e.target;
-    try {
-      const res = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { 'Accept': 'application/json' } });
-      if (res.ok) {
-        form.style.display = 'none';
-        document.getElementById('curso-ok').style.display = 'block';
-      }
-    } catch(err) { form.submit(); }
-  });
+  document.querySelectorAll(".fade-up").forEach((el) => observer.observe(el));
 </script>
 </body>
 </html>
