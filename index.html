@@ -1,849 +1,48 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-PRKZJFTT');</script>
+<!-- End Google Tag Manager -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ivan Imports | Asesoría online para comprar y matricular coches importados</title>
-<meta name="description" content="Revisión de anuncios, cálculo de gastos reales, contacto con vendedores y acompañamiento online para matricular vehículos extranjeros en España.">
-<meta property="og:title" content="Ivan Imports: revisa antes de comprar o matricular">
-<meta property="og:description" content="Asesoría online para evitar errores al comprar coches en Alemania, Europa o matricular vehículos en España.">
+<title>Ivan Imports | Asesoría para comprar coches en Alemania y matricular en España</title>
+<meta name="description" content="Revisión online de anuncios, vendedores, documentación y costes antes de comprar un coche en Alemania o Europa. Evita errores antes de pagar reserva.">
+<link rel="canonical" href="https://ivanimports.es/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#1b263b">
+<meta property="og:site_name" content="Ivan Imports">
+<meta property="og:locale" content="es_ES">
+<meta property="og:title" content="Ivan Imports | Asesoría para comprar coches en Alemania y matricular en España">
+<meta property="og:description" content="Revisión online de anuncios, vendedores, documentación y costes antes de comprar un coche en Alemania o Europa. Evita errores antes de pagar reserva.">
 <meta property="og:type" content="website">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #f5f1ea;
-    --surface: #ffffff;
-    --surface-alt: #fbf8f3;
-    --text: #1d1d1b;
-    --muted: #5f646d;
-    --line: #ded8cf;
-    --brand: #b65a2a;
-    --brand-dark: #96471d;
-    --brand-soft: #f7e4d8;
-    --ok: #166534;
-    --ok-soft: #ddf4e2;
-    --shadow: 0 16px 40px rgba(31, 22, 14, 0.08);
-    --radius: 24px;
-    --radius-sm: 16px;
-    --max: 1180px;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-
-  body {
-    background:
-      radial-gradient(circle at top left, rgba(182, 90, 42, 0.12), transparent 28%),
-      linear-gradient(180deg, #f9f4ed 0%, var(--bg) 42%, #f7f2eb 100%);
-    color: var(--text);
-    font-family: "Sora", sans-serif;
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
-  }
-
-  a { color: inherit; }
-
-  nav {
-    position: sticky;
-    top: 0;
-    z-index: 30;
-    backdrop-filter: blur(18px);
-    background: rgba(249, 244, 237, 0.9);
-    border-bottom: 1px solid rgba(222, 216, 207, 0.9);
-  }
-
-  .nav-inner {
-    max-width: var(--max);
-    margin: 0 auto;
-    padding: 0.95rem 1.2rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-  }
-
-  .logo {
-    font-family: "Fraunces", serif;
-    font-size: 1.3rem;
-    font-weight: 600;
-    text-decoration: none;
-    letter-spacing: -0.02em;
-  }
-
-  .nav-links {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    list-style: none;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-  }
-
-  .nav-links a {
-    text-decoration: none;
-    color: var(--muted);
-    font-size: 0.86rem;
-    font-weight: 600;
-  }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.55rem;
-    border-radius: 999px;
-    text-decoration: none;
-    font-weight: 700;
-    transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
-    cursor: pointer;
-    border: 1px solid transparent;
-  }
-
-  .btn:hover { transform: translateY(-1px); }
-
-  .btn-primary {
-    background: var(--ok);
-    color: #fff;
-    padding: 0.95rem 1.45rem;
-    box-shadow: 0 10px 24px rgba(22, 101, 52, 0.18);
-  }
-
-  .btn-primary:hover { background: #14532d; }
-
-  .btn-secondary {
-    background: var(--surface);
-    color: var(--text);
-    border-color: var(--line);
-    padding: 0.95rem 1.45rem;
-  }
-
-  .btn-secondary:hover { border-color: var(--brand); color: var(--brand); }
-
-  .btn-tiktok {
-    background: var(--brand);
-    color: #fff;
-    padding: 0.9rem 1.35rem;
-  }
-
-  .btn-tiktok:hover { background: var(--brand-dark); }
-
-  .btn-full { width: 100%; }
-
-  .hero-wrap {
-    max-width: var(--max);
-    margin: 0 auto;
-    padding: 3rem 1.2rem 1.8rem;
-  }
-
-  .hero {
-    background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(247, 235, 226, 0.96));
-    border: 1px solid rgba(222, 216, 207, 0.9);
-    border-radius: 36px;
-    box-shadow: var(--shadow);
-    overflow: hidden;
-    position: relative;
-  }
-
-  .hero::after {
-    content: "";
-    position: absolute;
-    inset: auto -80px -110px auto;
-    width: 260px;
-    height: 260px;
-    background: radial-gradient(circle, rgba(182, 90, 42, 0.14), transparent 65%);
-    pointer-events: none;
-  }
-
-  .hero-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
-    gap: 2rem;
-    padding: 4rem 3rem;
-    align-items: center;
-  }
-
-  .eyebrow,
-  .section-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    background: var(--brand-soft);
-    color: var(--brand-dark);
-    border-radius: 999px;
-    padding: 0.4rem 0.8rem;
-    font-size: 0.74rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  h1, h2, h3 {
-    font-family: "Fraunces", serif;
-    letter-spacing: -0.03em;
-    line-height: 1.05;
-  }
-
-  h1 {
-    font-size: clamp(2.45rem, 6vw, 4.5rem);
-    margin: 1rem 0;
-    max-width: 11ch;
-  }
-
-  .hero p {
-    color: var(--muted);
-    font-size: 1.02rem;
-    max-width: 60ch;
-  }
-
-  .hero-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.9rem;
-    margin-top: 1.6rem;
-  }
-
-  .hero-quote {
-    margin-top: 1.3rem;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--text);
-    padding: 0.95rem 1rem;
-    background: rgba(255,255,255,0.75);
-    border: 1px solid rgba(222, 216, 207, 0.95);
-    border-radius: 18px;
-    max-width: 60ch;
-  }
-
-  .hero-microcopy {
-    margin-top: 0.9rem;
-    font-size: 0.84rem;
-    color: var(--muted);
-  }
-
-  .hero-side {
-    background: rgba(255, 255, 255, 0.78);
-    border: 1px solid rgba(222, 216, 207, 0.9);
-    border-radius: 28px;
-    padding: 1.5rem;
-  }
-
-  .hero-side h3 {
-    font-size: 1.35rem;
-    margin-bottom: 1rem;
-  }
-
-  .signal-list {
-    list-style: none;
-    display: grid;
-    gap: 0.8rem;
-    margin-bottom: 1.25rem;
-  }
-
-  .signal-list li {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.7rem;
-    color: var(--muted);
-    font-size: 0.92rem;
-  }
-
-  .signal-list li::before {
-    content: "•";
-    color: var(--brand);
-    font-size: 1.4rem;
-    line-height: 1;
-    margin-top: -0.05rem;
-  }
-
-  .hero-note {
-    background: var(--surface-alt);
-    border-radius: 18px;
-    padding: 0.95rem 1rem;
-    color: var(--muted);
-    font-size: 0.86rem;
-  }
-
-  .section {
-    max-width: var(--max);
-    margin: 0 auto;
-    padding: 2rem 1.2rem 4.4rem;
-  }
-
-  .section-head {
-    max-width: 760px;
-    margin-bottom: 2rem;
-  }
-
-  .section-head h2 {
-    font-size: clamp(2rem, 4vw, 3rem);
-    margin: 1rem 0 0.8rem;
-  }
-
-  .section-head p {
-    color: var(--muted);
-    font-size: 1rem;
-  }
-
-  .case-grid,
-  .dual-grid,
-  .steps-grid,
-  .service-grid,
-  .trust-grid {
-    display: grid;
-    gap: 1rem;
-  }
-
-  .case-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .dual-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .steps-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .service-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .trust-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-
-  .case-card,
-  .step-card,
-  .service-card,
-  .matricula-panel,
-  .alpha-panel,
-  .about-panel,
-  .legal-panel,
-  .final-cta,
-  .trust-card,
-  .split-panel,
-  .tiktok-panel {
-    background: rgba(255,255,255,0.94);
-    border: 1px solid rgba(222, 216, 207, 0.95);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-  }
-
-  .case-card,
-  .step-card,
-  .service-card,
-  .trust-card {
-    padding: 1.45rem;
-  }
-
-  .case-card {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-  }
-
-  .case-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 0.65rem;
-    margin-top: auto;
-  }
-
-  .case-link {
-    font-size: 0.82rem;
-    color: var(--brand-dark);
-    font-weight: 600;
-    text-decoration: none;
-  }
-
-  .case-card h3,
-  .step-card h3,
-  .trust-card h3 {
-    font-size: 1.16rem;
-  }
-
-  .case-card p,
-  .step-card p,
-  .trust-card p {
-    font-size: 0.92rem;
-    color: var(--muted);
-  }
-
-  .service-card {
-    display: flex;
-    flex-direction: column;
-    min-height: 100%;
-  }
-
-  .service-step {
-    color: var(--brand);
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: 0.5rem;
-  }
-
-  .service-name {
-    font-size: 1.4rem;
-    margin-bottom: 0.65rem;
-  }
-
-  .service-for {
-    font-size: 0.84rem;
-    color: var(--brand-dark);
-    font-weight: 600;
-    margin-bottom: 0.9rem;
-  }
-
-  .service-desc,
-  .service-small,
-  .price-note,
-  .alpha-copy,
-  .about-copy,
-  .legal-text,
-  .microcopy,
-  .notice-text {
-    color: var(--muted);
-  }
-
-  .service-desc {
-    font-size: 0.95rem;
-    margin-bottom: 1rem;
-  }
-
-  .list-title {
-    font-size: 0.84rem;
-    font-weight: 700;
-    margin-bottom: 0.7rem;
-  }
-
-  .feature-list,
-  .price-list,
-  .plain-list {
-    list-style: none;
-    display: grid;
-    gap: 0.65rem;
-  }
-
-  .feature-list {
-    margin-bottom: 1.2rem;
-  }
-
-  .feature-list li,
-  .plain-list li {
-    padding-left: 1.2rem;
-    position: relative;
-    color: var(--muted);
-    font-size: 0.9rem;
-  }
-
-  .feature-list li::before,
-  .plain-list li::before {
-    position: absolute;
-    left: 0;
-    font-weight: 700;
-  }
-
-  .feature-list li::before {
-    content: "✓";
-    color: var(--ok);
-  }
-
-  .plain-list li::before {
-    content: "•";
-    color: var(--brand);
-  }
-
-  .pricing-box {
-    margin-top: auto;
-    padding: 1rem;
-    background: var(--surface-alt);
-    border-radius: 18px;
-    border: 1px solid var(--line);
-  }
-
-  .price-list li {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    font-size: 0.95rem;
-    font-weight: 600;
-  }
-
-  .price-list strong {
-    color: var(--text);
-    font-weight: 700;
-    white-space: nowrap;
-  }
-
-  .price-note {
-    font-size: 0.82rem;
-    margin-top: 0.8rem;
-    line-height: 1.5;
-  }
-
-  .service-small,
-  .microcopy {
-    font-size: 0.82rem;
-    line-height: 1.5;
-  }
-
-  .notice-text {
-    font-size: 0.86rem;
-    line-height: 1.55;
-    margin-top: 0.9rem;
-  }
-
-  .service-small { margin: 0.8rem 0 0; }
-  .service-card .btn { margin-top: 1rem; }
-
-  .step-card {
-    padding: 1.4rem;
-  }
-
-  .step-number {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: var(--brand-soft);
-    color: var(--brand-dark);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 0.95rem;
-    margin-bottom: 0.85rem;
-  }
-
-  .split-panel,
-  .matricula-panel,
-  .alpha-panel,
-  .about-panel,
-  .tiktok-panel {
-    padding: 2rem;
-  }
-
-  .split-panel,
-  .matricula-panel,
-  .alpha-panel,
-  .about-panel,
-  .tiktok-panel {
-    display: grid;
-    gap: 1.5rem;
-  }
-
-  .split-panel {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .panel-col h3 {
-    font-size: 1.45rem;
-    margin-bottom: 0.8rem;
-  }
-
-  .panel-col p {
-    color: var(--muted);
-    margin-bottom: 1rem;
-  }
-
-  .yes-list li::before { content: "✓"; color: var(--ok); }
-  .no-list li::before { content: "—"; color: var(--brand); }
-
-  .matricula-panel {
-    grid-template-columns: minmax(0, 1.15fr) minmax(240px, 0.85fr);
-    align-items: center;
-  }
-
-  .matricula-price {
-    background: linear-gradient(180deg, #fff5ef, #fff);
-    border: 1px solid var(--line);
-    border-radius: 22px;
-    padding: 1.4rem;
-  }
-
-  .matricula-price-value,
-  .alpha-price-now {
-    font-family: "Fraunces", serif;
-    font-size: clamp(2.1rem, 4vw, 3rem);
-    line-height: 1;
-    margin: 0.45rem 0;
-  }
-
-  .support-note,
-  .alpha-note {
-    margin-top: 1rem;
-    padding: 0.95rem 1rem;
-    border-radius: 16px;
-    font-size: 0.88rem;
-    line-height: 1.55;
-  }
-
-  .support-note {
-    background: var(--ok-soft);
-    color: #1f5130;
-  }
-
-  .alpha-panel {
-    grid-template-columns: minmax(0, 1.05fr) minmax(240px, 0.95fr);
-    align-items: center;
-  }
-
-  .price-stack {
-    display: grid;
-    gap: 0.8rem;
-  }
-
-  .alpha-price-later {
-    color: var(--muted);
-    font-size: 0.95rem;
-  }
-
-  .alpha-price-later span {
-    text-decoration: line-through;
-    text-decoration-thickness: 2px;
-  }
-
-  .about-panel {
-    grid-template-columns: 1fr 1fr;
-    align-items: start;
-  }
-
-  .about-copy {
-    display: grid;
-    gap: 0.9rem;
-    font-size: 0.95rem;
-  }
-
-  .about-points {
-    list-style: none;
-    display: grid;
-    gap: 0.8rem;
-  }
-
-  .about-points li {
-    background: var(--surface-alt);
-    border: 1px solid var(--line);
-    border-radius: 18px;
-    padding: 0.9rem 1rem;
-    font-size: 0.9rem;
-    color: var(--muted);
-  }
-
-  .tiktok-panel {
-    grid-template-columns: 1fr 0.95fr;
-    align-items: center;
-  }
-
-  .mini-steps {
-    display: grid;
-    gap: 0.8rem;
-  }
-
-  .mini-step {
-    background: var(--surface-alt);
-    border: 1px solid var(--line);
-    border-radius: 18px;
-    padding: 0.95rem 1rem;
-    color: var(--muted);
-    font-size: 0.9rem;
-  }
-
-  .faq-list {
-    display: grid;
-    gap: 0.9rem;
-  }
-
-  .faq-item {
-    background: rgba(255,255,255,0.94);
-    border: 1px solid rgba(222, 216, 207, 0.95);
-    border-radius: 18px;
-    overflow: hidden;
-  }
-
-  .faq-q {
-    width: 100%;
-    cursor: pointer;
-    padding: 1.15rem 1.25rem;
-    font-size: 0.95rem;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-  }
-
-  .faq-arrow {
-    width: 18px;
-    height: 18px;
-    flex-shrink: 0;
-    transition: transform 0.18s ease;
-  }
-
-  .faq-q.open .faq-arrow { transform: rotate(180deg); }
-
-  .faq-a {
-    display: none;
-    padding: 0 1.25rem 1.2rem;
-    color: var(--muted);
-    font-size: 0.92rem;
-    line-height: 1.65;
-  }
-
-  .faq-a.open { display: block; }
-
-  .final-cta {
-    text-align: center;
-    padding: 2.3rem 1.6rem;
-  }
-
-  .final-cta h2 {
-    font-size: clamp(1.9rem, 4vw, 2.8rem);
-    margin-bottom: 0.9rem;
-  }
-
-  .final-cta p {
-    color: var(--muted);
-    max-width: 56ch;
-    margin: 0 auto 1.4rem;
-  }
-
-  .cta-actions {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 0.9rem;
-  }
-
-  .floating-whatsapp {
-    position: fixed;
-    right: 1rem;
-    bottom: 1rem;
-    z-index: 40;
-    display: none;
-    padding: 0.9rem 1.15rem;
-    border-radius: 999px;
-    background: var(--ok);
-    color: #fff;
-    box-shadow: 0 18px 38px rgba(22, 101, 52, 0.24);
-    font-size: 0.92rem;
-    font-weight: 700;
-    text-decoration: none;
-  }
-
-  .floating-whatsapp-note {
-    position: fixed;
-    right: 1rem;
-    bottom: 4.3rem;
-    z-index: 39;
-    display: none;
-    max-width: 220px;
-    padding: 0.7rem 0.8rem;
-    border-radius: 16px;
-    background: rgba(255,255,255,0.96);
-    border: 1px solid rgba(222, 216, 207, 0.95);
-    box-shadow: var(--shadow);
-    color: var(--muted);
-    font-size: 0.76rem;
-    line-height: 1.45;
-  }
-
-  footer {
-    max-width: var(--max);
-    margin: 0 auto;
-    padding: 0 1.2rem 2.5rem;
-  }
-
-  .footer-box {
-    border-top: 1px solid var(--line);
-    padding-top: 1.4rem;
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    flex-wrap: wrap;
-    color: var(--muted);
-    font-size: 0.82rem;
-  }
-
-  .fade-up {
-    opacity: 0;
-    transform: translateY(24px);
-    transition: opacity 0.5s ease, transform 0.5s ease;
-  }
-
-  .fade-up.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  @media (max-width: 1080px) {
-    .case-grid,
-    .dual-grid,
-    .service-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-
-  @media (max-width: 980px) {
-    .hero-grid,
-    .case-grid,
-    .dual-grid,
-    .steps-grid,
-    .service-grid,
-    .matricula-panel,
-    .alpha-panel,
-    .about-panel,
-    .split-panel,
-    .tiktok-panel,
-    .trust-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .hero-grid { padding: 2.5rem 1.5rem; }
-    .matricula-price { order: -1; }
-  }
-
-  @media (max-width: 740px) {
-    .nav-inner {
-      align-items: flex-start;
-      flex-direction: column;
-    }
-
-    .nav-links {
-      width: 100%;
-      gap: 0.7rem;
-      justify-content: flex-start;
-    }
-
-    .hero-wrap { padding-top: 1.3rem; }
-    .hero-grid { padding: 2rem 1.2rem; }
-    .section { padding: 1.5rem 1rem 3.3rem; }
-    .matricula-panel,
-    .alpha-panel,
-    .about-panel,
-    .legal-panel,
-    .final-cta,
-    .split-panel,
-    .tiktok-panel { padding: 1.4rem; }
-  }
-
-  @media (max-width: 520px) {
-    h1 { max-width: none; }
-    .hero-actions,
-    .cta-actions { flex-direction: column; }
-    .btn-primary,
-    .btn-secondary,
-    .btn-tiktok { width: 100%; }
-    .price-list li { font-size: 0.9rem; }
-    .floating-whatsapp {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .floating-whatsapp-note { display: block; }
-  }
-</style>
+<meta property="og:url" content="https://ivanimports.es/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Ivan Imports | Asesoría para comprar coches en Alemania y matricular en España">
+<meta name="twitter:description" content="Revisión online de anuncios, vendedores, documentación y costes antes de comprar un coche en Alemania o Europa. Evita errores antes de pagar reserva.">
+<link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PRKZJFTT"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
 
 <nav>
   <div class="nav-inner">
-    <a href="#" class="logo">Ivan Imports</a>
+    <a href="index.html" class="logo">Ivan Imports</a>
+    <button class="nav-toggle js-nav-toggle" type="button" aria-label="Abrir menú" aria-expanded="false">Menú</button>
     <ul class="nav-links">
       <li><a href="#servicios">Servicios</a></li>
-      <li><a href="#coste-real">Coste real</a></li>
+      <li><a href="#como-trabajo">Cómo trabajo</a></li>
       <li><a href="#matriculacion">Matriculación</a></li>
       <li><a href="#matriculapro">MatriculaPRO</a></li>
       <li><a href="#faq">FAQ</a></li>
-      <li><a href="#contacto">Contacto</a></li>
+      <li><a href="#contacto">WhatsApp</a></li>
     </ul>
   </div>
 </nav>
@@ -852,610 +51,482 @@
   <section class="hero fade-up">
     <div class="hero-grid">
       <div>
-        <span class="eyebrow">Asesoría práctica y online</span>
-        <h1>Asesoría online antes de comprar o matricular un coche importado</h1>
-        <p>Reviso anuncios, hablo con vendedores, calculo gastos reales y te ayudo a detectar riesgos antes de pagar, viajar o iniciar la matriculación en España.</p>
+        <span class="eyebrow">Asesoría online para compra y matriculación</span>
+        <h1>Antes de pagar una reserva por un coche en Alemania, revisa si de verdad merece la pena.</h1>
+        <p>Te ayudo online a revisar anuncios, hablar con vendedores, comprobar documentación y calcular el coste real de traer y matricular el coche en España.</p>
         <div class="hero-actions">
-          <a href="#" class="btn btn-primary js-whatsapp-link" data-track="whatsapp-hero" data-wa-message="Hola Iván, vengo de la web y quiero consultarte un caso sobre un coche.">Enviar mi caso por WhatsApp</a>
-          <a href="#servicios" class="btn btn-secondary">Ver servicios y precios</a>
+          <a href="#" class="btn btn-primary js-whatsapp-link" data-track="whatsapp-hero" data-wa-message="Hola Iván, quiero enviarte un coche/caso para revisar antes de pagar.">Enviar coche por WhatsApp</a>
+          <a href="#servicios" class="btn btn-secondary">Ver servicios</a>
         </div>
-        <div class="hero-quote">Trabajo 100 % online. No compro coches por ti ni acompaño físicamente: te ayudo a decidir mejor antes de mover dinero.</div>
-        <div class="hero-microcopy">También puedes escribirme por <a class="js-tiktok-link" data-track="tiktok-profile" href="#">TikTok</a> si vienes desde un vídeo.</div>
+        <div class="hero-microcopy">Mini filtro gratuito hasta 3 anuncios. Servicios de pago desde 39 €.</div>
+        <div class="authority-bar">
+          <div class="authority-chip">
+            <strong>Revisión antes de pagar</strong>
+            <span>Para detectar riesgos antes de reservar o viajar.</span>
+          </div>
+          <div class="authority-chip">
+            <strong>Coste real estimado</strong>
+            <span>Para no decidir solo por el precio del anuncio.</span>
+          </div>
+          <div class="authority-chip">
+            <strong>Asesoría online</strong>
+            <span>Enfoque práctico sobre documentación y riesgos.</span>
+          </div>
+        </div>
       </div>
-      <aside class="hero-side">
-        <h3>Qué suelo revisar primero</h3>
-        <ul class="signal-list">
-          <li>Si el anuncio tiene señales raras o datos que no cuadran.</li>
-          <li>Qué papeles conviene pedir antes de hablar de dinero.</li>
-          <li>Cuánto puede costar realmente ponerlo en España.</li>
-          <li>Qué riesgos aparecen antes de comprar o matricular.</li>
-        </ul>
-        <div class="hero-note">Mejor perder 10 minutos revisando que miles de euros comprando mal.</div>
+      <aside class="hero-report">
+        <div class="hero-report-header">
+          <div>
+            <div class="service-step">Revisión inicial</div>
+            <h3>Lo que suelo mirar primero</h3>
+          </div>
+          <div class="hero-risk-pill">Enfoque práctico</div>
+        </div>
+        <div class="hero-stat-list">
+          <div class="hero-stat-item">
+            <div class="hero-stat-label">Anuncio</div>
+            <div class="hero-risk-value"><strong>Ver si tiene sentido</strong></div>
+          </div>
+          <div class="hero-stat-item">
+            <div class="hero-stat-label">Vendedor</div>
+            <div class="hero-risk-value"><strong>Preguntar lo importante</strong></div>
+          </div>
+          <div class="hero-stat-item">
+            <div class="hero-stat-label">Documentación</div>
+            <div class="hero-risk-value"><strong>Comprobar lo básico</strong></div>
+          </div>
+          <div class="hero-stat-item">
+            <div class="hero-stat-label">Coste España</div>
+            <div class="hero-risk-value"><strong>Calcular antes de pagar</strong></div>
+          </div>
+          <div class="hero-stat-item">
+            <div class="hero-stat-label">Siguiente paso</div>
+            <div class="hero-risk-value"><strong>Avanzar, negociar o descartar</strong></div>
+          </div>
+        </div>
+        <div class="hero-report-note">El servicio es online. No acompaño físicamente a Alemania, no compro coches por el cliente y no sustituyo inspección presencial, gestoría, abogado ni asesor fiscal.</div>
       </aside>
     </div>
   </section>
 </div>
 
-<section class="section" id="busqueda">
+<section class="section problem-band">
   <div class="section-head fade-up">
-    <span class="section-label">Selector rápido</span>
-    <h2>¿Cuál es tu caso?</h2>
-    <p>Elige la situación que más se parece a la tuya y te llevo al servicio correcto.</p>
+    <span class="section-label">Qué hago</span>
+    <h2>Te ayudo a saber si merece la pena avanzar o si hay riesgo antes de pagar.</h2>
+    <p>El objetivo no es decirte qué coche comprar. El objetivo es ayudarte a revisar mejor antes de pagar una reserva, viajar o meterte en una compra que luego no compensa.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head fade-up">
+    <span class="section-label">Ruta rápida</span>
+    <h2>¿En qué punto estás?</h2>
+    <p>Elige la situación que más se parece a la tuya y te llevo al tipo de ayuda que encaja mejor.</p>
   </div>
 
-  <div class="case-grid">
-    <article class="case-card fade-up">
-      <h3>Ya tengo un coche visto</h3>
-      <p>Quiero saber si merece la pena antes de pagar o viajar.</p>
-      <div class="case-actions">
-        <a href="#servicios" class="btn btn-primary" data-track="case-car-found">Revisar anuncio</a>
-        <a href="#" class="case-link js-whatsapp-link" data-wa-message="Hola Iván, ya tengo un coche visto y quiero revisar el anuncio.">Enviar por WhatsApp</a>
-      </div>
+  <div class="quick-case-grid">
+    <article class="quick-case-card fade-up">
+      <h3>Tengo 2 o 3 anuncios vistos</h3>
+      <p>Te hago un primer filtro rápido para ver si merece la pena seguir.</p>
+      <a href="#" class="btn btn-primary btn-full js-whatsapp-link" data-track="case-mini-filter" data-wa-message="Hola Iván, tengo 2 o 3 anuncios vistos y quiero usar el mini filtro gratuito.">Usar mini filtro gratuito</a>
     </article>
-    <article class="case-card fade-up">
-      <h3>Todavía no sé qué coche comprar</h3>
-      <p>Quiero que me ayudes a buscar y filtrar opciones.</p>
-      <div class="case-actions">
-        <a href="#busqueda" class="btn btn-primary" data-track="case-car-search">Buscar coches</a>
-      </div>
+    <article class="quick-case-card fade-up">
+      <h3>Ya tengo un coche casi decidido</h3>
+      <p>Reviso el anuncio, señales de riesgo y puntos que deberías confirmar antes de pagar.</p>
+      <a href="#" class="btn btn-primary btn-full js-whatsapp-link" data-track="case-review-car" data-wa-message="Hola Iván, tengo un coche casi decidido y quiero revisarlo antes de pagar.">Revisar este coche</a>
     </article>
-    <article class="case-card fade-up">
-      <h3>Quiero saber cuánto costará ponerlo en España</h3>
-      <p>Transporte, ITV, COC, DGT, Hacienda, placas y otros gastos.</p>
-      <div class="case-actions">
-        <a href="#coste-real" class="btn btn-primary" data-track="case-cost-real">Calcular coste real</a>
-        <a href="#" class="case-link js-whatsapp-link" data-wa-message="Hola Iván, quiero calcular el coste real de un coche para ponerlo en España.">Enviar por WhatsApp</a>
-      </div>
-    </article>
-    <article class="case-card fade-up">
+    <article class="quick-case-card fade-up">
       <h3>Quiero que hables con el vendedor</h3>
-      <p>Preguntas importantes, documentación, COC, historial y datos del coche.</p>
-      <div class="case-actions">
-        <a href="#vendedor-documentos" class="btn btn-primary" data-track="case-seller-contact">Contactar vendedor</a>
-        <a href="#" class="case-link js-whatsapp-link" data-wa-message="Hola Iván, quiero que hables con un vendedor y revises papeles.">Enviar por WhatsApp</a>
+      <p>Puedo ayudarte a preguntar lo importante y pedir información o documentación básica.</p>
+      <a href="#" class="btn btn-primary btn-full js-whatsapp-link" data-track="case-seller-help" data-wa-message="Hola Iván, quiero que me ayudes a revisar un coche y hablar con el vendedor.">Revisión + vendedor</a>
+    </article>
+    <article class="quick-case-card fade-up">
+      <h3>No sé cuánto costará ponerlo en España</h3>
+      <p>Calculamos una estimación realista de gastos, impuestos, viaje, matrículas, ITV y trámites.</p>
+      <a href="#" class="btn btn-primary btn-full js-whatsapp-link" data-track="case-cost-real" data-wa-message="Hola Iván, quiero calcular el coste real de traer y matricular un coche.">Calcular coste real</a>
+    </article>
+    <article class="quick-case-card fade-up">
+      <h3>Ya tengo coche o documentación</h3>
+      <p>Te oriento con los pasos de matriculación en España y la documentación disponible.</p>
+      <a href="#" class="btn btn-primary btn-full js-whatsapp-link" data-track="case-registration-help" data-wa-message="Hola Iván, ya tengo coche o documentación y necesito orientación para matricularlo en España.">Consultar matriculación</a>
+    </article>
+  </div>
+</section>
+
+<section class="section" id="como-trabajo">
+  <div class="section-head fade-up">
+    <span class="section-label">Cómo trabajo</span>
+    <h2>Un proceso simple para saber rápido si merece la pena avanzar</h2>
+    <p>Todo empieza por WhatsApp y por tener claro qué coche estás mirando o qué necesitas revisar.</p>
+  </div>
+
+  <div class="traffic-grid">
+    <article class="traffic-card green fade-up">
+      <div class="traffic-light"></div>
+      <h3>1. Me envías el coche o tu caso por WhatsApp</h3>
+      <p>Puedes mandar un anuncio, una duda de documentación, varios coches o un caso de matriculación.</p>
+    </article>
+    <article class="traffic-card amber fade-up">
+      <div class="traffic-light"></div>
+      <h3>2. Reviso según el servicio elegido</h3>
+      <p>Reviso anuncio, vendedor, documentación y costes aproximados según el punto en el que estés.</p>
+    </article>
+    <article class="traffic-card green fade-up">
+      <div class="traffic-light"></div>
+      <h3>3. Te digo riesgos, dudas y próximos pasos</h3>
+      <p>Te explico si conviene avanzar, negociar, pedir más información o descartar.</p>
+    </article>
+  </div>
+
+  <div class="feature-panel fade-up" style="margin-top:1.2rem;">
+    <span class="section-label">Paso final</span>
+    <h3>4. Tú decides si avanzar, negociar, pedir más información o descartar</h3>
+    <p>Mi trabajo es darte más claridad antes de mover dinero, no empujarte a comprar.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="feature-panel-grid">
+    <article class="feature-panel fade-up">
+      <span class="section-label">Mini filtro gratuito</span>
+      <h3>Si ya tienes anuncios vistos, empieza por aquí</h3>
+      <p>Me mandas hasta 3 anuncios y te doy una primera opinión rápida para decirte cuál miraría primero, cuál descartaría y qué habría que revisar si quieres avanzar.</p>
+      <div class="service-actions-row">
+        <a href="#" class="btn btn-primary js-whatsapp-link" data-track="whatsapp-service-mini-filter-home" data-wa-message="Hola Iván, quiero usar el mini filtro gratuito. Te paso hasta 3 anuncios.">Usar mini filtro</a>
+        <a href="servicios/mini-filtro-gratuito/" class="btn btn-text" data-track="details-mini-filter">Más detalles</a>
       </div>
     </article>
-    <article class="case-card fade-up">
-      <h3>Quiero intentar bajar el precio</h3>
-      <p>Compra preparada online, revisión, cálculo y negociación.</p>
-      <div class="case-actions">
-        <a href="#compra-preparada" class="btn btn-primary" data-track="case-negotiation">Preparar compra</a>
-        <a href="#" class="case-link js-whatsapp-link" data-wa-message="Hola Iván, quiero ayuda con compra preparada y negociación.">Enviar por WhatsApp</a>
+    <article class="feature-panel fade-up">
+      <span class="section-label">Busco y filtro · 49 €</span>
+      <h3>Si quieres que busque por ti desde cero, este es otro servicio</h3>
+      <p>No es lo mismo mandarme anuncios para una primera opinión que pedirme que busque opciones desde cero. Si ya tienes coches vistos, usa el mini filtro. Si quieres que yo busque por ti, elige Busco y filtro.</p>
+      <div class="service-actions-row">
+        <a href="#busqueda" class="btn btn-secondary">Ver búsqueda</a>
+        <a href="servicios/busco-y-filtro/" class="btn btn-text" data-track="details-search-filter">Más detalles</a>
       </div>
     </article>
-    <article class="case-card fade-up">
-      <h3>Ya tengo el coche y quiero matricularlo</h3>
-      <p>ITV, DGT, Hacienda, documentación y pasos para matricular.</p>
-      <div class="case-actions">
-        <a href="#matriculacion" class="btn btn-primary" data-track="case-matriculation">Ayuda matriculación</a>
-        <a href="#" class="case-link js-whatsapp-link" data-wa-message="Hola Iván, ya tengo un coche y necesito ayuda con la matriculación.">Enviar por WhatsApp</a>
-      </div>
-    </article>
-  </div>
-
-  <p class="microcopy fade-up" style="margin-top:1rem;">Si no sabes cuál elegir, escríbeme por WhatsApp y te digo qué servicio encaja.</p>
-  <a href="#" class="btn btn-secondary js-whatsapp-link fade-up" data-track="case-not-sure" data-wa-message="Hola Iván, no sé qué servicio necesito. Te explico mi caso." style="margin-top:0.8rem;">No sé qué necesito</a>
-</section>
-
-<section class="section">
-  <div class="section-head fade-up">
-    <span class="section-label">Consultas por llamada</span>
-    <h2>¿Prefieres hablar conmigo?</h2>
-    <p>Si tu caso tiene muchas dudas o necesitas verlo conmigo paso a paso, puedes hacer una consulta por llamada. Por WhatsApp primero puedo orientarte y decirte si realmente necesitas llamada o si encaja mejor otro servicio.</p>
-  </div>
-
-  <div class="dual-grid">
-    <article class="service-card fade-up" id="vendedor-documentos">
-      <div class="service-step">Llamada 1</div>
-      <h3 class="service-name">Consulta exprés</h3>
-      <div class="service-for">Hasta 15 minutos · 30 €</div>
-      <p class="service-desc">Para dudas rápidas, orientación inicial, revisar si tu caso tiene sentido o elegir el servicio correcto.</p>
-      <div class="list-title">Qué incluye</div>
-      <ul class="feature-list">
-        <li>Duda rápida sobre compra o matriculación.</li>
-        <li>Orientación inicial.</li>
-        <li>Recomendación del siguiente paso.</li>
-        <li>Ideal si no sabes qué servicio elegir.</li>
-      </ul>
-      <a href="#" class="btn btn-primary btn-full js-whatsapp-link" data-track="whatsapp-call-15" data-wa-message="Hola Iván, quiero consultar la llamada exprés de 15 minutos.">Consultar llamada exprés</a>
-    </article>
-    <article class="service-card fade-up" id="compra-preparada">
-      <div class="service-step">Llamada 2</div>
-      <h3 class="service-name">Consulta completa</h3>
-      <div class="service-for">Hasta 45 minutos · 70 €</div>
-      <p class="service-desc">Para casos más complejos, explicación paso a paso, compra fuera de España, documentación o matriculación.</p>
-      <div class="list-title">Qué incluye</div>
-      <ul class="feature-list">
-        <li>Revisión general del caso.</li>
-        <li>Dudas sobre compra, documentación o matriculación.</li>
-        <li>Explicación paso a paso.</li>
-        <li>Recomendación de servicios o siguientes acciones.</li>
-      </ul>
-      <a href="#" class="btn btn-primary btn-full js-whatsapp-link" data-track="whatsapp-call-45" data-wa-message="Hola Iván, quiero consultar la llamada completa de 45 minutos.">Consultar llamada completa</a>
-    </article>
-  </div>
-
-  <p class="microcopy fade-up" style="margin-top:1rem;">Las llamadas se reservan con cita previa. No atiendo llamadas directas sin haber revisado antes el caso por mensaje.</p>
-</section>
-
-<section class="section">
-  <div class="section-head fade-up">
-    <span class="section-label">Cómo funciona</span>
-    <h2>Un proceso claro antes de tomar decisiones</h2>
-    <p>Primero revisamos tu caso. Si no encaja, te lo digo. No todos los coches merecen la pena.</p>
-  </div>
-
-  <div class="steps-grid">
-    <article class="step-card fade-up">
-      <div class="step-number">1</div>
-      <h3>Me envías el anuncio o la documentación</h3>
-      <p>Compárteme el enlace, fotos, papeles o dudas que tengas sobre el vehículo.</p>
-    </article>
-    <article class="step-card fade-up">
-      <div class="step-number">2</div>
-      <h3>Reviso el caso y te digo qué servicio encaja</h3>
-      <p>Valoro qué necesitas y qué nivel de ayuda tiene sentido antes de avanzar.</p>
-    </article>
-    <article class="step-card fade-up">
-      <div class="step-number">3</div>
-      <h3>Hago la revisión o negociación</h3>
-      <p>Según el servicio, reviso anuncios, calculo costes, hablo con el vendedor o preparo la negociación.</p>
-    </article>
-    <article class="step-card fade-up">
-      <div class="step-number">4</div>
-      <h3>Recibes un resumen claro</h3>
-      <p>Te llevas riesgos, costes orientativos y el siguiente paso explicado de forma simple.</p>
-    </article>
-  </div>
-</section>
-
-<section class="section">
-  <div class="section-head fade-up">
-    <span class="section-label">Búsqueda online de vehículos</span>
-    <h2>Si todavía no sabes qué coches mirar</h2>
-    <p>Si quieres comprar pero no sabes qué anuncios mirar, puedo ayudarte a buscar, filtrar y preparar la compra online. No compro ni recojo el coche por ti.</p>
-  </div>
-
-  <div class="trust-grid">
-    <article class="service-card fade-up">
-      <div class="service-step">Nivel 1</div>
-      <h3 class="service-name">Busco y filtro</h3>
-      <div class="service-for">Desde 49 €</div>
-      <p class="service-desc">Para quien quiere opciones filtradas sin perder horas mirando anuncios.</p>
-      <div class="list-title">Incluye</div>
-      <ul class="feature-list">
-        <li>Búsqueda según presupuesto y criterios.</li>
-        <li>Selección de opciones interesantes.</li>
-        <li>Descarte de anuncios con señales raras.</li>
-        <li>Comentario breve de cada opción.</li>
-        <li>Recomendación de cuál miraría primero.</li>
-      </ul>
-      <div class="list-title">No incluye</div>
-      <ul class="plain-list no-list">
-        <li>Hablar con vendedores.</li>
-        <li>Revisar documentación.</li>
-        <li>Negociar precio.</li>
-        <li>Calcular gastos completos.</li>
-      </ul>
-      <a href="#" class="btn btn-primary btn-full js-whatsapp-link" data-track="whatsapp-search-level-1" data-wa-message="Hola Iván, quiero información sobre búsqueda nivel 1: buscar y filtrar coches.">Quiero búsqueda nivel 1</a>
-    </article>
-    <article class="service-card fade-up">
-      <div class="service-step">Nivel 2</div>
-      <h3 class="service-name">Busco, filtro y compruebo</h3>
-      <div class="service-for">Desde 99 €</div>
-      <p class="service-desc">Para quien quiere avanzar con más seguridad antes de viajar o pagar una reserva.</p>
-      <div class="list-title">Incluye</div>
-      <ul class="feature-list">
-        <li>Todo lo del nivel 1.</li>
-        <li>Contactar con vendedor.</li>
-        <li>Hacer preguntas importantes.</li>
-        <li>Pedir documentación si procede.</li>
-        <li>Revisar datos básicos del vehículo.</li>
-        <li>Detectar riesgos iniciales.</li>
-      </ul>
-      <div class="list-title">No incluye</div>
-      <ul class="plain-list no-list">
-        <li>Negociación avanzada.</li>
-        <li>Informe presencial.</li>
-        <li>Compra física del vehículo.</li>
-      </ul>
-      <a href="#" class="btn btn-primary btn-full js-whatsapp-link" data-track="whatsapp-search-level-2" data-wa-message="Hola Iván, quiero información sobre búsqueda nivel 2: buscar, filtrar y comprobar vendedor/documentación.">Quiero búsqueda nivel 2</a>
-    </article>
-    <article class="service-card fade-up">
-      <div class="service-step">Nivel 3</div>
-      <h3 class="service-name">Compra preparada online</h3>
-      <div class="service-for">Desde 199 €</div>
-      <p class="service-desc">Para quien quiere que prepare la compra online lo máximo posible antes de tomar una decisión.</p>
-      <div class="list-title">Incluye</div>
-      <ul class="feature-list">
-        <li>Búsqueda y filtro.</li>
-        <li>Contacto con vendedor.</li>
-        <li>Revisión documental inicial.</li>
-        <li>Cálculo orientativo de coste real.</li>
-        <li>Intento de negociación.</li>
-        <li>Conclusión final: avanzar, cuidado o descartaría.</li>
-        <li>Próximos pasos recomendados.</li>
-      </ul>
-      <div class="list-title">No incluye</div>
-      <ul class="plain-list no-list">
-        <li>Compra física.</li>
-        <li>Recogida del coche.</li>
-        <li>Transporte.</li>
-        <li>Inspección presencial propia.</li>
-        <li>Garantía mecánica.</li>
-      </ul>
-      <a href="#" class="btn btn-primary btn-full js-whatsapp-link" data-track="whatsapp-search-level-3" data-wa-message="Hola Iván, quiero información sobre búsqueda nivel 3: compra preparada online.">Quiero compra preparada</a>
-    </article>
-  </div>
-
-  <p class="microcopy fade-up" style="margin-top:1rem;">Los precios pueden variar según número de vehículos, país, dificultad del caso y profundidad necesaria.</p>
-</section>
-
-<section class="section">
-  <div class="service-card fade-up">
-    <div class="service-step">Pack personalizado</div>
-    <h3 class="service-name">Pack personalizado</h3>
-    <div class="service-for">¿Tienes varias dudas o no sabes por dónde empezar?</div>
-    <p class="service-desc">Algunos casos mezclan varias cosas: búsqueda, revisión de anuncios, cálculo de gastos, hablar con vendedor, documentación, llamada o matriculación. Escríbeme, vemos tu situación y preparo una solución adaptada.</p>
-    <div class="list-title">Ejemplos</div>
-    <ul class="feature-list">
-      <li>Quiero mirar varios coches y calcular cuál merece la pena.</li>
-      <li>Ya tengo un coche visto, pero no sé si la documentación sirve.</li>
-      <li>Necesito revisar compra, gastos y matriculación.</li>
-      <li>Tengo un caso raro y no sé qué servicio elegir.</li>
-    </ul>
-    <a href="#" class="btn btn-primary js-whatsapp-link" data-track="whatsapp-custom-pack" data-wa-message="Hola Iván, tengo varias dudas y quiero consultar un pack personalizado.">Explicar mi caso por WhatsApp</a>
-    <p class="microcopy" style="margin-top:0.9rem;">Primero reviso tu caso por mensaje. Si no encaja con mis servicios, te lo digo.</p>
-  </div>
-</section>
-
-<section class="section">
-  <div class="split-panel fade-up">
-    <div class="panel-col">
-      <span class="section-label">Coste real</span>
-      <h3>Un coche barato fuera de España no siempre acaba siendo barato</h3>
-      <p>El precio del anuncio es solo una parte. Antes de comprar conviene sumar transporte o viaje, ITV, COC o ficha reducida, DGT, Hacienda o modelo 576 si aplica, impuesto municipal, placas y posibles problemas de documentación.</p>
-      <ul class="plain-list">
-        <li>El coche puede parecer barato y dejar de serlo al calcularlo todo.</li>
-        <li>Un documento que falta puede bloquear o encarecer la matriculación.</li>
-        <li>Viajar sin revisar antes puede salir caro.</li>
-        <li>Negociar sin datos reduce tus opciones.</li>
-      </ul>
-    </div>
-    <div class="panel-col" style="display:flex;flex-direction:column;justify-content:center;">
-      <h3>Antes de pagar, pon números y riesgos sobre la mesa</h3>
-      <p>Si vienes por vídeos sobre cuánto cuesta traer un coche o si un precio parece demasiado bueno, este es el punto donde más errores se evitan.</p>
-      <a href="#" class="btn btn-primary js-whatsapp-link" data-track="whatsapp-cost-pain-section" data-wa-message="Hola Iván, quiero calcular el coste real de un coche antes de comprarlo.">Calcular coste real por WhatsApp</a>
-      <p class="notice-text">Para poder ayudarte, envía por mensaje el enlace del anuncio, país del vehículo, si ya lo has comprado o no, y qué necesitas revisar.</p>
-    </div>
   </div>
 </section>
 
 <section class="section" id="servicios">
   <div class="section-head fade-up">
-    <span class="section-label">Servicios y precios</span>
-    <h2>Asesoría online para comprar y matricular con más información</h2>
-    <p>Servicios desde 29 €. Pensados para resolver dudas reales antes de pagar, viajar o iniciar trámites.</p>
+    <span class="section-label">Servicios</span>
+    <h2>Servicios ordenados según lo que necesites revisar</h2>
+    <p>Cada servicio está pensado para un momento distinto de la compra o de la matriculación. La idea es que entiendas rápido para quién es, qué incluye y qué no incluye.</p>
   </div>
 
   <div class="service-grid">
-    <article class="service-card fade-up">
-      <div class="service-step">Servicio 1</div>
-      <h3 class="service-name">Filtro de anuncios</h3>
-      <div class="service-for">Para quien está comparando coches y quiere descartar errores rápido.</div>
-      <p class="service-desc">Reviso varios coches y te digo cuáles merecen la pena, cuáles tienen riesgos y cuáles descartaría.</p>
-      <div class="list-title">Qué incluye</div>
-      <ul class="feature-list">
-        <li>Revisión de fotos.</li>
-        <li>Revisión de descripción.</li>
-        <li>Coherencia de precio.</li>
-        <li>Kilómetros, año, motor y equipamiento.</li>
-        <li>Señales raras.</li>
-        <li>Riesgos iniciales para matriculación en España.</li>
-        <li>Ranking final: mejor opción, cuidado o descartar.</li>
-      </ul>
-      <div class="pricing-box">
-        <div class="list-title">Precios</div>
-        <ul class="price-list">
-          <li><span>Hasta 3 anuncios</span> <strong>29 €</strong></li>
-          <li><span>Hasta 5 anuncios</span> <strong>39 €</strong></li>
-        </ul>
-        <p class="price-note">Primero revisamos tu caso. Si no encaja, te lo digo.</p>
+    <article class="service-value-box fade-up">
+      <div class="service-step">Gratis</div>
+      <h3 class="service-name">Mini filtro gratuito</h3>
+      <div class="service-price">Gratis</div>
+      <p class="service-desc">Para quien quiere una primera opinión rápida de hasta 3 anuncios.</p>
+      <div class="service-kv">
+        <div class="service-kv-row"><strong>Para quién es</strong><p>Para quien ya tiene anuncios vistos y quiere una orientación inicial.</p></div>
+        <div class="service-kv-row"><strong>Qué incluye</strong><p>Primera opinión rápida, señales visibles y siguiente paso recomendado.</p></div>
+        <div class="service-kv-row"><strong>Qué no incluye</strong><p>No incluye contacto con vendedor, cálculo completo ni revisión documental profunda.</p></div>
       </div>
-      <p class="service-small">No sustituye inspección mecánica presencial ni garantía sobre el estado real del vehículo.</p>
-      <a href="#" class="btn btn-primary btn-full js-whatsapp-link" data-track="whatsapp-service-filter" data-wa-message="Hola Iván, quiero contratar o consultar el filtro de anuncios.">Consultar por WhatsApp</a>
+      <div class="service-actions">
+        <a href="#" class="btn btn-primary btn-full js-whatsapp-link" data-track="whatsapp-service-mini-filter" data-wa-message="Hola Iván, quiero usar el mini filtro gratuito. Te paso hasta 3 anuncios.">Usar mini filtro</a>
+        <a href="servicios/mini-filtro-gratuito/" class="btn btn-secondary btn-full" data-track="details-mini-filter">Más detalles</a>
+      </div>
     </article>
 
-    <article class="service-card fade-up" id="coste-real">
-      <div class="service-step">Servicio 2</div>
+    <article class="service-value-box fade-up">
+      <div class="service-step">Desde 39 €</div>
+      <h3 class="service-name">Revisión de anuncio</h3>
+      <div class="service-price">Desde 39 €</div>
+      <p class="service-desc">Para quien ya tiene un coche visto y quiere saber si hay señales de riesgo.</p>
+      <div class="service-kv">
+        <div class="service-kv-row"><strong>Para quién es</strong><p>Para quien quiere revisar un coche antes de seguir preguntando o pagar nada.</p></div>
+        <div class="service-kv-row"><strong>Qué incluye</strong><p>Revisión del anuncio, señales raras, coherencia básica y orientación de siguiente paso.</p></div>
+        <div class="service-kv-row"><strong>Qué no incluye</strong><p>No incluye hablar con vendedor ni revisión documental completa.</p></div>
+      </div>
+      <div class="service-actions">
+        <a href="#" class="btn btn-primary btn-full js-whatsapp-link" data-track="whatsapp-service-review-ad" data-wa-message="Hola Iván, quiero revisar un anuncio para saber si tiene señales de riesgo antes de avanzar.">Pedir revisión</a>
+        <a href="servicios/revision-anuncio/" class="btn btn-secondary btn-full" data-track="details-review-ad">Más detalles</a>
+      </div>
+    </article>
+
+    <article class="service-value-box fade-up" id="vendedor-documentos">
+      <div class="service-step">Desde 79 €</div>
+      <h3 class="service-name">Revisión + vendedor + documentación</h3>
+      <div class="service-price">Desde 79 €</div>
+      <p class="service-desc">Para quien quiere que se revise el anuncio, se contacte con el vendedor y se pidan datos básicos.</p>
+      <div class="service-kv">
+        <div class="service-kv-row"><strong>Para quién es</strong><p>Para quien ya tiene un coche candidato y quiere comprobar más antes de pagar o viajar.</p></div>
+        <div class="service-kv-row"><strong>Qué incluye</strong><p>Preguntas al vendedor, petición de documentación y revisión básica de lo que se aporte.</p></div>
+        <div class="service-kv-row"><strong>Qué no incluye</strong><p>No sustituye inspección presencial, gestoría ni garantía mecánica.</p></div>
+      </div>
+      <div class="service-actions">
+        <a href="#" class="btn btn-primary btn-full js-whatsapp-link" data-track="whatsapp-service-seller-docs" data-wa-message="Hola Iván, quiero que revises un coche, hables con el vendedor y compruebes documentación básica.">Revisión + vendedor</a>
+        <a href="servicios/vendedor-documentacion/" class="btn btn-secondary btn-full" data-track="details-seller-docs">Más detalles</a>
+      </div>
+    </article>
+
+    <article class="service-value-box fade-up" id="coste-real">
+      <div class="service-step">Desde 49 €</div>
       <h3 class="service-name">Cálculo de coste real</h3>
-      <div class="service-for">Para saber cuánto puede costar realmente poner un coche extranjero en España antes de comprarlo.</div>
-      <p class="service-desc">Especialmente útil si vienes de vídeos sobre cuánto cuesta traer un coche de Alemania o si dudas entre precio atractivo y coste final real.</p>
-      <div class="list-title">Qué incluye</div>
-      <ul class="feature-list">
-        <li>Precio del coche.</li>
-        <li>Transporte o viaje orientativo.</li>
-        <li>ITV.</li>
-        <li>COC o ficha reducida.</li>
-        <li>DGT.</li>
-        <li>Hacienda o modelo 576 si aplica.</li>
-        <li>Impuesto municipal.</li>
-        <li>Placas.</li>
-        <li>Riesgos documentales iniciales.</li>
-        <li>Conclusión orientativa: merece la pena, cuidado o no lo veo claro.</li>
-      </ul>
-      <div class="pricing-box">
-        <div class="list-title">Precio</div>
-        <ul class="price-list">
-          <li><span>Desde</span> <strong>49 €</strong></li>
-        </ul>
-        <p class="price-note">Calcula el coste real, no solo el precio del anuncio.</p>
+      <div class="service-price">Desde 49 €</div>
+      <p class="service-desc">Para saber cuánto puede costarte realmente traer y matricular el coche en España.</p>
+      <div class="service-kv">
+        <div class="service-kv-row"><strong>Para quién es</strong><p>Para quien duda si el coche realmente compensa frente al coste final.</p></div>
+        <div class="service-kv-row"><strong>Qué incluye</strong><p>Estimación de transporte, ITV, DGT, impuestos y gastos habituales.</p></div>
+        <div class="service-kv-row"><strong>Qué no incluye</strong><p>No es una garantía exacta del coste final ni asesoramiento fiscal oficial.</p></div>
       </div>
-      <p class="service-small">Las estimaciones son orientativas y dependen del vehículo y la documentación.</p>
-      <a href="#" class="btn btn-primary btn-full js-whatsapp-link" data-track="whatsapp-cost-real" data-wa-message="Hola Iván, quiero calcular el coste real de un coche para España.">Consultar por WhatsApp</a>
-    </article>
-
-    <article class="service-card fade-up">
-      <div class="service-step">Servicio 3</div>
-      <h3 class="service-name">Hablo con el vendedor y reviso papeles</h3>
-      <div class="service-for">Para quien ya tiene candidatos y necesita hablar con el vendedor antes de pagar o viajar.</div>
-      <p class="service-desc">Contacto con el vendedor, hago las preguntas importantes, pido documentación y reviso si todo parece cuadrar antes de que te comprometas.</p>
-      <div class="list-title">Qué incluye</div>
-      <ul class="feature-list">
-        <li>Todo lo del Filtro de anuncios.</li>
-        <li>Contacto con el vendedor.</li>
-        <li>Preguntas clave sobre el estado real del vehículo.</li>
-        <li>Petición de documentación.</li>
-        <li>Revisión de COC si existe.</li>
-        <li>Revisión de documentación extranjera.</li>
-        <li>Revisión de libro o historial si se aporta.</li>
-        <li>Confirmación de datos importantes.</li>
-        <li>Riesgos visibles para matriculación en España.</li>
-        <li>Resumen claro por escrito.</li>
-      </ul>
-      <div class="pricing-box">
-        <div class="list-title">Precios</div>
-        <ul class="price-list">
-          <li><span>1 vehículo</span> <strong>79 €</strong></li>
-          <li><span>Hasta 3 vehículos</span> <strong>99 €</strong></li>
-          <li><span>Hasta 5 vehículos</span> <strong>149 €</strong></li>
-        </ul>
-        <p class="price-note">Mejor perder 10 minutos revisando que miles de euros comprando mal.</p>
+      <div class="service-actions">
+        <a href="#" class="btn btn-primary btn-full js-whatsapp-link" data-track="whatsapp-service-cost-real" data-wa-message="Hola Iván, quiero calcular el coste real de traer y matricular un coche en España.">Calcular coste real</a>
+        <a href="servicios/calculo-coste-real/" class="btn btn-secondary btn-full" data-track="details-cost-real">Más detalles</a>
       </div>
-      <p class="service-small">No sustituye inspección mecánica presencial ni garantía sobre el estado real del vehículo.</p>
-      <a href="#" class="btn btn-primary btn-full js-whatsapp-link" data-track="whatsapp-seller-docs" data-wa-message="Hola Iván, quiero que hables con un vendedor y revises documentación.">Consultar por WhatsApp</a>
-    </article>
-
-    <article class="service-card fade-up">
-      <div class="service-step">Servicio 4</div>
-      <h3 class="service-name">Compra preparada + negociación</h3>
-      <div class="service-for">Para quien quiere llegar a la compra con una visión más completa y margen para negociar.</div>
-      <p class="service-desc">Hablo con el vendedor, intento negociar el precio y calculo cuánto te puede costar realmente poner el coche en España.</p>
-      <div class="list-title">Qué incluye</div>
-      <ul class="feature-list">
-        <li>Todo lo del servicio anterior.</li>
-        <li>Negociación del precio.</li>
-        <li>Cálculo orientativo completo de gastos finales.</li>
-        <li>Viaje o transporte.</li>
-        <li>ITV.</li>
-        <li>Ficha reducida o COC.</li>
-        <li>DGT.</li>
-        <li>Hacienda o modelo 576 si aplica.</li>
-        <li>Impuesto municipal.</li>
-        <li>Placas y matriculación.</li>
-        <li>Otros posibles gastos según el caso.</li>
-        <li>Recomendación final: comprar, negociar, esperar o descartar.</li>
-      </ul>
-      <div class="pricing-box">
-        <div class="list-title">Precios</div>
-        <ul class="price-list">
-          <li><span>1 vehículo</span> <strong>149 €</strong></li>
-          <li><span>2 vehículos</span> <strong>239 €</strong></li>
-          <li><span>3 vehículos</span> <strong>329 €</strong></li>
-        </ul>
-        <p class="price-note">No todos los coches merecen la pena. Si no lo veo claro, te lo digo.</p>
-      </div>
-      <p class="service-small">No sustituye inspección mecánica presencial ni garantía sobre el estado real del vehículo.</p>
-      <p class="service-small"><strong>Garantía de valor:</strong> Si no se consigue ninguna rebaja ni mejora útil durante la negociación, podrás aplicar una revisión adicional a otro vehículo similar durante los siguientes 7 días.</p>
-      <a href="#" class="btn btn-primary btn-full js-whatsapp-link" data-track="whatsapp-negotiation" data-wa-message="Hola Iván, quiero ayuda con compra preparada y negociación.">Consultar por WhatsApp</a>
     </article>
   </div>
 
-  <p class="microcopy fade-up" style="margin-top:1rem;">Primero revisamos tu caso. Si quieres avanzar, después te paso el método de pago que encaje mejor.</p>
-  <p class="microcopy fade-up" style="margin-top:0.6rem;">Si ya tienes anuncios vistos, elige revisión, cálculo, vendedor o compra preparada. Si todavía no sabes qué coches mirar, usa la búsqueda online por niveles.</p>
+  <div class="service-summary-grid" style="margin-top:1.2rem;">
+    <article class="service-value-box fade-up" id="compra-preparada">
+      <div class="service-step">Desde 149 €</div>
+      <h3 class="service-name">Compra preparada online</h3>
+      <div class="service-price">Desde 149 €</div>
+      <p class="service-desc">Pack más completo online: revisión, vendedor, documentación, costes y orientación antes de pagar.</p>
+      <div class="service-kv">
+        <div class="service-kv-row"><strong>Para quién es</strong><p>Para quien quiere revisar un coche seriamente antes de avanzar de verdad.</p></div>
+        <div class="service-kv-row"><strong>Qué incluye</strong><p>Revisión, preguntas, documentación, costes y próximos pasos recomendados.</p></div>
+        <div class="service-kv-row"><strong>Qué no incluye</strong><p>No incluye compra física, acompañamiento a Alemania ni inspección presencial propia.</p></div>
+      </div>
+      <div class="service-actions">
+        <a href="#" class="btn btn-primary btn-full js-whatsapp-link" data-track="whatsapp-service-purchase-prep" data-wa-message="Hola Iván, quiero el servicio de compra preparada online para revisar un coche antes de avanzar.">Compra preparada</a>
+        <a href="servicios/compra-preparada/" class="btn btn-secondary btn-full" data-track="details-purchase-prep">Más detalles</a>
+      </div>
+    </article>
+
+    <article class="service-value-box fade-up" id="matriculacion">
+      <div class="service-step">Desde 250 €</div>
+      <h3 class="service-name">Acompañamiento de matriculación</h3>
+      <div class="service-price">Desde 250 €</div>
+      <p class="service-desc">Orientación durante el proceso de matriculación en España. Aquí el foco es matricular, no “importar”.</p>
+      <div class="service-kv">
+        <div class="service-kv-row"><strong>Para quién es</strong><p>Para quien ya tiene el vehículo o está cerca de tenerlo y necesita ordenar trámites.</p></div>
+        <div class="service-kv-row"><strong>Qué incluye</strong><p>Orientación sobre documentación, ITV, impuestos y trámites de matriculación.</p></div>
+        <div class="service-kv-row"><strong>Qué no incluye</strong><p>No sustituye ITV, gestoría ni autoridad competente.</p></div>
+      </div>
+      <div class="service-actions">
+        <a href="#" class="btn btn-primary btn-full js-whatsapp-link" data-track="whatsapp-service-matriculation" data-wa-message="Hola Iván, necesito orientación para matricular un vehículo en España.">Consultar matriculación</a>
+        <a href="servicios/acompanamiento-matriculacion/" class="btn btn-secondary btn-full" data-track="details-matriculation">Más detalles</a>
+      </div>
+    </article>
+
+    <article class="service-value-box fade-up">
+      <div class="service-step">Según caso</div>
+      <h3 class="service-name">Pack personalizado</h3>
+      <div class="service-price">Según caso</div>
+      <p class="service-desc">Para casos raros, completos o mezclados que no entran bien en una sola opción.</p>
+      <div class="service-kv">
+        <div class="service-kv-row"><strong>Para quién es</strong><p>Para quien necesita combinar búsqueda, compra, documentación, costes o matriculación.</p></div>
+        <div class="service-kv-row"><strong>Qué incluye</strong><p>Revisión inicial del caso y propuesta adaptada.</p></div>
+        <div class="service-kv-row"><strong>Qué no incluye</strong><p>No es una tarifa cerrada ni sustituye servicios externos especializados.</p></div>
+      </div>
+      <div class="service-actions">
+        <a href="#" class="btn btn-primary btn-full js-whatsapp-link" data-track="whatsapp-service-custom-pack" data-wa-message="Hola Iván, tengo un caso raro o completo y quiero ver si encaja en un pack personalizado.">Enviar mi caso</a>
+        <a href="servicios/pack-personalizado/" class="btn btn-secondary btn-full" data-track="details-custom-pack">Más detalles</a>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="section">
+  <div class="cost-example-panel fade-up">
+    <div class="section-head">
+      <span class="section-label">Ejemplo orientativo</span>
+      <h2>El precio del anuncio no es el coste final</h2>
+      <p>Un coche puede parecer buena compra en Alemania y dejar de serlo cuando sumas desplazamiento, matrículas, seguro, ITV y trámites.</p>
+    </div>
+    <div class="cost-example-grid">
+      <div>
+        <div class="cost-line"><strong>Coche anunciado en Alemania</strong><span>18.900 €</span></div>
+        <div class="cost-line"><strong>Vuelo / transporte / desplazamiento</strong><span>desde 300 €</span></div>
+        <div class="cost-line"><strong>Matrículas exportación + seguro</strong><span>desde 250 €</span></div>
+        <div class="cost-line"><strong>Combustible / peajes / hotel</strong><span>desde 400 €</span></div>
+        <div class="cost-line"><strong>ITV / tasas / impuestos / documentación</strong><span>variable</span></div>
+        <div class="cost-line total"><strong>Coste estimado final</strong><span>desde 20.000 € aprox.</span></div>
+      </div>
+      <div class="feature-panel">
+        <span class="section-label">Nota</span>
+        <h3>Esto es solo un ejemplo orientativo</h3>
+        <p>El coste real depende de ciudad, vehículo, CO2, documentación, estado alemán, fecha, ITV y forma de traerlo.</p>
+        <a href="#" class="btn btn-primary js-whatsapp-link" data-track="whatsapp-cost-example" data-wa-message="Hola Iván, quiero calcular el coste real con un coche concreto.">Calcular coste con un coche real</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="busqueda">
+  <div class="section-head fade-up">
+    <span class="section-label">Búsqueda online</span>
+    <h2>Busco opciones que puedan tener sentido, no anuncios al azar</h2>
+    <p>Si todavía no tienes coche elegido, puedo ayudarte a buscar, filtrar y comprobar opciones antes de que pierdas tiempo con anuncios que no compensan.</p>
+  </div>
+
+  <div class="service-summary-grid">
+    <article class="service-value-box fade-up">
+      <div class="service-step">Desde 49 €</div>
+      <h3 class="service-name">Busco y filtro</h3>
+      <div class="service-price">Desde 49 €</div>
+      <p class="service-desc">Yo busco por ti y te entrego hasta 3 opciones filtradas que podrían tener sentido frente a España.</p>
+      <div class="service-kv">
+        <div class="service-kv-row"><strong>Qué ganas</strong><p>No empezar desde cero y comparar mejor.</p></div>
+        <div class="service-kv-row"><strong>Qué evitas</strong><p>Perder horas buscando o revisar coches mal elegidos.</p></div>
+      </div>
+      <div class="service-actions">
+        <a href="#" class="btn btn-primary btn-full js-whatsapp-link" data-track="whatsapp-service-search-filter" data-wa-message="Hola Iván, quiero que me busques y filtres 3 coches.">Pedir búsqueda filtrada</a>
+        <a href="servicios/busco-y-filtro/" class="btn btn-secondary btn-full" data-track="details-search-filter">Más detalles</a>
+      </div>
+    </article>
+
+    <article class="service-value-box fade-up">
+      <div class="service-step">Desde 99 €</div>
+      <h3 class="service-name">Busco, filtro y compruebo</h3>
+      <div class="service-price">Desde 99 €</div>
+      <p class="service-desc">Además de buscar opciones, hago una primera comprobación con vendedor y documentación básica.</p>
+      <div class="service-kv">
+        <div class="service-kv-row"><strong>Qué ganas</strong><p>Opciones más filtradas y con primera validación.</p></div>
+        <div class="service-kv-row"><strong>Qué evitas</strong><p>Avanzar con coches o vendedores que no responden bien.</p></div>
+      </div>
+      <div class="service-actions">
+        <a href="#" class="btn btn-primary btn-full js-whatsapp-link" data-track="whatsapp-service-search-verified" data-wa-message="Hola Iván, quiero búsqueda nivel 2: buscar, filtrar y comprobar vendedor/documentación.">Pedir búsqueda filtrada</a>
+        <a href="servicios/busco-filtro-compruebo/" class="btn btn-secondary btn-full" data-track="details-search-verified">Más detalles</a>
+      </div>
+    </article>
+
+    <article class="service-value-box fade-up">
+      <div class="service-step">Desde 199 €</div>
+      <h3 class="service-name">Compra preparada online con búsqueda</h3>
+      <div class="service-price">Desde 199 €</div>
+      <p class="service-desc">Solución más completa online desde búsqueda hasta conclusión final antes de pagar.</p>
+      <div class="service-kv">
+        <div class="service-kv-row"><strong>Qué ganas</strong><p>Proceso más completo y ordenado.</p></div>
+        <div class="service-kv-row"><strong>Qué evitas</strong><p>Improvisar una compra fuera sin método.</p></div>
+      </div>
+      <div class="service-actions">
+        <a href="#" class="btn btn-primary btn-full js-whatsapp-link" data-track="whatsapp-service-online-purchase" data-wa-message="Hola Iván, quiero el servicio de compra preparada online con búsqueda para revisar un coche antes de avanzar.">Compra preparada</a>
+        <a href="servicios/compra-preparada-online/" class="btn btn-secondary btn-full" data-track="details-online-purchase">Más detalles</a>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head fade-up">
+    <span class="section-label">Ejemplos reales</span>
+    <h2>Ejemplos de cosas que conviene revisar antes de pagar</h2>
+    <p>No son estadísticas ni promesas. Son ejemplos realistas del tipo de riesgos que conviene aclarar antes de reservar o comprar.</p>
+  </div>
+
+  <div class="case-study-grid">
+    <article class="case-study-card fade-up">
+      <div class="service-step">Caso 1</div>
+      <h3>Golf GTI / Golf R en Alemania</h3>
+      <div class="case-study-block">
+        <strong>Riesgo</strong>
+        <p>Precio atractivo, pero faltan datos de documentación y coste final.</p>
+      </div>
+      <div class="case-study-block">
+        <strong>Recomendación</strong>
+        <p>Pedir documentación antes de pagar reserva.</p>
+      </div>
+    </article>
+    <article class="case-study-card fade-up">
+      <div class="service-step">Caso 2</div>
+      <h3>Audi o BMW en Holanda</h3>
+      <div class="case-study-block">
+        <strong>Riesgo</strong>
+        <p>Coste final en España más alto de lo esperado.</p>
+      </div>
+      <div class="case-study-block">
+        <strong>Recomendación</strong>
+        <p>Calcular gastos antes de avanzar.</p>
+      </div>
+    </article>
+    <article class="case-study-card fade-up">
+      <div class="service-step">Caso 3</div>
+      <h3>Vehículo con anuncio poco claro</h3>
+      <div class="case-study-block">
+        <strong>Riesgo</strong>
+        <p>Fotos pobres y vendedor que responde rápido pero evita detalles importantes.</p>
+      </div>
+      <div class="case-study-block">
+        <strong>Recomendación</strong>
+        <p>Hacer preguntas concretas antes de reservar.</p>
+      </div>
+    </article>
+  </div>
 </section>
 
 <section class="section">
   <div class="split-panel fade-up">
     <div class="panel-col">
-      <span class="section-label">Qué hago y qué no hago</span>
-      <h3>Sí hago</h3>
-      <ul class="plain-list yes-list">
-        <li>Reviso anuncios.</li>
-        <li>Analizo señales raras y riesgos iniciales.</li>
-        <li>Calculo gastos orientativos.</li>
-        <li>Hablo con vendedores.</li>
-        <li>Pido documentación.</li>
-        <li>Reviso COC, documentación extranjera e historial si se aporta.</li>
-        <li>Te oriento con matriculación en España.</li>
-        <li>Intento negociar precio si contratas ese servicio.</li>
-      </ul>
+      <span class="section-label">Confianza</span>
+      <h3>Lo que sí hago y lo que no hago</h3>
+      <p>La idea es que tengas claro hasta dónde llega la ayuda y por qué sirve precisamente antes de pagar.</p>
     </div>
-    <div class="panel-col">
-      <span class="section-label">Filtro de clientes</span>
-      <h3>No hago</h3>
-      <ul class="plain-list no-list">
-        <li>No compro coches por ti.</li>
-        <li>No acompaño físicamente a Alemania.</li>
-        <li>No recojo vehículos.</li>
-        <li>No garantizo el estado mecánico sin inspección presencial.</li>
-        <li>No sustituyo a una gestoría, abogado, asesor fiscal o inspección técnica profesional.</li>
-        <li>No prometo que todos los vehículos puedan matricularse.</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<section class="section">
-  <div class="trust-grid">
-    <article class="trust-card fade-up">
-      <h3>Por qué revisar antes de comprar</h3>
-      <p>Llevo años comprando, vendiendo e importando vehículos. He visto errores que convierten un coche barato en una compra cara: documentación incompleta, gastos mal calculados, falta de COC, impuestos ignorados o anuncios poco claros.</p>
-    </article>
-    <article class="trust-card fade-up">
-      <h3>Evita sorpresas antes de pagar</h3>
-      <p>Un anuncio atractivo no siempre significa una compra buena. Muchas veces el riesgo está en lo que falta por revisar.</p>
-    </article>
-    <article class="trust-card fade-up">
-      <h3>Decide con más información</h3>
-      <p>Calcula el coste real, no solo el precio del anuncio, y entiende mejor lo que implica comprar o matricular.</p>
-    </article>
-  </div>
-</section>
-
-<section class="section" id="matriculacion">
-  <div class="section-head fade-up">
-    <span class="section-label">Matriculación</span>
-    <h2>Acompañamiento de matriculación</h2>
-    <p>Para quien ya tiene un coche extranjero y necesita orientación práctica para avanzar con ITV, DGT, Hacienda y documentación en España.</p>
-  </div>
-
-  <div class="matricula-panel fade-up">
-    <div>
-      <h3 class="service-name">Acompañamiento de matriculación</h3>
-      <div class="service-for">Para cuando ya tienes el coche y quieres avanzar con más claridad.</div>
-      <ul class="feature-list">
-        <li>Orientación personalizada.</li>
-        <li>Revisión de documentos disponibles.</li>
-        <li>Pasos a seguir según tu caso.</li>
-        <li>Resolución de dudas por escrito o llamada.</li>
-        <li>Orientación para ITV.</li>
-        <li>Orientación para DGT.</li>
-        <li>Orientación con Hacienda o modelo 576.</li>
-        <li>Checklist adaptada a tu caso.</li>
-      </ul>
-      <div class="support-note">Objetivo: ayudarte a dejar claro el camino de matriculación lo antes posible, siempre según documentación, citas disponibles y situación concreta del vehículo.</div>
-      <p class="service-small">No sustituyo una gestoría ni puedo garantizar la matriculación sin revisar el caso y la documentación.</p>
-    </div>
-    <div class="matricula-price">
-      <div class="service-step">Precio fijo</div>
-      <div class="matricula-price-value">250 €</div>
-      <p class="price-note">Cálculo, orientación y seguimiento del proceso con enfoque práctico.</p>
-      <a href="#" class="btn btn-primary btn-full js-whatsapp-link" data-track="whatsapp-matriculacion" data-wa-message="Hola Iván, necesito acompañamiento para matricular un coche en España.">Consultar por WhatsApp</a>
-    </div>
-  </div>
-</section>
-
-<section class="section" id="matriculapro">
-  <div class="section-head fade-up">
-    <span class="section-label">MatriculaPRO Alpha</span>
-    <h2>Herramienta guiada para avanzar paso a paso</h2>
-    <p>MatriculaPRO va de matriculación, no de importación. Está pensado para quien prefiere entender y avanzar con una ruta más estructurada.</p>
-  </div>
-
-  <div class="alpha-panel fade-up">
-    <div>
-      <h3 class="service-name">MatriculaPRO Alpha</h3>
-      <p class="alpha-copy">MatriculaPRO Alpha es la herramienta que estoy construyendo para quienes prefieren avanzar por su cuenta. Incluye rutas, checklists, simuladores y guías prácticas para entender la matriculación de vehículos en España.</p>
-      <p class="alpha-note">No quiero posicionarlo como un curso tradicional. Es una herramienta guiada para entender y avanzar mejor.</p>
-    </div>
-    <div class="price-stack">
-      <div class="pricing-box">
-        <div class="list-title">Ahora</div>
-        <div class="alpha-price-now">49 €</div>
-        <div class="alpha-price-later">Precio previsto versión completa: <span>199 €</span></div>
+    <div class="trust-panel">
+      <div class="trust-point">
+        <strong>Lo que sí hago</strong>
+        <p>Revisar anuncios y señales de riesgo, orientar con documentación disponible, ayudar a calcular costes aproximados, preparar preguntas para vendedores y ayudarte a decidir si avanzar, negociar o descartar.</p>
       </div>
-      <a href="#" class="btn btn-secondary btn-full js-matriculapro-link" data-track="matriculapro-alpha">Ver MatriculaPRO Alpha</a>
-    </div>
-  </div>
-</section>
-
-<section class="section">
-  <div class="tiktok-panel fade-up">
-    <div>
-      <span class="section-label">¿Vienes de TikTok?</span>
-      <h2>¿Vienes de TikTok y estás mirando un coche?</h2>
-      <p>Si has visto un vídeo sobre coches de Alemania, subastas, gastos de matriculación o documentación, puedes enviarme el anuncio o tu caso por WhatsApp. Te diré qué habría que revisar y qué servicio encaja mejor.</p>
-      <div class="hero-actions">
-        <a href="#" class="btn btn-primary js-whatsapp-link" data-track="whatsapp-tiktok-section" data-wa-message="Hola Iván, vengo de TikTok y quiero enviarte mi caso sobre un coche.">Enviar mi caso por WhatsApp</a>
-        <a href="#" class="btn btn-tiktok js-tiktok-link" data-track="tiktok-profile">Ver perfil de TikTok</a>
+      <div class="trust-point">
+        <strong>Lo que no hago</strong>
+        <p>No compro el coche por ti, no acompaño físicamente a Alemania, no garantizo el estado mecánico sin inspección presencial y no sustituyo ITV, gestoría, abogado, asesor fiscal o autoridad competente.</p>
       </div>
-      <div class="hero-microcopy">Sin compromiso inicial. Primero vemos si tiene sentido revisar tu caso.</div>
-    </div>
-    <div class="mini-steps">
-      <div class="mini-step">1. Me mandas el anuncio o documentación.</div>
-      <div class="mini-step">2. Te digo qué revisar y qué servicio encaja.</div>
-      <div class="mini-step">3. Si quieres avanzar, te paso el enlace de pago y empezamos.</div>
     </div>
   </div>
 </section>
 
 <section class="section">
-  <div class="about-panel fade-up">
-    <div>
-      <span class="section-label">Sobre mí</span>
-      <h2>Experiencia real para revisar mejor antes de comprar</h2>
-    </div>
-    <div class="about-copy">
-      <p>Empecé trabajando en compraventa y aprendí desde dentro cómo se cruzan documentación, decisiones de compra y trámites posteriores.</p>
-      <p>Hoy acompaño casos reales de revisión, negociación y matriculación para que tomes decisiones con más criterio y menos improvisación.</p>
-      <p>No vendo la idea de “te traigo un coche”. Mi trabajo es ayudarte a decidir con más información antes de mover dinero.</p>
-      <ul class="about-points">
-        <li>Asesoría online para anuncios, documentos, costes y decisión de compra.</li>
-        <li>Orientación práctica para matricular en España paso a paso.</li>
-        <li>Enfoque claro para tráfico móvil, TikTok, Instagram y YouTube Shorts.</li>
-      </ul>
+  <div class="feature-panel fade-up" id="matriculapro">
+    <span class="section-label">MatriculaPRO</span>
+    <h2>Un módulo pensado para entender la matriculación, no para “importar coches”</h2>
+    <p>MatriculaPRO está pensado para quienes ya tienen o quieren comprar un vehículo fuera y necesitan saber si se puede matricular y cuánto puede costar. El foco está en documentación, ITV, impuestos y trámites de matriculación en España.</p>
+    <div class="service-actions-row">
+      <a href="#" class="btn btn-secondary js-matriculapro-link" data-track="matriculapro-alpha">Entrar en MatriculaPRO Alpha</a>
     </div>
   </div>
 </section>
 
 <section class="section" id="faq">
   <div class="section-head fade-up">
-    <span class="section-label">Preguntas frecuentes</span>
-    <h2>Respuestas claras antes de escribirme</h2>
-    <p>Quiero que sepas rápido qué hago, qué no hago y cómo suelo trabajar antes de revisar tu caso.</p>
+    <span class="section-label">FAQ</span>
+    <h2>Preguntas frecuentes antes de enviarme un coche o un caso</h2>
+    <p>La idea es que tengas claras las limitaciones del servicio y cuándo tiene sentido usarlo.</p>
   </div>
 
   <div class="faq-list fade-up">
     <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)" data-track="faq-click">¿Compras o traes coches por el cliente?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
-      <div class="faq-a">No. Trabajo 100 % online. No compro el coche por ti ni acompaño físicamente. Te ayudo a revisar anuncios, hablar con vendedores, calcular gastos, revisar documentación y preparar la decisión.</div>
+      <div class="faq-q" onclick="toggleFaq(this)" data-track="faq-click">¿Acompañas físicamente a Alemania?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+      <div class="faq-a">No, el servicio es online.</div>
     </div>
     <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)" data-track="faq-click">¿Puedo enviarte un anuncio antes de comprar?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
-      <div class="faq-a">Sí. Es lo más recomendable. Puedes enviarme el enlace del anuncio y te digo qué servicio encaja según el nivel de revisión que necesites.</div>
+      <div class="faq-q" onclick="toggleFaq(this)" data-track="faq-click">¿Compras el coche por mí?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+      <div class="faq-a">No. La decisión y la compra son del cliente.</div>
     </div>
     <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)" data-track="faq-click">¿Me puedes decir cuánto costará matricular un coche en España?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
-      <div class="faq-a">Puedo hacer un cálculo orientativo con los gastos habituales: ITV, COC o ficha reducida, DGT, Hacienda o modelo 576 si aplica, impuesto municipal, placas y otros costes posibles. El resultado depende del vehículo y la documentación.</div>
+      <div class="faq-q" onclick="toggleFaq(this)" data-track="faq-click">¿Puedes hablar con el vendedor?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+      <div class="faq-a">Sí, en los servicios que lo incluyen.</div>
     </div>
     <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)" data-track="faq-click">¿MatriculaPRO es un curso?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
-      <div class="faq-a">No quiero posicionarlo como un curso tradicional. MatriculaPRO es una herramienta guiada para entender y avanzar paso a paso en la matriculación de vehículos en España.</div>
+      <div class="faq-q" onclick="toggleFaq(this)" data-track="faq-click">¿Puedes comprobar si se puede matricular?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+      <div class="faq-a">Puedo orientar y revisar documentación disponible, pero no sustituyo a ITV, gestoría o autoridad competente.</div>
     </div>
     <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)" data-track="faq-click">¿Puedo pagar después de hablar contigo?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
-      <div class="faq-a">Sí. Para servicios personalizados, primero revisamos brevemente tu caso y después te indico qué servicio encaja mejor. Si quieres avanzar, te paso el método de pago.</div>
+      <div class="faq-q" onclick="toggleFaq(this)" data-track="faq-click">¿Cuánto cuesta traer un coche?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+      <div class="faq-a">Depende de país, ciudad, combustible, matrículas, seguro, ITV, impuestos y vehículo.</div>
     </div>
     <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)" data-track="faq-click">¿Puedes garantizar que un coche se puede matricular?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
-      <div class="faq-a">No puedo garantizarlo sin revisar el caso y la documentación. Precisamente el objetivo es detectar riesgos antes de que gastes dinero o avances con una compra complicada.</div>
+      <div class="faq-q" onclick="toggleFaq(this)" data-track="faq-click">¿Qué pasa si el coche tiene riesgo?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+      <div class="faq-a">Te lo digo claramente y puedo recomendar descartar, pedir más documentación o negociar.</div>
     </div>
     <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)" data-track="faq-click">¿Trabajas solo con coches importados?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
-      <div class="faq-a">Principalmente ayudo con vehículos de importación y casos donde hay dudas de documentación, compra o matriculación, pero también puedo revisar coches nacionales si necesitas una segunda opinión antes de comprar.</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)" data-track="faq-direct-call">¿Puedo llamarte directamente por WhatsApp?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
-      <div class="faq-a">Para mantener el orden, no atiendo llamadas sin cita previa. Primero envíame tu caso por WhatsApp con el anuncio, documentación o duda principal. Si hace falta hablar, te indicaré cómo reservar una consulta.</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)" data-track="faq-external-collaborators">¿Puedes ayudarme si necesito inspección presencial, transporte o recogida del coche?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
-      <div class="faq-a">Ivan Imports trabaja principalmente online. En algunos casos puedo orientarte sobre posibles colaboradores externos para inspección presencial, transporte, recogida o gestión física, pero esos servicios no los realiza Ivan Imports directamente y se valoran caso por caso.</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)" data-track="faq-external-collaborators">¿Ivan Imports se responsabiliza del trabajo de colaboradores externos?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
-      <div class="faq-a">Los colaboradores externos, si se recomiendan, trabajan de forma independiente. Ivan Imports puede ayudarte a preparar el caso, revisar información y orientarte, pero cualquier servicio externo debe contratarse y confirmarse directamente con el proveedor correspondiente.</div>
+      <div class="faq-q" onclick="toggleFaq(this)" data-track="faq-click">¿Puedo enviarte varios coches?<svg class="faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+      <div class="faq-a">Sí. Hay mini filtro gratuito y servicios de filtrado más completos.</div>
     </div>
   </div>
 </section>
@@ -1463,83 +534,41 @@
 <section class="section">
   <div class="legal-panel fade-up">
     <span class="section-label">Importante</span>
-    <p class="legal-text">Servicio de orientación y acompañamiento práctico. No sustituye una inspección mecánica profesional, gestoría administrativa, asesoramiento legal o fiscal ni informe oficial de homologación. Las recomendaciones se basan en la información disponible aportada por el cliente y/o vendedor. Las estimaciones de gastos son orientativas y pueden variar según comunidad, ITV, DGT, documentación y vehículo.</p>
+    <p class="legal-text">Ivan Imports es un servicio de asesoría online para reducir riesgos antes de pagar un coche o iniciar su matriculación en España. La orientación no sustituye a ITV, gestoría, abogado, asesor fiscal o autoridad competente. Las estimaciones de gastos son orientativas y pueden variar según comunidad, ITV, DGT, documentación y vehículo.</p>
   </div>
 </section>
 
 <section class="section" id="contacto">
   <div class="final-cta fade-up">
-    <h2>Antes de pagar un coche, calcula el riesgo</h2>
-    <p>Un coche barato fuera de España puede salir caro si la documentación, impuestos o matriculación no cuadran. Envíame tu caso y lo revisamos online.</p>
+    <h2>Si tienes un coche visto o una duda real, envíamela por WhatsApp</h2>
+    <p>Puedes mandarme un anuncio, varios coches, una duda de documentación o un caso de matriculación. Te diré qué conviene revisar antes de pagar o avanzar.</p>
     <div class="cta-actions">
-      <a href="#" class="btn btn-primary js-whatsapp-link" data-track="whatsapp-hero" data-wa-message="Hola Iván, vengo de la web y quiero consultarte un caso sobre un coche.">Enviar caso por WhatsApp</a>
-      <a href="#faq" class="btn btn-secondary">Ver preguntas frecuentes</a>
+      <a href="#" class="btn btn-primary js-whatsapp-link" data-track="whatsapp-final-cta" data-wa-message="Hola Iván, quiero enviarte un coche o un caso para que me digas qué conviene revisar antes de avanzar.">Enviar coche por WhatsApp</a>
+      <a href="#servicios" class="btn btn-secondary">Ver servicios</a>
     </div>
-    <p class="notice-text">WhatsApp es para enviar tu caso por mensaje. Las llamadas se reservan aparte si hacen falta.</p>
   </div>
 </section>
 
-<a href="#" class="floating-whatsapp js-whatsapp-link" data-track="whatsapp-floating" data-wa-message="Hola Iván, vengo de la web y quiero consultarte un caso sobre un coche.">WhatsApp</a>
-<div class="floating-whatsapp-note">WhatsApp es para enviar tu caso por mensaje. Las llamadas se reservan aparte si hacen falta.</div>
+<a href="#" class="floating-whatsapp js-whatsapp-link" data-track="whatsapp-floating" data-wa-message="Hola Iván, quiero hacerte una consulta breve sobre un coche antes de pagar.">WhatsApp</a>
 
 <footer>
   <div class="footer-box">
-    <div>Ivan Imports</div>
-    <div>Asesoría online para revisar, calcular y preparar compra o matriculación de vehículos</div>
-    <div>© 2026</div>
+    <div>
+      <strong>Ivan Imports</strong>
+      <div class="footer-note">Asesoría online para revisar anuncios, vendedores, documentación y costes antes de comprar o matricular un vehículo en España.</div>
+    </div>
+    <div>
+      <a href="index.html">Inicio</a><br>
+      <a href="#servicios">Servicios</a><br>
+      <a href="#faq">FAQ</a><br>
+      <a href="#contacto">WhatsApp</a>
+    </div>
+    <div>
+      <span>Servicio online, sin compra ni acompañamiento físico.</span>
+    </div>
   </div>
 </footer>
 
-<script>
-  const WHATSAPP_PHONE = "34633430079";
-  const TIKTOK_URL = "https://www.tiktok.com/@ivan.imports";
-  const MATRICULAPRO_URL = "https://matriculapro.ivanimports.es";
-
-  function createWhatsAppUrl(message) {
-    return `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(message)}`;
-  }
-
-  function toggleFaq(el) {
-    const answer = el.nextElementSibling;
-    const isOpen = el.classList.contains("open");
-    document.querySelectorAll(".faq-q").forEach((question) => {
-      question.classList.remove("open");
-      question.nextElementSibling.classList.remove("open");
-    });
-    if (!isOpen) {
-      el.classList.add("open");
-      answer.classList.add("open");
-    }
-  }
-
-  document.querySelectorAll(".js-whatsapp-link").forEach((link) => {
-    const message = link.dataset.waMessage || "Hola Iván, vengo de la web y quiero consultarte un caso sobre un coche.";
-    link.href = createWhatsAppUrl(message);
-    link.target = "_blank";
-    link.rel = "noreferrer";
-  });
-
-  document.querySelectorAll(".js-tiktok-link").forEach((link) => {
-    link.href = TIKTOK_URL;
-    link.target = "_blank";
-    link.rel = "noreferrer";
-  });
-
-  document.querySelectorAll(".js-matriculapro-link").forEach((link) => {
-    link.href = MATRICULAPRO_URL;
-    link.target = "_blank";
-    link.rel = "noreferrer";
-  });
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry, index) => {
-      if (entry.isIntersecting) {
-        setTimeout(() => entry.target.classList.add("visible"), index * 60);
-      }
-    });
-  }, { threshold: 0.12 });
-
-  document.querySelectorAll(".fade-up").forEach((el) => observer.observe(el));
-</script>
+<script src="assets/site.js"></script>
 </body>
 </html>
