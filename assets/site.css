@@ -184,6 +184,30 @@ h1 {
   max-width: 12ch;
 }
 
+.hero-word {
+  position: relative;
+  display: inline-block;
+}
+
+.hero-word-travel {
+  color: #8d5a49;
+}
+
+.hero-word-travel::after {
+  content: "";
+  position: absolute;
+  left: 0.08em;
+  right: 0.08em;
+  bottom: 0.02em;
+  height: 0.14em;
+  border-radius: 999px;
+  background: rgba(224, 122, 95, 0.18);
+}
+
+.hero-word-europe {
+  color: #1f4d45;
+}
+
 h2 { font-size: clamp(2.2rem, 3.9vw, 3.5rem); }
 h3 { font-size: 1.24rem; }
 
@@ -301,6 +325,7 @@ h3 { font-size: 1.24rem; }
 .hero-microcopy {
   margin-top: 0.95rem;
   font-size: 0.84rem;
+  max-width: 42ch;
 }
 
 .hero-side,
@@ -636,9 +661,9 @@ h3 { font-size: 1.24rem; }
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  background: rgba(224, 122, 95, 0.16);
-  color: #f6d9cf;
-  border: 1px solid rgba(246, 217, 207, 0.18);
+  background: rgba(31, 77, 69, 0.18);
+  color: #d9efe7;
+  border: 1px solid rgba(217, 239, 231, 0.16);
   padding: 0.3rem 0.7rem;
   font-family: "Inter", sans-serif;
   font-size: 0.76rem;
@@ -649,10 +674,10 @@ h3 { font-size: 1.24rem; }
 
 .hero-stat-item {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(112px, 0.44fr) minmax(0, 1fr);
   gap: 0.6rem;
-  align-items: end;
-  padding: 0.85rem 0;
+  align-items: start;
+  padding: 0.95rem 0;
   border-bottom: 1px solid rgba(241, 245, 249, 0.1);
 }
 
@@ -670,13 +695,14 @@ h3 { font-size: 1.24rem; }
   color: #f8fafc;
   font-size: 0.95rem;
   font-weight: 600;
+  text-align: left;
 }
 
 .hero-risk-value strong { color: #ffffff; font-weight: 700; }
 
 .hero-report-note {
-  margin-top: 1.1rem;
-  padding-top: 1rem;
+  margin-top: 1.25rem;
+  padding-top: 1.15rem;
   border-top: 1px solid rgba(241, 245, 249, 0.1);
   font-size: 0.86rem;
   color: rgba(241, 245, 249, 0.8);
@@ -778,6 +804,32 @@ h3 { font-size: 1.24rem; }
   box-shadow: var(--shadow);
 }
 
+.capability-intro {
+  max-width: 980px;
+}
+
+.capability-grid {
+  align-items: stretch;
+}
+
+.capability-card {
+  padding: 1.7rem;
+}
+
+.capability-card .service-name {
+  min-height: 0;
+  margin-bottom: 0.95rem;
+}
+
+.capability-card .service-list {
+  gap: 0.8rem;
+}
+
+.capability-card .service-list li {
+  font-size: 0.95rem;
+  line-height: 1.64;
+}
+
 .service-value-box.premium-accent { border-top-color: var(--accent); }
 
 .quick-case-card {
@@ -802,6 +854,68 @@ h3 { font-size: 1.24rem; }
 
 .cost-example-panel {
   padding: 2rem;
+}
+
+.warning-panel {
+  background:
+    radial-gradient(circle at top right, rgba(224, 122, 95, 0.14), transparent 30%),
+    linear-gradient(180deg, rgba(255, 248, 244, 0.96), rgba(255, 255, 255, 0.98));
+  border-color: rgba(224, 122, 95, 0.2);
+}
+
+.warning-panel .section-head {
+  max-width: 1000px;
+}
+
+.warning-label {
+  background: rgba(224, 122, 95, 0.12);
+  color: #8d4e3c;
+  border-color: rgba(224, 122, 95, 0.14);
+}
+
+.warning-word {
+  color: #b65a2a;
+  position: relative;
+  display: inline-block;
+}
+
+.warning-word::after {
+  content: "";
+  position: absolute;
+  left: 0.06em;
+  right: 0.06em;
+  bottom: 0.02em;
+  height: 0.13em;
+  border-radius: 999px;
+  background: rgba(224, 122, 95, 0.18);
+}
+
+.warning-feature {
+  padding: 1.7rem;
+  background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255, 247, 243, 0.96));
+  border-color: rgba(224, 122, 95, 0.18);
+}
+
+.warning-mini-label {
+  margin-bottom: 1rem;
+  background: rgba(255, 244, 237, 0.96);
+  color: #8a503f;
+  border-color: rgba(224, 122, 95, 0.14);
+}
+
+.warning-feature h3 {
+  margin-bottom: 0.95rem;
+}
+
+.warning-feature .service-list {
+  gap: 0.82rem;
+}
+
+.warning-highlight {
+  margin-top: 1.3rem;
+  background: linear-gradient(180deg, rgba(255, 239, 230, 0.98), rgba(255,255,255,0.98));
+  color: #7f4838;
+  border: 1px solid rgba(224, 122, 95, 0.16);
 }
 
 .cost-example-grid {
@@ -1289,6 +1403,10 @@ footer {
   .page-hero-grid {
     padding: 2.6rem 1.7rem;
   }
+
+  .hero-grid {
+    gap: 1.5rem;
+  }
 }
 
 @media (min-width: 981px) {
@@ -1361,6 +1479,17 @@ footer {
   .hero-report {
     padding: 1.4rem;
   }
+
+  .capability-card,
+  .warning-feature,
+  .cost-example-panel {
+    padding: 1.45rem;
+  }
+
+  .hero-stat-item {
+    grid-template-columns: 1fr;
+    gap: 0.3rem;
+  }
 }
 
 @media (max-width: 520px) {
@@ -1380,6 +1509,11 @@ footer {
 
   h1 { max-width: none; }
 
+  .hero-word-travel::after,
+  .warning-word::after {
+    bottom: 0;
+  }
+
   .hero-actions,
   .cta-actions,
   .service-cta-group,
@@ -1396,6 +1530,11 @@ footer {
 
   .price-list li {
     font-size: 0.9rem;
+  }
+
+  .capability-card .service-list li,
+  .warning-feature .service-list li {
+    font-size: 0.93rem;
   }
 
   .floating-whatsapp {
