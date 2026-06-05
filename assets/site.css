@@ -490,7 +490,7 @@ h3 { font-size: 1.24rem; }
 .authority-bar { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .about-ivan { grid-template-columns: minmax(280px, 0.9fr) minmax(0, 1.1fr); }
 .about-credentials { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.quick-case-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.quick-case-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .cost-example-grid { grid-template-columns: 1fr 0.9fr; }
 
 .case-card,
@@ -808,26 +808,41 @@ h3 { font-size: 1.24rem; }
   max-width: 980px;
 }
 
+.capability-slider-note {
+  display: none;
+  margin: -0.65rem 0 1.05rem;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
 .capability-grid {
   align-items: stretch;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .capability-card {
-  padding: 1.7rem;
+  padding: 1.45rem;
 }
 
 .capability-card .service-name {
   min-height: 0;
-  margin-bottom: 0.95rem;
+  margin-bottom: 0.8rem;
 }
 
 .capability-card .service-list {
-  gap: 0.8rem;
+  gap: 0.72rem;
 }
 
 .capability-card .service-list li {
-  font-size: 0.95rem;
-  line-height: 1.64;
+  font-size: 0.91rem;
+  line-height: 1.56;
+}
+
+.capability-step {
+  color: rgba(27, 38, 59, 0.36);
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.85rem;
 }
 
 .service-value-box.premium-accent { border-top-color: var(--accent); }
@@ -837,19 +852,20 @@ h3 { font-size: 1.24rem; }
   border: 1px solid rgba(184, 195, 207, 0.68);
   border-radius: 16px;
   box-shadow: var(--shadow);
-  padding: 1.35rem;
+  padding: 1rem 0.95rem;
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: 0.62rem;
 }
 
 .quick-case-card h3 {
-  font-size: 1.02rem;
+  font-size: 0.98rem;
 }
 
 .quick-case-card p {
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 0.86rem;
+  line-height: 1.45;
 }
 
 .cost-example-panel {
@@ -920,6 +936,18 @@ h3 { font-size: 1.24rem; }
   background: linear-gradient(180deg, rgba(255, 239, 230, 0.98), rgba(255,255,255,0.98));
   color: #7f4838;
   border: 1px solid rgba(224, 122, 95, 0.16);
+}
+
+.transparency-grid {
+  margin-top: 1.35rem;
+}
+
+.transparency-card {
+  padding: 1.25rem;
+}
+
+.transparency-card .section-label {
+  margin-bottom: 0.9rem;
 }
 
 .cost-example-grid {
@@ -1370,6 +1398,10 @@ footer {
   .quick-case-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .capability-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 980px) {
@@ -1433,6 +1465,14 @@ footer {
   .service-grid .service-kv,
   .service-summary-grid .service-kv {
     min-height: 10rem;
+  }
+
+  .capability-grid .capability-card:nth-child(4) {
+    grid-column: 1 / 2;
+  }
+
+  .capability-grid .capability-card:nth-child(5) {
+    grid-column: 2 / 3;
   }
 }
 
@@ -1512,6 +1552,10 @@ footer {
   .warning-panel .section-head {
     margin-bottom: 1.5rem;
   }
+
+  .quick-case-card {
+    padding: 0.95rem;
+  }
 }
 
 @media (max-width: 520px) {
@@ -1561,6 +1605,40 @@ footer {
   .capability-card .service-list li,
   .warning-feature .service-list li {
     font-size: 0.93rem;
+  }
+
+  .capability-slider-note {
+    display: block;
+  }
+
+  .capability-grid {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(84vw, 1fr);
+    grid-template-columns: none;
+    overflow-x: auto;
+    gap: 0.9rem;
+    padding: 0.15rem 0.1rem 0.35rem;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .capability-grid::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .capability-grid::-webkit-scrollbar-thumb {
+    background: rgba(27, 38, 59, 0.18);
+    border-radius: 999px;
+  }
+
+  .capability-card {
+    scroll-snap-align: start;
+    min-height: 100%;
+  }
+
+  .quick-case-grid {
+    gap: 0.75rem;
   }
 
   .warning-panel {
