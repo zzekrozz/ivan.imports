@@ -90,6 +90,72 @@ if (navToggle && navLinks) {
   syncNavToggle();
 }
 
+function initSliderDots() {
+  const sliders = document.querySelectorAll(".js-slider");
+
+  sliders.forEach((slider) => {
+    const dots = slider.parentElement?.querySelector(".js-slider-dots");
+    const slides = Array.from(slider.children).filter((child) => child instanceof HTMLElement);
+
+    if (!dots || slides.length < 2) {
+      if (dots) dots.innerHTML = "";
+      return;
+    }
+
+    dots.innerHTML = "";
+
+    const dotButtons = slides.map((_, index) => {
+      const dot = document.createElement("button");
+      dot.type = "button";
+      dot.className = "slider-dot";
+      dot.setAttribute("aria-label", `Ir al bloque ${index + 1}`);
+      dot.addEventListener("click", () => {
+        slides[index].scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+      });
+      dots.appendChild(dot);
+      return dot;
+    });
+
+    const updateActiveDot = () => {
+      const sliderRect = slider.getBoundingClientRect();
+      const sliderCenter = sliderRect.left + sliderRect.width / 2;
+      let activeIndex = 0;
+      let closestDistance = Number.POSITIVE_INFINITY;
+
+      slides.forEach((slide, index) => {
+        const rect = slide.getBoundingClientRect();
+        const slideCenter = rect.left + rect.width / 2;
+        const distance = Math.abs(sliderCenter - slideCenter);
+
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          activeIndex = index;
+        }
+      });
+
+      dotButtons.forEach((dot, index) => {
+        dot.classList.toggle("is-active", index === activeIndex);
+        dot.setAttribute("aria-current", index === activeIndex ? "true" : "false");
+      });
+    };
+
+    let ticking = false;
+    slider.addEventListener("scroll", () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(() => {
+        updateActiveDot();
+        ticking = false;
+      });
+    }, { passive: true });
+
+    window.addEventListener("resize", updateActiveDot);
+    updateActiveDot();
+  });
+}
+
+initSliderDots();
+
 if ("IntersectionObserver" in window) {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry, index) => {

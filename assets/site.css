@@ -802,6 +802,7 @@ h3 { font-size: 1.24rem; }
   background: linear-gradient(180deg, var(--surface-alt), #fff);
   border-top: 3px solid var(--brand);
   box-shadow: var(--shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .capability-intro {
@@ -824,6 +825,18 @@ h3 { font-size: 1.24rem; }
   padding: 1.45rem;
 }
 
+.capability-card:hover,
+.quick-case-card:hover,
+.service-feature-card:hover,
+.service-cost-panel:hover,
+.service-custom-panel:hover,
+.authority-chip:hover,
+.service-value-box:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 22px 42px rgba(12, 20, 34, 0.12);
+  border-color: rgba(27, 38, 59, 0.24);
+}
+
 .capability-card .service-name {
   min-height: 0;
   margin-bottom: 0.8rem;
@@ -838,13 +851,6 @@ h3 { font-size: 1.24rem; }
   line-height: 1.56;
 }
 
-.capability-step {
-  color: rgba(27, 38, 59, 0.36);
-  font-size: 1rem;
-  letter-spacing: 0.04em;
-  margin-bottom: 0.85rem;
-}
-
 .service-value-box.premium-accent { border-top-color: var(--accent); }
 
 .quick-case-card {
@@ -856,6 +862,7 @@ h3 { font-size: 1.24rem; }
   display: flex;
   flex-direction: column;
   gap: 0.62rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .quick-case-card h3 {
@@ -938,6 +945,18 @@ h3 { font-size: 1.24rem; }
   border: 1px solid rgba(224, 122, 95, 0.16);
 }
 
+.warning-emphasis {
+  margin-top: 1rem;
+  padding: 1rem 1.05rem;
+  border-left: 3px solid rgba(224, 122, 95, 0.5);
+  background: rgba(255, 248, 244, 0.9);
+  color: #7b4739;
+  font-size: 0.95rem;
+  font-style: italic;
+  line-height: 1.62;
+  border-radius: 12px;
+}
+
 .transparency-grid {
   margin-top: 1.35rem;
 }
@@ -998,6 +1017,110 @@ h3 { font-size: 1.24rem; }
 .service-kv-row {
   padding-top: 0.75rem;
   border-top: 1px solid var(--line);
+}
+
+.service-feature-stack {
+  display: grid;
+  gap: 1.2rem;
+}
+
+.service-feature-card,
+.service-cost-panel,
+.service-custom-panel {
+  background: rgba(255,255,255,0.97);
+  border: 1px solid rgba(184, 195, 207, 0.72);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 1.8rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.service-feature-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
+  gap: 1.2rem;
+  align-items: stretch;
+}
+
+.service-feature-copy,
+.service-cost-copy,
+.service-custom-copy {
+  display: grid;
+  align-content: start;
+}
+
+.service-feature-accent {
+  border-radius: 16px;
+  padding: 1.35rem;
+  border: 1px solid rgba(184, 195, 207, 0.48);
+  display: grid;
+  align-content: start;
+  gap: 0.95rem;
+}
+
+.service-feature-primary {
+  border-top: 3px solid var(--ok);
+  background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239, 248, 246, 0.96));
+}
+
+.service-feature-primary .service-feature-accent {
+  background: linear-gradient(180deg, rgba(228, 240, 238, 0.96), rgba(255,255,255,0.98));
+}
+
+.service-feature-matriculation {
+  border-top: 3px solid var(--brand);
+  background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(234, 240, 246, 0.96));
+}
+
+.service-feature-matriculation .service-feature-accent {
+  background: linear-gradient(180deg, rgba(234, 240, 246, 0.98), rgba(255,255,255,0.98));
+}
+
+.service-grid-support {
+  margin-top: 1.2rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.service-cost-panel {
+  margin-top: 1.2rem;
+  border-top: 3px solid var(--accent);
+  background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(249, 236, 232, 0.92));
+}
+
+.service-custom-panel {
+  margin-top: 1.2rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr);
+  gap: 1.2rem;
+  align-items: center;
+  border-top: 3px solid #8d5a49;
+  background:
+    radial-gradient(circle at top right, rgba(224, 122, 95, 0.1), transparent 30%),
+    linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248, 242, 239, 0.96));
+}
+
+.slider-dots {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  margin-top: 0.95rem;
+}
+
+.slider-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  border: 0;
+  padding: 0;
+  background: rgba(27, 38, 59, 0.2);
+  cursor: pointer;
+  transition: width 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.slider-dot.is-active {
+  width: 24px;
+  background: var(--brand);
 }
 
 .risk-band {
@@ -1402,6 +1525,11 @@ footer {
   .capability-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .service-feature-card,
+  .service-custom-panel {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 980px) {
@@ -1467,12 +1595,13 @@ footer {
     min-height: 10rem;
   }
 
-  .capability-grid .capability-card:nth-child(4) {
-    grid-column: 1 / 2;
-  }
-
-  .capability-grid .capability-card:nth-child(5) {
-    grid-column: 2 / 3;
+  .authority-chip,
+  .capability-card,
+  .service-feature-card,
+  .service-cost-panel,
+  .service-custom-panel,
+  .quick-case-card {
+    will-change: transform;
   }
 }
 
@@ -1556,6 +1685,43 @@ footer {
   .quick-case-card {
     padding: 0.95rem;
   }
+
+  .authority-bar,
+  .capability-grid {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(88%, 1fr);
+    grid-template-columns: none;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    gap: 0.9rem;
+    padding: 0.15rem 0.1rem 0.35rem;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .authority-bar::-webkit-scrollbar,
+  .capability-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .authority-chip,
+  .capability-card {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    min-height: 100%;
+  }
+
+  .slider-dots {
+    display: flex;
+  }
+
+  .service-feature-card,
+  .service-custom-panel,
+  .service-cost-panel {
+    padding: 1.35rem;
+  }
 }
 
 @media (max-width: 520px) {
@@ -1611,32 +1777,6 @@ footer {
     display: block;
   }
 
-  .capability-grid {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(84vw, 1fr);
-    grid-template-columns: none;
-    overflow-x: auto;
-    gap: 0.9rem;
-    padding: 0.15rem 0.1rem 0.35rem;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .capability-grid::-webkit-scrollbar {
-    height: 8px;
-  }
-
-  .capability-grid::-webkit-scrollbar-thumb {
-    background: rgba(27, 38, 59, 0.18);
-    border-radius: 999px;
-  }
-
-  .capability-card {
-    scroll-snap-align: start;
-    min-height: 100%;
-  }
-
   .quick-case-grid {
     gap: 0.75rem;
   }
@@ -1647,6 +1787,16 @@ footer {
 
   .warning-panel .section-head p {
     font-size: 0.95rem;
+  }
+
+  .authority-bar,
+  .capability-grid {
+    grid-auto-columns: minmax(86vw, 1fr);
+  }
+
+  .warning-emphasis {
+    font-size: 0.92rem;
+    padding: 0.9rem 0.95rem;
   }
 
   .floating-whatsapp {
