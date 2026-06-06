@@ -1,6 +1,15 @@
 const WHATSAPP_PHONE = "34674252436";
 const TIKTOK_URL = "https://www.tiktok.com/@ivan.imports";
 const MATRICULAPRO_URL = "https://matriculapro.ivanimports.es";
+const GA_EVENT_ALIASES = {
+  "whatsapp-service-europa-360": "click_pack_europa_360",
+  "whatsapp-service-purchase-prep": "click_revision_completa",
+  "details-purchase-prep": "click_revision_completa",
+  "whatsapp-service-matriculation": "click_matriculacion",
+  "details-matriculation": "click_matriculacion",
+  "whatsapp-service-cost-real": "click_calculo_coste",
+  "details-cost-real": "click_calculo_coste",
+};
 
 function createWhatsAppUrl(message) {
   return `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(message)}`;
@@ -12,8 +21,19 @@ function trackEvent(eventName, params = {}) {
   window.dataLayer = window.dataLayer || [];
   window.dataLayer.push({ event: eventName, ...params });
 
+  const gaEventNames = new Set();
+  if (eventName.startsWith("whatsapp-")) {
+    gaEventNames.add("click_whatsapp");
+  }
+  if (GA_EVENT_ALIASES[eventName]) {
+    gaEventNames.add(GA_EVENT_ALIASES[eventName]);
+  }
+
   if (typeof window.gtag === "function") {
-    window.gtag("event", eventName, params);
+    const eventsToSend = gaEventNames.size ? gaEventNames : new Set([eventName]);
+    eventsToSend.forEach((gaEventName) => {
+      window.gtag("event", gaEventName, params);
+    });
   }
 }
 
