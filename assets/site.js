@@ -116,6 +116,8 @@ function initSliderDots() {
   sliders.forEach((slider) => {
     const dots = slider.parentElement?.querySelector(".js-slider-dots");
     const slides = Array.from(slider.children).filter((child) => child instanceof HTMLElement);
+    let touchStartX = null;
+    let touchStartIndex = 0;
 
     if (!dots || slides.length < 2) {
       if (dots) dots.innerHTML = "";
@@ -124,19 +126,9 @@ function initSliderDots() {
 
     dots.innerHTML = "";
 
-    const dotButtons = slides.map((_, index) => {
-      const dot = document.createElement("button");
-      dot.type = "button";
-      dot.className = "slider-dot";
-      dot.setAttribute("aria-label", `Ir al bloque ${index + 1}`);
-      dot.addEventListener("click", () => {
-        slides[index].scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
-      });
-      dots.appendChild(dot);
-      return dot;
-    });
+    const clampIndex = (value) => Math.max(0, Math.min(slides.length - 1, value));
 
-    const updateActiveDot = () => {
+    const getActiveIndex = () => {
       const sliderRect = slider.getBoundingClientRect();
       const sliderCenter = sliderRect.left + sliderRect.width / 2;
       let activeIndex = 0;
@@ -153,6 +145,28 @@ function initSliderDots() {
         }
       });
 
+      return activeIndex;
+    };
+
+    const scrollToSlide = (index) => {
+      const target = slides[clampIndex(index)];
+      if (!target) return;
+      target.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+    };
+
+    const dotButtons = slides.map((_, index) => {
+      const dot = document.createElement("button");
+      dot.type = "button";
+      dot.className = "slider-dot";
+      dot.setAttribute("aria-label", `Ir al bloque ${index + 1}`);
+      dot.addEventListener("click", () => scrollToSlide(index));
+      dots.appendChild(dot);
+      return dot;
+    });
+
+    const updateActiveDot = () => {
+      const activeIndex = getActiveIndex();
+
       dotButtons.forEach((dot, index) => {
         dot.classList.toggle("is-active", index === activeIndex);
         dot.setAttribute("aria-current", index === activeIndex ? "true" : "false");
@@ -167,6 +181,24 @@ function initSliderDots() {
         updateActiveDot();
         ticking = false;
       });
+    }, { passive: true });
+
+    slider.addEventListener("touchstart", (event) => {
+      touchStartX = event.changedTouches[0]?.clientX ?? null;
+      touchStartIndex = getActiveIndex();
+    }, { passive: true });
+
+    slider.addEventListener("touchend", (event) => {
+      if (touchStartX === null) return;
+
+      const touchEndX = event.changedTouches[0]?.clientX ?? touchStartX;
+      const deltaX = touchEndX - touchStartX;
+      const targetIndex = Math.abs(deltaX) > 36
+        ? clampIndex(touchStartIndex + (deltaX < 0 ? 1 : -1))
+        : getActiveIndex();
+
+      window.setTimeout(() => scrollToSlide(targetIndex), 40);
+      touchStartX = null;
     }, { passive: true });
 
     window.addEventListener("resize", updateActiveDot);
