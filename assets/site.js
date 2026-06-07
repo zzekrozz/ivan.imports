@@ -221,3 +221,4 @@ if ("IntersectionObserver" in window) {
 } else {
   document.querySelectorAll(".fade-up").forEach((el) => el.classList.add("visible"));
 }
+
