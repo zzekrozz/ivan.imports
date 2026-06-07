@@ -386,12 +386,65 @@ h3 { font-size: 1.24rem; }
   font-size: 0.92rem;
 }
 
+.hero-offer-list {
+  margin-top: 1.25rem;
+  max-width: 58ch;
+}
+
+.hero-offer-list li {
+  font-size: 0.95rem;
+}
+
+.hero-offer-panel {
+  background:
+    radial-gradient(circle at top right, rgba(31, 77, 69, 0.16), transparent 32%),
+    linear-gradient(180deg, rgba(27, 38, 59, 0.98), rgba(24, 41, 63, 0.98));
+}
+
+.service-path-grid {
+  align-items: stretch;
+}
+
+.service-path-card {
+  background: linear-gradient(180deg, #ffffff, #f8fafc);
+  border-top: 3px solid rgba(27, 38, 59, 0.16);
+}
+
+#revision-gratis {
+  border-top-color: var(--ok);
+  background:
+    radial-gradient(circle at top right, rgba(31, 77, 69, 0.14), transparent 34%),
+    linear-gradient(180deg, rgba(255,255,255,0.98), rgba(244, 250, 248, 0.98));
+}
+
+#revision-gratis .service-price {
+  color: var(--ok);
+}
+
+#revision-gratis .service-name,
+#pack-europa-360 .service-name,
+#matriculacion .service-name,
+#busqueda-coches .service-name {
+  max-width: 18ch;
+}
+
+.service-path-card .service-actions {
+  margin-top: 1.2rem;
+}
+
+.trust-card h3 {
+  font-size: 1.08rem;
+  line-height: 1.4;
+}
+
 .testimonials-section {
   padding-top: 0.9rem;
+  overflow-x: clip;
 }
 
 .testimonials-grid {
   align-items: stretch;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .testimonial-card {
@@ -478,6 +531,11 @@ h3 { font-size: 1.24rem; }
 
 .testimonials-cta .cta-actions {
   justify-content: center;
+}
+
+.testimonial-card {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
 
 .hero-mobile-review {
@@ -1968,6 +2026,10 @@ footer {
 }
 
 @media (max-width: 1180px) {
+  .testimonials-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .trust-grid,
   .service-grid,
   .service-summary-grid,
@@ -2067,6 +2129,25 @@ footer {
 }
 
 @media (max-width: 740px) {
+  .testimonials-grid {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(86%, 1fr);
+    grid-template-columns: none;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    gap: 0.9rem;
+    padding: 0.05rem 0.1rem 0.45rem;
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .testimonials-grid::-webkit-scrollbar {
+    display: none;
+  }
+
   body {
     padding-bottom: 4.8rem;
   }
@@ -2138,6 +2219,10 @@ footer {
     grid-template-columns: 1fr;
     gap: 0;
     padding: 2rem 1rem 1.7rem;
+  }
+
+  .hero-offer-list {
+    gap: 0.62rem;
   }
 
   .hero-actions,
@@ -2223,7 +2308,7 @@ footer {
 
 @media (max-width: 520px) {
   .hero-actions .btn-primary {
-    display: none;
+    display: inline-flex;
   }
 
   h1 {
@@ -2278,8 +2363,21 @@ footer {
     line-height: 1.5;
   }
 
+  .hero-offer-list li {
+    font-size: 0.91rem;
+  }
+
+  .hero-offer-panel {
+    display: block;
+  }
+
   .testimonial-card {
     padding: 1.1rem 1rem 1.02rem;
+  }
+
+  .testimonials-grid {
+    grid-auto-columns: minmax(84vw, 1fr);
+    gap: 0.85rem;
   }
 
   .testimonial-message {
@@ -2460,6 +2558,12 @@ footer {
     padding: 1.55rem 0.82rem 1.35rem;
   }
 
+  .service-path-card,
+  .step-card,
+  .trust-card {
+    padding: 1.2rem;
+  }
+
   .hero,
   .page-hero,
   .warning-panel,
@@ -2490,6 +2594,11 @@ footer {
   .authority-bar,
   .capability-grid {
     grid-auto-columns: minmax(82vw, 1fr);
+    gap: 0.8rem;
+  }
+
+  .testimonials-grid {
+    grid-auto-columns: minmax(86vw, 1fr);
     gap: 0.8rem;
   }
 
