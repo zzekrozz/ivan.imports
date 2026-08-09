@@ -1,0 +1,142 @@
+{
+  "version": 1,
+  "format": "webp",
+  "previewPolicy": "Selected low-resolution page previews only; source PDFs are not included.",
+  "items": [
+    {
+      "file": "guide-cover.webp",
+      "sourceDocument": "guia-principal",
+      "sourcePage": 1,
+      "title": "Portada de la guía",
+      "alt": "Portada de la guía Importa tu coche en 7 días sobre una carretera europea.",
+      "width": 720,
+      "height": 1019
+    },
+    {
+      "file": "workbook-cover.webp",
+      "sourceDocument": "cuaderno-de-trabajo",
+      "sourcePage": 1,
+      "title": "Portada del cuaderno",
+      "alt": "Portada azul del cuaderno de trabajo Importa tu coche en 7 días.",
+      "width": 720,
+      "height": 1019
+    },
+    {
+      "file": "journey.webp",
+      "sourceDocument": "guia-principal",
+      "sourcePage": 4,
+      "title": "Recorrido completo",
+      "alt": "Página de la guía con el recorrido completo desde la búsqueda hasta DGT.",
+      "width": 720,
+      "height": 1019
+    },
+    {
+      "file": "filters.webp",
+      "sourceDocument": "guia-principal",
+      "sourcePage": 20,
+      "title": "Filtros por potencia",
+      "alt": "Página con ejemplos de filtros por potencia para comparar versiones equivalentes.",
+      "width": 720,
+      "height": 1019
+    },
+    {
+      "file": "comparison.webp",
+      "sourceDocument": "guia-principal",
+      "sourcePage": 19,
+      "title": "Chollos falsos",
+      "alt": "Comparación visual de dos Volkswagen Golf con potencias distintas que explica los chollos falsos.",
+      "width": 720,
+      "height": 1019
+    },
+    {
+      "file": "max-price.webp",
+      "sourceDocument": "guia-principal",
+      "sourcePage": 48,
+      "title": "Precio máximo de compra",
+      "alt": "Página con la fórmula y un ejemplo para calcular el precio máximo de compra en Europa.",
+      "width": 720,
+      "height": 1019
+    },
+    {
+      "file": "budget.webp",
+      "sourceDocument": "guia-principal",
+      "sourcePage": 54,
+      "title": "Presupuesto completo",
+      "alt": "Tabla de presupuesto completo con compra, viaje, placas, combustible e importes de matriculación.",
+      "width": 720,
+      "height": 1019
+    },
+    {
+      "file": "v7.webp",
+      "sourceDocument": "guia-principal",
+      "sourcePage": 71,
+      "title": "Campo V.7",
+      "alt": "Página que explica cómo el campo V.7 de emisiones puede cambiar el presupuesto de matriculación.",
+      "width": 720,
+      "height": 1019
+    },
+    {
+      "file": "negotiation.webp",
+      "sourceDocument": "guia-principal",
+      "sourcePage": 75,
+      "title": "Ejemplos de negociación",
+      "alt": "Página con ejemplos de negociación basados en intención real y defectos concretos.",
+      "width": 720,
+      "height": 1019
+    },
+    {
+      "file": "travel-day.webp",
+      "sourceDocument": "guia-principal",
+      "sourcePage": 87,
+      "title": "Qué día viajar",
+      "alt": "Página con el orden recomendado de días para viajar y los riesgos de hacerlo al final de la semana.",
+      "width": 720,
+      "height": 1019
+    },
+    {
+      "file": "inspection.webp",
+      "sourceDocument": "guia-principal",
+      "sourcePage": 95,
+      "title": "Inspección de carrocería",
+      "alt": "Página de revisión de carrocería con huecos, tornillos, pintura y desmontajes.",
+      "width": 720,
+      "height": 1019
+    },
+    {
+      "file": "export-plates.webp",
+      "sourceDocument": "guia-principal",
+      "sourcePage": 109,
+      "title": "Placas de exportación",
+      "alt": "Página sobre placas de exportación alemanas y las preguntas que conviene hacer antes de viajar.",
+      "width": 720,
+      "height": 1019
+    },
+    {
+      "file": "registration.webp",
+      "sourceDocument": "guia-principal",
+      "sourcePage": 124,
+      "title": "Orden de matriculación",
+      "alt": "Diagrama de seis pasos desde la ITV de matriculación hasta fabricar las placas españolas.",
+      "width": 720,
+      "height": 1019
+    },
+    {
+      "file": "seven-day-method.webp",
+      "sourceDocument": "guia-principal",
+      "sourcePage": 141,
+      "title": "Método de los 7 Días",
+      "alt": "Calendario visual del Método de los 7 Días desde el viaje hasta DGT.",
+      "width": 720,
+      "height": 1019
+    },
+    {
+      "file": "workbook-sheet.webp",
+      "sourceDocument": "cuaderno-de-trabajo",
+      "sourcePage": 14,
+      "title": "Ficha de inspección presencial",
+      "alt": "Ficha rellenable del cuaderno para registrar la inspección presencial del vehículo.",
+      "width": 720,
+      "height": 1019
+    }
+  ]
+}

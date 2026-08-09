@@ -18,11 +18,13 @@ window.IVAN_IMPORTS_CONFIG = Object.freeze({
   products: {
     subastasPro: "https://subastaspro.ivanimports.es",
     matriculaPro: "https://matriculapro.ivanimports.es",
-    importCourse: "",
+    importCourse: "/importa-en-7-dias/",
   },
   legal: {
     notice: "",
     privacy: "",
+    cookies: "",
+    purchaseTerms: "",
   },
   prices: {
     copart: {
