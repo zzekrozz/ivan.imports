@@ -18,7 +18,7 @@ for (const route of requiredRoutes) {
 }
 
 const configSource = readFileSync(join(root, "assets/importa-7-dias/config.js"), "utf8");
-if (!/checkoutEnabled:\s*false/.test(configSource)) failures.push("checkoutEnabled debe seguir en false");
+if (!/checkoutEnabled:\s*true/.test(configSource)) failures.push("checkoutEnabled debe estar en true para ventas LIVE");
 const paymentLink = "https://buy.stripe.com/dRmcN6a3K0jdd2ra3m8N207";
 const publicProductFiles = [
   "assets/importa-7-dias/config.js",
@@ -66,4 +66,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log("Build estático validado: rutas, assets, rewrites, checkout bloqueado y ausencia de PDF.");
+console.log("Build estático validado: rutas, assets, rewrites, checkout LIVE y ausencia de PDF.");

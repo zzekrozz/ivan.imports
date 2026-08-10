@@ -13,7 +13,7 @@
     supportDays: 14,
 
     // El enlace LIVE queda centralizado, pero no se abre hasta completar la prueba integral en Stripe TEST.
-    checkoutEnabled: false,
+    checkoutEnabled: true,
     checkoutUrl: "https://buy.stripe.com/dRmcN6a3K0jdd2ra3m8N207",
 
     // Opcional. La sección de vídeo no se renderiza mientras esta URL esté vacía.
