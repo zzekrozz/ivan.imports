@@ -294,10 +294,9 @@ body.course-landing {
 }
 
 .course-logo--brand img {
-  width: 112px;
+  width: 190px;
   height: auto;
   border-radius: 0;
-  mix-blend-mode: screen;
 }
 
 .course-logo span span {
@@ -1843,7 +1842,7 @@ body.course-landing {
 }
 
 .course-logo--footer img {
-  width: 170px;
+  width: 214px;
 }
 
 .course-footer__grid > div:first-child p {
@@ -2273,7 +2272,7 @@ body.course-landing {
   }
 
   .course-logo--brand img {
-    width: 86px;
+    width: 150px;
     height: auto;
   }
 

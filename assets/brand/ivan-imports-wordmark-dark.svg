@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="430" height="88" viewBox="0 0 430 88" role="img" aria-labelledby="title">
+  <title id="title">IvanImports</title>
+  <defs>
+    <linearGradient id="blue" x1="10" y1="8" x2="64" y2="76" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#20e7ff"/>
+      <stop offset=".48" stop-color="#0087ff"/>
+      <stop offset="1" stop-color="#1642bd"/>
+    </linearGradient>
+    <linearGradient id="silver" x1="28" y1="17" x2="51" y2="52" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffffff"/>
+      <stop offset=".5" stop-color="#8d9aa8"/>
+      <stop offset=".75" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#667484"/>
+    </linearGradient>
+    <linearGradient id="ivan" x1="88" y1="27" x2="177" y2="62" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#03cdef"/>
+      <stop offset=".55" stop-color="#0084ee"/>
+      <stop offset="1" stop-color="#174bc7"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(3 2)">
+    <path d="M6 9 17 15 37 55 57 15 68 9 37 70Z" fill="url(#blue)" stroke="#13cfff" stroke-width="1.1" stroke-linejoin="round"/>
+    <path d="M22 14 29 18 37 34 45 18 52 14 37 44Z" fill="url(#silver)" stroke="#ffffff" stroke-width=".8" stroke-linejoin="round"/>
+  </g>
+  <text x="88" y="57" fill="url(#ivan)" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" letter-spacing="4">IVAN</text>
+  <text x="205" y="57" fill="#14283c" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" letter-spacing="3">IMPORTS</text>
+</svg>

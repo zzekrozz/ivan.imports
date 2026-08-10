@@ -169,6 +169,12 @@ p {
   border-radius: 7px;
 }
 
+.logo .brand-wordmark {
+  width: 184px;
+  height: auto;
+  border-radius: 0;
+}
+
 .nav-panel,
 .nav-links {
   display: flex;
@@ -1188,14 +1194,13 @@ p {
 .link-hub-brand {
   display: flex;
   align-items: center;
-  gap: 0.7rem;
   margin-bottom: 2.4rem;
   font-weight: 850;
 }
 
 .link-hub-brand img {
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 7px;
+  width: 210px;
+  height: auto;
 }
 
 .link-hub-intro h1 {
@@ -1496,6 +1501,10 @@ p {
 
   .nav-inner {
     min-height: 64px;
+  }
+
+  .logo .brand-wordmark {
+    width: 156px;
   }
 
   .hero-wrap,

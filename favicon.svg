@@ -1,5 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Ivan Imports">
-  <rect width="64" height="64" rx="14" fill="#1b263b"/>
-  <path d="M18 20h6v24h-6zM40 20h6v24h-6zM27 20h10v6H27zM27 38h10v6H27z" fill="#f8fafc"/>
-  <path d="M18 48h28" stroke="#e07a5f" stroke-width="4" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" role="img" aria-label="IvanImports">
+  <defs>
+    <linearGradient id="panel" x1="12" y1="8" x2="84" y2="90" gradientUnits="userSpaceOnUse"><stop stop-color="#07111f"/><stop offset="1" stop-color="#111f35"/></linearGradient>
+    <linearGradient id="blue" x1="18" y1="15" x2="55" y2="78" gradientUnits="userSpaceOnUse"><stop stop-color="#23e6ff"/><stop offset=".45" stop-color="#0087ff"/><stop offset="1" stop-color="#1642bd"/></linearGradient>
+    <linearGradient id="silver" x1="35" y1="23" x2="59" y2="57" gradientUnits="userSpaceOnUse"><stop stop-color="#fff"/><stop offset=".45" stop-color="#9aa7b5"/><stop offset=".72" stop-color="#f6f8fb"/><stop offset="1" stop-color="#6d7886"/></linearGradient>
+  </defs>
+  <rect x="3" y="3" width="90" height="90" rx="20" fill="url(#panel)"/>
+  <path d="M14 18 27 25 48 67 69 25 82 18 48 82Z" fill="url(#blue)" stroke="#23dfff" stroke-width="1.25" stroke-linejoin="round"/>
+  <path d="M31 22 39 27 48 45 57 27 65 22 48 56Z" fill="url(#silver)" stroke="#fff" stroke-width="1" stroke-linejoin="round"/>
+  <path d="M18 85h60" stroke="#168ff5" stroke-width="2" stroke-linecap="round" opacity=".72"/>
 </svg>

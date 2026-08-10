@@ -38,7 +38,7 @@
 }
 
 .ty-header .course-logo { color: #fff; }
-.ty-header .course-logo--brand img { width: 108px; height: auto; }
+.ty-header .course-logo--brand img { width: 184px; height: auto; }
 .ty-header__inner > p {
   display: flex;
   align-items: center;
@@ -430,7 +430,7 @@
   .ty-header__inner { min-height: 64px; }
   .ty-header__inner > p { padding: 9px 11px 9px 10px; font-size: .6rem; letter-spacing: .1em; }
   .ty-header .course-logo { font-size: .76rem; }
-  .ty-header .course-logo--brand img { width: 82px; height: auto; }
+  .ty-header .course-logo--brand img { width: 146px; height: auto; }
   .ty-hero { padding: 100px 0 48px; }
   .ty-hero__grid { display: flex; flex-direction: column; align-items: stretch; gap: 30px; }
   .ty-confirmation-mark { width: 54px; height: 54px; margin-bottom: 21px; box-shadow: 0 0 0 7px rgba(244,185,35,.035); }

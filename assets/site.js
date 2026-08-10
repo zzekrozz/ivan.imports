@@ -49,8 +49,7 @@ function getHeaderMarkup() {
     <nav class="site-nav" aria-label="Navegación principal">
       <div class="nav-inner">
         <a class="logo" href="/" aria-label="IvanImports, inicio">
-          <img src="/favicon.svg" alt="" width="34" height="34">
-          <span>IvanImports</span>
+          <img class="brand-wordmark" src="/assets/brand/ivan-imports-wordmark-dark.svg" alt="IvanImports" width="430" height="88">
         </a>
         <button class="nav-toggle js-nav-toggle" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="main-navigation">
           <span class="menu-icon" aria-hidden="true"></span>
@@ -92,8 +91,7 @@ function getFooterMarkup() {
       <div class="footer-inner">
         <div class="footer-brand">
           <a class="logo" href="/">
-            <img src="/favicon.svg" alt="" width="32" height="32">
-            <span>IvanImports</span>
+            <img class="brand-wordmark" src="/assets/brand/ivan-imports-wordmark-dark.svg" alt="IvanImports" width="430" height="88">
           </a>
           <p>Compra, subastas, importación y matriculación de vehículos en Europa con experiencia práctica.</p>
         </div>
