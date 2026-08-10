@@ -38,27 +38,33 @@
 }
 
 .ty-header .course-logo { color: #fff; }
+.ty-header .course-logo--brand img { width: 108px; height: auto; }
 .ty-header__inner > p {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
   margin: 0;
-  color: rgba(255,255,255,.72);
+  padding: 10px 14px 10px 12px;
+  border: 1px solid rgba(244,185,35,.38);
+  border-radius: 999px;
+  background: rgba(5,18,30,.72);
+  color: rgba(255,255,255,.9);
+  box-shadow: 0 12px 34px rgba(0,0,0,.18);
   font-size: .72rem;
   font-weight: 800;
   letter-spacing: .14em;
+  line-height: 1;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
-.ty-header__inner > p span {
-  width: 24px;
-  height: 24px;
-  display: grid;
-  place-items: center;
+.ty-order-status__dot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
   border-radius: 50%;
   background: var(--ty-yellow);
-  color: var(--ty-navy);
-  font-size: .8rem;
+  box-shadow: 0 0 0 4px rgba(244,185,35,.12);
 }
 
 .ty-hero {
@@ -127,6 +133,96 @@
 
 .ty-confirmation-mark svg { width: 37px; fill: none; stroke: var(--ty-yellow); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
 
+.ty-state-panel[hidden],
+[data-confirmed-content][hidden],
+.ty-verification-visual[hidden] { display: none !important; }
+
+.ty-state-panel .ty-button { margin-top: 30px; }
+
+.ty-confirmation-mark--pending span {
+  color: var(--ty-yellow);
+  font-size: 1.2rem;
+  font-weight: 900;
+  letter-spacing: .18em;
+}
+
+.ty-confirmation-mark--neutral {
+  border-color: rgba(255,255,255,.28);
+  background: rgba(255,255,255,.05);
+  box-shadow: 0 0 0 10px rgba(255,255,255,.02);
+}
+
+.ty-confirmation-mark--neutral span {
+  color: #fff;
+  font-family: Georgia, serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.ty-verification-spinner {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  margin-bottom: 28px;
+  border: 1px solid rgba(244,185,35,.25);
+  border-radius: 50%;
+}
+
+.ty-verification-spinner::before,
+.ty-verification-spinner span {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border: 2px solid transparent;
+  border-top-color: var(--ty-yellow);
+  border-radius: 50%;
+  animation: ty-spin 1.1s linear infinite;
+}
+
+.ty-verification-spinner span { inset: 13px; border-top-color: rgba(255,255,255,.58); animation-direction: reverse; animation-duration: 1.6s; }
+
+.ty-secure-note {
+  max-width: 620px;
+  margin-top: 34px;
+  padding: 17px 19px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  border: 1px solid rgba(255,255,255,.13);
+  border-radius: 12px;
+  background: rgba(255,255,255,.04);
+}
+
+.ty-secure-note span { color: var(--ty-yellow); font-weight: 900; }
+.ty-secure-note p { margin: 0; color: rgba(255,255,255,.6); font-size: .84rem; line-height: 1.55; }
+
+.ty-verification-visual {
+  position: relative;
+  min-height: 430px;
+  display: grid;
+  place-items: center;
+}
+
+.ty-verification-visual::before,
+.ty-verification-visual::after {
+  content: "";
+  position: absolute;
+  width: 360px;
+  height: 360px;
+  border: 1px solid rgba(244,185,35,.12);
+  border-radius: 50%;
+}
+
+.ty-verification-visual::after { width: 260px; height: 260px; border-color: rgba(40,126,216,.18); }
+.ty-verification-visual > div { position: relative; z-index: 2; width: 180px; height: 180px; display: grid; place-content: center; text-align: center; border: 1px solid rgba(255,255,255,.18); border-radius: 50%; background: rgba(255,255,255,.04); box-shadow: 0 25px 70px rgba(0,0,0,.24); }
+.ty-verification-visual strong { color: #fff; font-size: .86rem; letter-spacing: .18em; }
+.ty-verification-visual small { margin-top: 8px; color: rgba(255,255,255,.47); font-size: .66rem; letter-spacing: .08em; }
+.ty-verification-visual span, .ty-verification-visual i { position: absolute; width: 7px; height: 7px; border-radius: 50%; background: var(--ty-yellow); box-shadow: 0 0 18px var(--ty-yellow); animation: ty-orbit 4s linear infinite; }
+.ty-verification-visual i { animation-duration: 6s; animation-direction: reverse; opacity: .65; }
+
+@keyframes ty-spin { to { transform: rotate(360deg); } }
+@keyframes ty-orbit { from { transform: rotate(0deg) translateX(130px) rotate(0deg); } to { transform: rotate(360deg) translateX(130px) rotate(-360deg); } }
+
 .ty-eyebrow {
   display: flex;
   align-items: center;
@@ -186,9 +282,11 @@
 }
 
 .ty-email-callout svg, .ty-step-icon svg { width: 23px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.ty-email-callout strong { display: block; margin-bottom: 5px; color: #fff; font-size: 1.05rem; }
+.ty-email-callout > div > strong { display: block; margin-bottom: 5px; color: #fff; font-size: 1.05rem; }
 .ty-email-callout p { margin: 0; color: rgba(255,255,255,.72); font-size: .94rem; line-height: 1.55; }
-.ty-product-meta { margin: 20px 0 0; color: rgba(255,255,255,.56); font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.ty-email-callout p strong { display: inline; margin: 0; color: #fff; font-size: inherit; }
+.ty-email-timing { display: block; margin-top: 4px; }
+.thank-you-page .ty-product-meta { margin: 24px 0 0; color: rgba(255,255,255,.56); font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .ty-product-meta span { padding: 0 7px; color: var(--ty-yellow); }
 
 .ty-product-stack { position: relative; height: 600px; perspective: 1400px; }
@@ -330,10 +428,9 @@
 @media (max-width: 760px) {
   .ty-container { width: min(calc(100% - 28px), 1180px); }
   .ty-header__inner { min-height: 64px; }
-  .ty-header__inner > p { font-size: .6rem; letter-spacing: .1em; }
-  .ty-header__inner > p span { width: 21px; height: 21px; }
+  .ty-header__inner > p { padding: 9px 11px 9px 10px; font-size: .6rem; letter-spacing: .1em; }
   .ty-header .course-logo { font-size: .76rem; }
-  .ty-header .course-logo img { width: 27px; height: 27px; }
+  .ty-header .course-logo--brand img { width: 82px; height: auto; }
   .ty-hero { padding: 100px 0 48px; }
   .ty-hero__grid { display: flex; flex-direction: column; align-items: stretch; gap: 30px; }
   .ty-confirmation-mark { width: 54px; height: 54px; margin-bottom: 21px; box-shadow: 0 0 0 7px rgba(244,185,35,.035); }
@@ -344,10 +441,14 @@
   .ty-hero__subtitle { margin-top: 19px; font-size: 1.05rem; }
   .ty-email-callout { margin-top: 23px; padding: 17px; grid-template-columns: 37px 1fr; gap: 12px; }
   .ty-email-callout__icon { width: 37px; height: 37px; }
-  .ty-email-callout strong { font-size: .94rem; }
+  .ty-email-callout > div > strong { font-size: .94rem; }
   .ty-email-callout p { font-size: .84rem; }
-  .ty-product-meta { margin-top: 15px; font-size: .65rem; }
+  .thank-you-page .ty-product-meta { margin-top: 22px; font-size: .65rem; }
   .ty-product-stack { width: 100%; height: 295px; transform: none; }
+  .ty-verification-visual { min-height: 290px; }
+  .ty-verification-visual::before { width: 250px; height: 250px; }
+  .ty-verification-visual::after { width: 185px; height: 185px; }
+  .ty-verification-visual > div { width: 135px; height: 135px; }
   .ty-product-page--guide { width: 165px; height: 234px; left: calc(50% - 116px); top: 27px; }
   .ty-product-page--workbook { width: 143px; height: 202px; right: calc(50% - 122px); top: 54px; }
   .ty-product-page--back { width: 110px; height: 156px; right: calc(50% - 98px); top: 0; }
@@ -414,4 +515,8 @@
 @media (prefers-reduced-motion: reduce) {
   [data-reveal] { opacity: 1; transform: none; transition: none; }
   .ty-button { transition: none; }
+  .ty-verification-spinner::before,
+  .ty-verification-spinner span,
+  .ty-verification-visual span,
+  .ty-verification-visual i { animation: none; }
 }

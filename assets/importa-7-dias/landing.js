@@ -69,7 +69,7 @@
   }
 
   function checkoutUrlWithAttribution() {
-    if (!config.checkoutUrl) return "";
+    if (!config.checkoutEnabled || !config.checkoutUrl) return "";
 
     try {
       const checkout = new URL(config.checkoutUrl, window.location.origin);
@@ -110,6 +110,11 @@
         });
 
         if (checkoutUrl) {
+          trackEvent("importa7_checkout_click", {
+            placement,
+            value: config.price || 179,
+            currency: config.currency || "EUR",
+          });
           trackEvent("importa7_begin_checkout", {
             placement,
             value: config.price || 179,
@@ -175,49 +180,6 @@
     }, { threshold: [0.15, 0.3, 0.5, 0.7], rootMargin: "-15% 0px -45%" });
 
     stages.forEach((stage) => observer.observe(stage));
-  }
-
-  function initGallery() {
-    const gallery = document.querySelector("[data-preview-gallery]");
-    const dialog = document.querySelector("[data-preview-dialog]");
-    if (!gallery) return;
-
-    const scrollAmount = () => Math.min(gallery.clientWidth * 0.86, 430);
-    document.querySelector("[data-gallery-prev]")?.addEventListener("click", () => {
-      gallery.scrollBy({ left: -scrollAmount(), behavior: "smooth" });
-    });
-    document.querySelector("[data-gallery-next]")?.addEventListener("click", () => {
-      gallery.scrollBy({ left: scrollAmount(), behavior: "smooth" });
-    });
-
-    if (!dialog) return;
-    const dialogImage = dialog.querySelector("[data-preview-dialog-image]");
-    const dialogTitle = dialog.querySelector("[data-preview-dialog-title]");
-
-    gallery.querySelectorAll("[data-preview-src]").forEach((button) => {
-      button.addEventListener("click", () => {
-        const source = button.dataset.previewSrc;
-        const title = button.dataset.previewTitle || "Vista de la guía";
-        if (dialogImage) {
-          dialogImage.src = source;
-          dialogImage.alt = `Vista ampliada: ${title}`;
-        }
-        if (dialogTitle) dialogTitle.textContent = title;
-        trackEvent("importa7_preview_open", { preview: title, source });
-
-        if (typeof dialog.showModal === "function") dialog.showModal();
-        else dialog.setAttribute("open", "");
-      });
-    });
-
-    const closeDialog = () => {
-      if (typeof dialog.close === "function") dialog.close();
-      else dialog.removeAttribute("open");
-    };
-    dialog.querySelector("[data-preview-close]")?.addEventListener("click", closeDialog);
-    dialog.addEventListener("click", (event) => {
-      if (event.target === dialog) closeDialog();
-    });
   }
 
   function initFaqTracking() {
@@ -358,7 +320,6 @@
   initPurchaseCtas();
   initReveal();
   initJourney();
-  initGallery();
   initFaqTracking();
   initVideo();
   initConfigLinks();

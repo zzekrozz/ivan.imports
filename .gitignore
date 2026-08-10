@@ -1,0 +1,13 @@
+node_modules/
+.npm-cache/
+.vercel/
+.env
+.env.*
+!.env.example
+*.pdf
+private-products/
+coverage/
+npm-debug.log*
+.agents/
+.claude/
+skills-lock.json

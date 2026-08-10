@@ -1,65 +1,64 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('consent', 'default', {
-      ad_storage: 'denied',
-      analytics_storage: 'denied',
-      ad_user_data: 'denied',
-      ad_personalization: 'denied',
-      wait_for_update: 500
-    });
-  </script>
-  <!-- Google Tag Manager -->
-  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-  })(window,document,'script','dataLayer','GTM-PRKZJFTT');</script>
-  <!-- End Google Tag Manager -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="robots" content="noindex, follow">
-  <title>Compra confirmada | Importa tu coche en 7 días</title>
-  <meta name="description" content="Tu compra de Importa tu coche en 7 días está confirmada. Consulta qué recibirás por email y cómo empezar.">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="referrer" content="no-referrer">
+  <title>Comprobando tu compra | Importa tu coche en 7 días</title>
+  <meta name="description" content="Comprobación segura de tu compra de Importa tu coche en 7 días.">
   <link rel="canonical" href="https://ivanimports.es/importa-en-7-dias/gracias/">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#071827">
   <link rel="stylesheet" href="/assets/importa-7-dias/landing.css">
   <link rel="stylesheet" href="/assets/importa-7-dias/thanks.css">
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-15ZVE8D75F"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-15ZVE8D75F');
-  </script>
 </head>
-<body class="course-landing thank-you-page">
-  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PRKZJFTT" height="0" width="0" style="display:none;visibility:hidden" title="Google Tag Manager"></iframe></noscript>
+<body class="course-landing thank-you-page" data-order-status="checking">
 
   <header class="ty-header">
     <div class="ty-container ty-header__inner">
-      <a class="course-logo" href="/" aria-label="IvanImports, página principal">
-        <img src="/favicon.svg" width="32" height="32" alt="">
-        <span>IVAN<span>IMPORTS</span></span>
+      <a class="course-logo course-logo--brand" href="/" aria-label="IvanImports, página principal">
+        <img src="/assets/importa-7-dias/brand/ivan-imports-logo.webp" width="1000" height="670" alt="IvanImports">
       </a>
-      <p><span aria-hidden="true">✓</span> Compra confirmada</p>
+      <p class="ty-order-status"><span class="ty-order-status__dot" aria-hidden="true"></span><span data-order-header>Comprobando compra</span></p>
     </div>
   </header>
 
   <main>
-    <section class="ty-hero" aria-labelledby="thank-you-title">
+    <section class="ty-hero" aria-label="Estado de la compra">
       <div class="ty-hero__glow" aria-hidden="true"></div>
       <div class="ty-container ty-hero__grid">
-        <div class="ty-hero__copy" data-reveal>
+        <div class="ty-hero__copy" aria-live="polite">
+          <div class="ty-state-panel" data-order-panel="checking">
+            <div class="ty-verification-spinner" aria-hidden="true"><span></span></div>
+            <p class="ty-eyebrow"><span></span> Comprobando tu compra</p>
+            <h1>Estamos confirmando que todo está correcto.</h1>
+            <p class="ty-hero__subtitle">Solo tardaremos unos segundos.</p>
+            <div class="ty-secure-note"><span aria-hidden="true">✓</span><p>La verificación se realiza directamente con Stripe. Esta página no recibe ni almacena datos bancarios.</p></div>
+          </div>
+
+          <div class="ty-state-panel" data-order-panel="pending" hidden>
+            <div class="ty-confirmation-mark ty-confirmation-mark--pending" aria-hidden="true"><span>···</span></div>
+            <p class="ty-eyebrow"><span></span> Pago en proceso</p>
+            <h1>Tu pago todavía se está procesando.</h1>
+            <p class="ty-hero__subtitle">Cuando Stripe confirme el pago, enviaremos automáticamente el material al correo utilizado.</p>
+            <div class="ty-email-callout"><span class="ty-email-callout__icon" aria-hidden="true">✉</span><div><strong>No necesitas dejar esta página abierta.</strong><p>El webhook de Stripe activa la entrega aunque cierres esta pestaña.</p></div></div>
+          </div>
+
+          <div class="ty-state-panel" data-order-panel="unverified" hidden>
+            <div class="ty-confirmation-mark ty-confirmation-mark--neutral" aria-hidden="true"><span>i</span></div>
+            <p class="ty-eyebrow"><span></span> Verificación no completada</p>
+            <h1>No hemos podido verificar esta compra desde esta página.</h1>
+            <p class="ty-hero__subtitle">Si acabas de pagar, revisa tu correo durante los próximos minutos. Si no recibes nada, contacta con IvanImports indicando el email utilizado en el pago.</p>
+            <a class="ty-button" href="/#contacto">Contactar con IvanImports</a>
+          </div>
+
+          <div class="ty-state-panel" data-order-panel="confirmed" hidden>
           <div class="ty-confirmation-mark" aria-hidden="true">
             <svg viewBox="0 0 64 64" role="img"><path d="M18 33.5 27.5 43 47 22"/></svg>
           </div>
           <p class="ty-eyebrow"><span></span> Compra confirmada</p>
-          <h1 id="thank-you-title">Ya tienes<br><em>tu sistema.</em></h1>
+          <h1>Ya estás<br><em>dentro.</em></h1>
           <p class="ty-hero__subtitle">Importa tu coche en 7 días ya forma parte de tu próxima operación.</p>
           <div class="ty-email-callout">
             <span class="ty-email-callout__icon" aria-hidden="true">
@@ -67,13 +66,18 @@
             </span>
             <div>
               <strong>Ahora, revisa tu correo.</strong>
-              <p>En unos minutos recibirás en el correo utilizado durante el pago todo lo necesario para empezar: la guía principal y el cuaderno de trabajo.</p>
+              <p>Estamos enviando la guía principal y el cuaderno de trabajo a <strong data-masked-email>tu correo de compra</strong><span class="ty-email-timing">El mensaje suele llegar en unos minutos.</span></p>
             </div>
           </div>
           <p class="ty-product-meta">150 páginas + cuaderno de trabajo <span>·</span> Edición 2026</p>
+          </div>
         </div>
 
-        <div class="ty-product-stack" aria-label="Guía principal y cuaderno de trabajo" data-reveal>
+        <div class="ty-verification-visual" data-verification-visual aria-hidden="true">
+          <div><span></span><i></i><strong>STRIPE</strong><small>Verificación segura</small></div>
+        </div>
+
+        <div class="ty-product-stack" aria-label="Guía principal y cuaderno de trabajo" data-confirmed-content hidden>
           <div class="ty-product-stack__halo" aria-hidden="true"></div>
           <figure class="ty-product-page ty-product-page--back">
             <img src="/assets/importa-7-dias/previews/inspection.webp" width="720" height="1019" alt="Vista parcial de una página de inspección de la guía">
@@ -89,7 +93,7 @@
       </div>
     </section>
 
-    <section class="ty-section ty-next" aria-labelledby="next-title">
+    <section class="ty-section ty-next" aria-labelledby="next-title" data-confirmed-content hidden>
       <div class="ty-container">
         <div class="ty-section-heading" data-reveal>
           <p class="ty-eyebrow ty-eyebrow--dark"><span></span> Los próximos minutos</p>
@@ -126,7 +130,7 @@
       </div>
     </section>
 
-    <section class="ty-section ty-system" aria-labelledby="system-title">
+    <section class="ty-section ty-system" aria-labelledby="system-title" data-confirmed-content hidden>
       <div class="ty-container">
         <div class="ty-system__intro" data-reveal>
           <p class="ty-eyebrow"><span></span> Un sistema de consulta</p>
@@ -140,7 +144,7 @@
       </div>
     </section>
 
-    <section class="ty-section ty-workbook" aria-labelledby="workbook-title">
+    <section class="ty-section ty-workbook" aria-labelledby="workbook-title" data-confirmed-content hidden>
       <div class="ty-container ty-workbook__grid">
         <div class="ty-workbook__visual" data-reveal>
           <figure class="ty-workbook__cover">
@@ -163,7 +167,7 @@
       </div>
     </section>
 
-    <section class="ty-section ty-bonus" data-thank-you-launch hidden aria-labelledby="bonus-title">
+    <section class="ty-section ty-bonus" data-thank-you-launch data-confirmed-content hidden aria-labelledby="bonus-title">
       <div class="ty-container">
         <div class="ty-bonus__card" data-reveal>
           <div class="ty-bonus__number"><strong data-support-days>14</strong><span>días</span></div>
@@ -181,7 +185,7 @@
       </div>
     </section>
 
-    <section class="ty-section ty-future" aria-labelledby="future-title">
+    <section class="ty-section ty-future" aria-labelledby="future-title" data-confirmed-content hidden>
       <div class="ty-container ty-future__grid">
         <div data-reveal>
           <p class="ty-eyebrow ty-eyebrow--dark"><span></span> Evolución del sistema</p>
@@ -196,7 +200,7 @@
       </div>
     </section>
 
-    <section class="ty-section ty-start" aria-labelledby="start-title">
+    <section class="ty-section ty-start" aria-labelledby="start-title" data-confirmed-content hidden>
       <div class="ty-container">
         <div class="ty-section-heading ty-section-heading--center" data-reveal>
           <p class="ty-eyebrow"><span></span> Mi recomendación</p>
@@ -211,18 +215,18 @@
       </div>
     </section>
 
-    <section class="ty-section ty-help" aria-labelledby="help-title">
+    <section class="ty-section ty-help" aria-labelledby="help-title" data-confirmed-content hidden>
       <div class="ty-container ty-help__card" data-reveal>
         <div>
           <p class="ty-eyebrow ty-eyebrow--dark"><span></span> Soporte</p>
           <h2 id="help-title">¿No llega el correo?</h2>
           <p>Espera unos minutos y revisa también Promociones, Spam o Correo no deseado.</p>
         </div>
-        <a class="ty-button ty-button--dark" href="#" data-commercial-whatsapp>Contactar con IvanImports <span>↗</span></a>
+        <a class="ty-button ty-button--dark" href="/#contacto">Contactar con IvanImports <span>↗</span></a>
       </div>
     </section>
 
-    <section class="ty-final" aria-labelledby="final-title">
+    <section class="ty-final" aria-labelledby="final-title" data-confirmed-content hidden>
       <div class="ty-final__road" aria-hidden="true"></div>
       <div class="ty-container ty-final__grid">
         <div class="ty-final__copy" data-reveal>

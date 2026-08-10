@@ -12,15 +12,15 @@
     launchBonus: true,
     supportDays: 14,
 
-    // Obligatorio antes de publicar. Debe ser una URL HTTPS del checkout definitivo.
-    checkoutUrl: "",
+    // El enlace LIVE queda centralizado, pero no se abre hasta completar la prueba integral en Stripe TEST.
+    checkoutEnabled: false,
+    checkoutUrl: "https://buy.stripe.com/dRmcN6a3K0jdd2ra3m8N207",
 
     // Opcional. La sección de vídeo no se renderiza mientras esta URL esté vacía.
     videoUrl: "",
     videoPoster: "",
 
     thankYouUrl: "/importa-en-7-dias/gracias/",
-    commercialWhatsApp: site.contact?.whatsappPhone || "34674252436",
     social: Object.freeze({
       tiktok: site.social?.tiktok || "https://www.tiktok.com/@ivan.imports",
       youtube: site.social?.youtube || "",

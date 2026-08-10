@@ -1,0 +1,46 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+"outputDirectory": ".",
+  "cleanUrls": true,
+  "functions": {
+    "api/importa-7-dias.js": {
+      "maxDuration": 60
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/stripe-importa-7-dias",
+      "destination": "/api/importa-7-dias?action=webhook"
+    },
+    {
+      "source": "/api/importa-7-dias/order-status",
+      "destination": "/api/importa-7-dias?action=order-status"
+    },
+    {
+      "source": "/api/importa-7-dias/download",
+      "destination": "/api/importa-7-dias?action=download"
+    },
+    {
+      "source": "/api/importa-7-dias/reissue",
+      "destination": "/api/importa-7-dias?action=reissue"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/importa-en-7-dias/gracias/(.*)",
+      "headers": [
+        { "key": "Referrer-Policy", "value": "no-referrer" },
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Cache-Control", "value": "private, no-store" }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Cache-Control", "value": "private, no-store" }
+      ]
+    }
+  ]
+}
