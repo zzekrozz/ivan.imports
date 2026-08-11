@@ -9,6 +9,7 @@ const requiredRoutes = [
   "copart/index.html",
   "empieza/index.html",
   "consultoria/index.html",
+  "go/index.html",
   "importa-en-7-dias/index.html",
   "importa-en-7-dias/gracias/index.html",
 ];
@@ -49,7 +50,7 @@ function walk(directory) {
 const pdfs = walk(root).filter((file) => extname(file).toLowerCase() === ".pdf");
 if (pdfs.length) failures.push("No puede haber PDF completos dentro del proyecto");
 
-for (const htmlRelative of ["importa-en-7-dias/index.html", "importa-en-7-dias/gracias/index.html"]) {
+for (const htmlRelative of ["go/index.html", "importa-en-7-dias/index.html", "importa-en-7-dias/gracias/index.html"]) {
   const html = readFileSync(join(root, htmlRelative), "utf8");
   const references = [...html.matchAll(/(?:src|href)=["']([^"']+)["']/g)].map((match) => match[1]);
   for (const reference of references) {

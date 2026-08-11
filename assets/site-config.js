@@ -6,13 +6,18 @@ window.IVAN_IMPORTS_CONFIG = Object.freeze({
     address: "",
   },
   siteUrl: "https://ivanimports.es",
+  promoGo: {
+    active: true,
+    label: "50% · 10 PLAZAS",
+    code: "AGOSTO50",
+  },
   contact: {
     whatsappPhone: "34674252436",
     email: "",
   },
   social: {
     tiktok: "https://www.tiktok.com/@ivan.imports",
-    youtube: "",
+    youtube: "https://www.youtube.com/@IvanPogg",
     instagram: "",
   },
   products: {
