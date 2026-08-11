@@ -59,7 +59,7 @@
             <div class="route-board-head"><strong>Una sesión, un objetivo claro</strong><span class="route-status" aria-label="Disponible bajo consulta"></span></div>
             <div class="route-list">
               <div class="route-row"><span>Formato</span><strong>Llamada práctica</strong></div>
-              <div class="route-row"><span>Duración</span><strong>15 o 45 minutos</strong></div>
+              <div class="route-row"><span>Duración</span><strong>30 o 60 minutos</strong></div>
               <div class="route-row"><span>Reserva</span><strong>Por WhatsApp</strong></div>
             </div>
           </aside>
@@ -85,25 +85,25 @@
         <div class="section-head fade-up">
           <span class="section-label">Sesiones</span>
           <h2 id="sesiones-title">Elige el tiempo que necesita tu caso</h2>
-          <p>Los importes se conservan desde la web actual y están centralizados para poder modificarlos en un único archivo.</p>
+          <p>Dos duraciones claras, con precio final e IVA incluido. La reserva se confirma directamente según disponibilidad.</p>
         </div>
         <div class="consultation-grid">
-          <article class="consultation-option fade-up">
-            <span class="tag">Consulta exprés · 15 minutos</span>
-            <h3>Una duda concreta</h3>
-            <div class="page-price" data-price="consultationExpress">30 €</div>
-            <p>Para confirmar un paso, revisar un dato o decidir qué deberías comprobar antes de avanzar.</p>
+          <article class="consultation-option fade-up" id="consulta-30">
+            <span class="tag">Consultoría · 30 minutos</span>
+            <h3>Resolver dudas concretas</h3>
+            <div class="page-price consultation-price" data-price="consultation30"><span data-price-amount>60 €</span><small data-price-vat>IVA incluido</small></div>
+            <p>Para resolver dudas concretas, revisar una operación o comentar tu caso conmigo.</p>
             <div class="service-actions">
-              <a href="#" class="btn btn-dark btn-full js-whatsapp-link" data-track="click_consultation_express" data-wa-message="Hola Iván, quiero reservar la consulta exprés de 15 minutos.">Reservar 15 minutos</a>
+              <a href="#" class="btn btn-dark btn-full js-whatsapp-link" data-consulting-booking="consultation30" data-track="click_consultation_30" data-wa-message="Hola Iván, quiero reservar la consultoría de 30 minutos por 60 € IVA incluido.">Reservar 30 minutos</a>
             </div>
           </article>
-          <article class="consultation-option fade-up">
-            <span class="tag">Consulta completa · 45 minutos</span>
-            <h3>Revisar el caso con contexto</h3>
-            <div class="page-price" data-price="consultationFull">70 €</div>
-            <p>Para analizar una compra, comparar opciones, revisar costes o ordenar varios pasos del proceso.</p>
+          <article class="consultation-option consultation-option--complete fade-up" id="consulta-60">
+            <span class="tag">Más completa · 60 minutos</span>
+            <h3>Analizar el caso en profundidad</h3>
+            <div class="page-price consultation-price" data-price="consultation60"><span data-price-amount>90 €</span><small data-price-vat>IVA incluido</small></div>
+            <p>Para analizar tu caso con más profundidad, revisar vehículos, costes, documentación o plantear todo el proceso.</p>
             <div class="service-actions">
-              <a href="#" class="btn btn-primary btn-full js-whatsapp-link" data-track="click_consultation_full" data-wa-message="Hola Iván, quiero reservar la consulta completa de 45 minutos.">Reservar 45 minutos</a>
+              <a href="#" class="btn btn-primary btn-full js-whatsapp-link" data-consulting-booking="consultation60" data-track="click_consultation_60" data-wa-message="Hola Iván, quiero reservar la consultoría de 60 minutos por 90 € IVA incluido.">Reservar 60 minutos</a>
             </div>
           </article>
         </div>

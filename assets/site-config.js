@@ -42,15 +42,21 @@ window.IVAN_IMPORTS_CONFIG = Object.freeze({
       vatAmount: 68.90,
       label: "397 € IVA incluido",
     },
-    consultationExpress: {
-      amount: 30,
-      minutes: 15,
-      label: "30 €",
+    consultation30: {
+      amount: 60,
+      minutes: 30,
+      vatIncluded: true,
+      label: "60 € IVA incluido",
+      bookingUrl: "",
+      fallbackHref: "/consultoria/#consulta-30",
     },
-    consultationFull: {
-      amount: 70,
-      minutes: 45,
-      label: "70 €",
+    consultation60: {
+      amount: 90,
+      minutes: 60,
+      vatIncluded: true,
+      label: "90 € IVA incluido",
+      bookingUrl: "",
+      fallbackHref: "/consultoria/#consulta-60",
     },
   },
   dossier: {

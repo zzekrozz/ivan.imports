@@ -51,6 +51,35 @@
     promoProgress.hidden = false;
   }
 
+  document.querySelectorAll("[data-go-consultation]").forEach((card) => {
+    const option = config.prices?.[card.dataset.goConsultation];
+    if (!option) return;
+
+    const minutes = card.querySelector("[data-go-consultation-minutes]");
+    const amount = card.querySelector("[data-go-consultation-amount]");
+    const vat = card.querySelector("[data-go-consultation-vat]");
+    if (minutes && Number.isFinite(Number(option.minutes))) minutes.textContent = String(Number(option.minutes));
+    if (amount && Number.isFinite(Number(option.amount))) amount.textContent = `${Number(option.amount)} €`;
+    if (vat) vat.textContent = option.vatIncluded === true ? "IVA incluido" : "";
+
+    const destination = String(option.bookingUrl || option.fallbackHref || "").trim();
+    if (!destination) return;
+    card.href = destination;
+    if (/^https?:\/\//.test(destination)) {
+      card.target = "_blank";
+      card.rel = "noopener noreferrer";
+    }
+  });
+
+  document.querySelectorAll("[data-go-social]").forEach((link) => {
+    const destination = String(config.social?.[link.dataset.goSocial] || "").trim();
+    if (!destination) {
+      link.hidden = true;
+      return;
+    }
+    link.href = destination;
+  });
+
   document.querySelectorAll("[data-go-track]").forEach(bindTrackedLink);
   trackEvent("go_view", { path: window.location.pathname });
 })();
