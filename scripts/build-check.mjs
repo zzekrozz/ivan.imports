@@ -35,6 +35,20 @@ const occurrences = publicSource.split(paymentLink).length - 1;
 if (occurrences !== 1) failures.push(`El Payment Link debe aparecer una vez en el frontend; aparece ${occurrences}`);
 if (/STRIPE_SECRET_KEY|STRIPE_WEBHOOK_SECRET|RESEND_API_KEY|UPSTASH_REDIS_REST_TOKEN/.test(publicSource)) failures.push("Una variable privada aparece en el frontend");
 
+const goSource = readFileSync(join(root, "go/index.html"), "utf8");
+const siteConfigSource = readFileSync(join(root, "assets/site-config.js"), "utf8");
+const consultingSource = [
+  goSource,
+  siteConfigSource,
+  readFileSync(join(root, "assets/site.js"), "utf8"),
+  readFileSync(join(root, "consultoria/index.html"), "utf8"),
+].join("\n");
+if (!/href=["']\/academia\/["']/.test(goSource)) failures.push("/go debe enlazar la Academia gratuita");
+if (!/consultation30[\s\S]*amount:\s*60[\s\S]*minutes:\s*30/.test(siteConfigSource)) failures.push("Falta la consultoría de 30 minutos por 60 €");
+if (!/consultation60[\s\S]*amount:\s*90[\s\S]*minutes:\s*60/.test(siteConfigSource)) failures.push("Falta la consultoría de 60 minutos por 90 €");
+if (/15\s*(?:min(?:utos?)?)|45\s*(?:min(?:utos?)?)|29\s*€|70\s*€/i.test(consultingSource)) failures.push("La experiencia de consultorías conserva una duración o precio antiguo");
+if (!/code:\s*["']AGOSTO50["']/.test(siteConfigSource) || !/label:\s*["']50% · 10 PLAZAS["']/.test(siteConfigSource)) failures.push("La promoción de /go debe conservar AGOSTO50 y 50% · 10 PLAZAS");
+
 const vercel = JSON.parse(readFileSync(join(root, "vercel.json"), "utf8"));
 const rewriteSources = new Set((vercel.rewrites || []).map((rewrite) => rewrite.source));
 for (const endpoint of ["/api/stripe-importa-7-dias", "/api/importa-7-dias/order-status", "/api/importa-7-dias/download", "/api/importa-7-dias/reissue"]) {

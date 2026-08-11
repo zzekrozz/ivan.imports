@@ -6,8 +6,8 @@ const CONFIG = window.IVAN_IMPORTS_CONFIG || {
   legal: { notice: "", privacy: "" },
   prices: {
     copart: { label: "397 € IVA incluido" },
-    consultationExpress: { label: "30 €", minutes: 15 },
-    consultationFull: { label: "70 €", minutes: 45 },
+    consultation30: { amount: 60, label: "60 € IVA incluido", minutes: 30, vatIncluded: true, bookingUrl: "" },
+    consultation60: { amount: 90, label: "90 € IVA incluido", minutes: 60, vatIncluded: true, bookingUrl: "" },
   },
   dossier: { url: "/docs/guia-compra-guiada-copart.pdf", available: false },
 };
@@ -163,7 +163,22 @@ function hydrateConfigLinks() {
 function hydratePrices() {
   document.querySelectorAll("[data-price]").forEach((element) => {
     const price = CONFIG.prices[element.dataset.price];
-    if (price?.label) element.textContent = price.label;
+    if (!price) return;
+
+    const amount = element.querySelector("[data-price-amount]");
+    const vat = element.querySelector("[data-price-vat]");
+    if (amount && Number.isFinite(Number(price.amount))) amount.textContent = `${Number(price.amount)} €`;
+    if (vat) vat.textContent = price.vatIncluded === true ? "IVA incluido" : "";
+    if (!amount && price.label) element.textContent = price.label;
+  });
+}
+
+function hydrateConsultingLinks() {
+  document.querySelectorAll("[data-consulting-booking]").forEach((link) => {
+    const option = CONFIG.prices[link.dataset.consultingBooking];
+    if (!option?.bookingUrl) return;
+    link.href = option.bookingUrl;
+    externalLinkAttributes(link);
   });
 }
 
@@ -365,6 +380,7 @@ function initReveal() {
 renderSiteChrome();
 hydrateConfigLinks();
 hydratePrices();
+hydrateConsultingLinks();
 initNavigation();
 initFaq();
 initDossier();
