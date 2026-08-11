@@ -58,8 +58,7 @@ function getHeaderMarkup() {
           <ul class="nav-links">
             <li><a href="/">Inicio</a></li>
             <li><a href="/copart/">Compra guiada Copart</a></li>
-            <li><a href="/#formacion">Formación</a></li>
-            <li><a href="#" data-config-link="matriculaPro" data-track="click_matriculapro">Matriculación</a></li>
+            <li><a href="/academia/" data-track="click_academia">Academia gratuita</a></li>
             <li><a href="/consultoria/">Consultoría</a></li>
           </ul>
           <a href="#" class="btn btn-primary btn-nav js-whatsapp-link" data-track="click_whatsapp" data-wa-message="Hola Iván, vengo de la web y quiero saber qué servicio encaja con mi caso.">Hablar con Iván</a>
@@ -98,8 +97,8 @@ function getFooterMarkup() {
         <div class="footer-links" aria-label="Servicios">
           <strong>Servicios</strong>
           <a href="/copart/">Compra guiada Copart</a>
+          <a href="/academia/" data-track="click_academia">Academia gratuita</a>
           <a href="#" data-config-link="subastasPro" data-track="click_subastaspro">SubastasPro</a>
-          <a href="#" data-config-link="matriculaPro" data-track="click_matriculapro">MatriculaPRO</a>
           <a href="/consultoria/">Consultoría</a>
         </div>
         <div class="footer-links" aria-label="Contacto y redes">
