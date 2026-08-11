@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { dirname, extname, join, resolve } from "node:path";
+import { dirname, extname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -9,7 +9,9 @@ const requiredRoutes = [
   "copart/index.html",
   "empieza/index.html",
   "consultoria/index.html",
+  "academia/index.html",
   "go/index.html",
+  "placasverdes/index.html",
   "importa-en-7-dias/index.html",
   "importa-en-7-dias/gracias/index.html",
 ];
@@ -47,17 +49,33 @@ function walk(directory) {
   });
 }
 
-const pdfs = walk(root).filter((file) => extname(file).toLowerCase() === ".pdf");
-if (pdfs.length) failures.push("No puede haber PDF completos dentro del proyecto");
+const allFiles = walk(root);
+const publicPdfRelative = "assets/academia/otorgamiento_ES.pdf";
+const publicPdf = join(root, publicPdfRelative);
+const unexpectedPdfs = allFiles
+  .filter((file) => extname(file).toLowerCase() === ".pdf")
+  .filter((file) => relative(root, file).replaceAll("\\", "/") !== publicPdfRelative);
+if (unexpectedPdfs.length) failures.push("Solo se permite el formulario público oficial de representación dentro del proyecto");
+if (!existsSync(publicPdf)) {
+  failures.push(`Falta el documento público: ${publicPdfRelative}`);
+} else if (!readFileSync(publicPdf).subarray(0, 5).equals(Buffer.from("%PDF-"))) {
+  failures.push(`El documento no es un PDF válido: ${publicPdfRelative}`);
+}
 
-for (const htmlRelative of ["go/index.html", "importa-en-7-dias/index.html", "importa-en-7-dias/gracias/index.html"]) {
+const intentionallyUnavailableReferences = new Set(["/docs/guia-compra-guiada-copart.pdf"]);
+const htmlFiles = allFiles
+  .filter((file) => extname(file).toLowerCase() === ".html")
+  .map((file) => relative(root, file));
+
+for (const htmlRelative of htmlFiles) {
   const html = readFileSync(join(root, htmlRelative), "utf8");
   const references = [...html.matchAll(/(?:src|href)=["']([^"']+)["']/g)].map((match) => match[1]);
   for (const reference of references) {
     if (/^(?:https?:|mailto:|tel:|#)/.test(reference)) continue;
     const clean = reference.split(/[?#]/)[0];
-    if (!clean || clean.endsWith("/")) continue;
-    const target = clean.startsWith("/") ? join(root, clean.slice(1)) : resolve(dirname(join(root, htmlRelative)), clean);
+    if (!clean || intentionallyUnavailableReferences.has(clean)) continue;
+    let target = clean.startsWith("/") ? join(root, clean.slice(1)) : resolve(dirname(join(root, htmlRelative)), clean);
+    if (clean.endsWith("/")) target = join(target, "index.html");
     if (!existsSync(target)) failures.push(`${htmlRelative}: referencia inexistente ${reference}`);
   }
 }
@@ -67,4 +85,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log("Build estático validado: rutas, assets, rewrites, checkout LIVE y ausencia de PDF.");
+console.log("Build estático validado: rutas, assets, enlaces, PDF público, rewrites y checkout LIVE.");

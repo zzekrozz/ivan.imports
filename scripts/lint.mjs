@@ -23,8 +23,13 @@ for (const file of files.filter((candidate) => codeExtensions.has(extname(candid
   if (result.status !== 0) failures.push(`${relative(root, file)}: ${result.stderr.trim()}`);
 }
 
-const pdfs = files.filter((file) => extname(file).toLowerCase() === ".pdf");
-if (pdfs.length) failures.push(`PDF privados dentro del proyecto: ${pdfs.map((file) => relative(root, file)).join(", ")}`);
+const publicPdfAllowlist = new Set(["assets/academia/otorgamiento_ES.pdf"]);
+const unexpectedPdfs = files
+  .filter((file) => extname(file).toLowerCase() === ".pdf")
+  .filter((file) => !publicPdfAllowlist.has(relative(root, file).replaceAll("\\", "/")));
+if (unexpectedPdfs.length) {
+  failures.push(`PDF no permitidos dentro del proyecto: ${unexpectedPdfs.map((file) => relative(root, file)).join(", ")}`);
+}
 
 const forbiddenSecrets = [
   ["Stripe secret key", /\bsk_(?:live|test)_[A-Za-z0-9]{16,}\b/],

@@ -689,6 +689,25 @@ p {
   border-top-color: var(--yellow);
 }
 
+.path-card--soon {
+  background: #efeee9;
+}
+
+.availability-note {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  padding: .8rem 1.15rem;
+  border: 1px dashed #aeb5b6;
+  border-radius: 6px;
+  color: #687277;
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
 .path-card h3,
 .service-card h3,
 .step-card h3,

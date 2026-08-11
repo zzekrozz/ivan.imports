@@ -203,11 +203,6 @@ body.course-landing:not(.thank-you-page) {
   white-space: normal;
 }
 
-.launch-bar__mobile-copy,
-.hero-mobile {
-  display: none;
-}
-
 .countdown {
   display: flex;
   align-items: center;
@@ -1661,41 +1656,32 @@ body.course-landing:not(.thank-you-page) {
 @media (max-width: 720px) {
   body.course-landing:not(.thank-you-page) { padding-bottom: calc(82px + env(safe-area-inset-bottom)); }
   .section { padding-block: 82px; }
-  .launch-bar__inner { grid-template-columns: minmax(0, 1fr) auto; gap: 6px; min-height: 48px; padding-block: 6px; }
-  .launch-bar__desktop-copy { display: none; }
-  .launch-bar__mobile-copy { display: block; }
-  .launch-bar__copy strong { font-size: 0.64rem; font-weight: 800; letter-spacing: 0.055em; line-height: 1.25; text-transform: uppercase; }
-  .countdown { gap: 0; }
-  .countdown > span { min-width: 22px; }
-  .countdown strong { font-size: 0.7rem; }
-  .countdown small { display: none; }
-  .countdown i { margin-inline: 1px; font-size: 0.62rem; }
+  .launch-bar__inner { grid-template-columns: minmax(0, 1fr) auto; gap: 10px; min-height: 76px; }
+  .launch-bar__copy strong { font-size: 0.74rem; }
+  .launch-bar__copy > span { font-size: 0.7rem; }
+  .countdown { gap: 1px; }
+  .countdown > span { min-width: 26px; }
+  .countdown strong { font-size: 0.78rem; }
+  .countdown small { font-size: 0.43rem; }
   .course-header__inner { grid-template-columns: minmax(130px, 180px) auto; gap: 12px; }
   .course-header .purchase-link { min-height: 40px; padding-inline: 13px; font-size: 0.6rem; }
   .course-header .purchase-link span { display: none; }
-  .hero { min-height: auto; }
-  .hero::before { background: linear-gradient(180deg, rgba(5, 8, 13, 0.98) 0%, rgba(5, 8, 13, 0.94) 38%, rgba(5, 8, 13, 0.58) 68%, rgba(5, 8, 13, 0.9) 100%), linear-gradient(90deg, rgba(5, 8, 13, 0.88), rgba(5, 8, 13, 0.08)); }
-  .hero__media img { opacity: 0.88; object-position: 66% center; transform: scale(1.04); }
-  .hero__grid { display: none; }
-  .hero-mobile { position: relative; z-index: 2; display: grid; min-height: calc(100svh - 114px); align-content: start; padding-block: 22px 18px; }
-  .hero-mobile__eyebrow { margin: 0 0 9px; color: var(--light-gold); font-size: 0.62rem; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; }
-  .hero-mobile h1 { max-width: none; margin: 0; font-size: clamp(3.05rem, 15.8vw, 4.25rem); font-weight: 760; letter-spacing: -0.07em; line-height: 0.8; text-transform: uppercase; text-wrap: nowrap; }
-  .hero-mobile h1 span,
-  .hero-mobile h1 em { display: block; }
-  .hero-mobile h1 em { margin-top: 0.13em; color: var(--light-gold); font-size: 1em; font-style: normal; letter-spacing: -0.065em; line-height: 0.88; }
-  .hero-mobile__lead { max-width: 33ch; margin: 16px 0 0; color: #d3d9e0; font-size: 0.86rem; line-height: 1.45; }
-  .hero-mobile__actions { display: grid; gap: 7px; margin-top: 17px; }
-  .hero-mobile__actions .purchase-link { width: 100%; min-height: 52px; font-size: 0.72rem; }
-  .hero-mobile__actions p { margin: 0; color: #9ea8b3; font-size: 0.61rem; letter-spacing: 0.02em; text-align: center; }
-  .hero-mobile__product { position: relative; min-height: 176px; margin-top: 12px; overflow: hidden; border-top: 1px solid rgba(215, 174, 88, 0.2); }
-  .hero-mobile__product::before { position: absolute; right: -18%; bottom: -58%; width: 82%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, rgba(215, 174, 88, 0.22), transparent 67%); filter: blur(8px); content: ""; }
-  .hero-mobile__mockups { position: absolute; bottom: -6px; left: 5px; width: 48%; height: 172px; }
-  .hero-mobile__mockups::after { position: absolute; right: 5%; bottom: 7px; left: 2%; height: 20px; border-radius: 50%; background: rgba(0, 0, 0, 0.72); filter: blur(10px); content: ""; }
-  .hero-mobile__mockups img { position: absolute; z-index: 1; border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 7px; box-shadow: 0 20px 38px rgba(0, 0, 0, 0.65); object-fit: cover; }
-  .hero-mobile__guide { bottom: 2px; left: 5px; width: clamp(86px, 26vw, 108px); height: auto; transform: rotate(-4deg); }
-  .hero-mobile__workbook { right: 2px; bottom: 0; width: clamp(68px, 20vw, 84px); height: auto; transform: rotate(5deg); }
-  .hero-mobile__benefits { position: absolute; top: 18px; right: 0; display: grid; width: 53%; grid-template-columns: 1fr 1fr; gap: 7px; }
-  .hero-mobile__benefits span { display: grid; min-height: 48px; place-items: center; padding: 7px 5px; border: 1px solid rgba(215, 174, 88, 0.24); border-radius: 10px; background: rgba(8, 14, 22, 0.75); color: #e4e8ed; font-size: 0.55rem; font-weight: 780; letter-spacing: 0.055em; line-height: 1.25; text-align: center; text-transform: uppercase; backdrop-filter: blur(10px); }
+  .hero__grid { padding-top: 42px; }
+  .hero h1 { max-width: none; font-size: clamp(2.7rem, 12vw, 4.6rem); }
+  .hero h1 em { font-size: 0.68em; }
+  .hero__lead { font-size: 0.96rem; line-height: 1.65; }
+  .hero__lead { margin-top: 22px; }
+  .hero__actions { display: grid; }
+  .hero__actions { margin-top: 22px; }
+  .hero__actions .purchase-link { width: 100%; }
+  .hero__actions p { max-width: none; text-align: center; }
+  .hero-console { min-height: 450px; }
+  .hero-panel { min-width: 145px; padding: 11px 12px; }
+  .hero-panel--ad { top: 12%; left: 2%; }
+  .hero-panel--cost { top: 27%; right: 0; }
+  .hero-panel--docs { bottom: 28%; left: 0; }
+  .hero-panel--plate { right: 0; bottom: 14%; }
+  .hero-product-dock { right: auto; bottom: 0; left: 0; }
   .section-heading h2,
   .offer-copy h2,
   .authority-block h2,
@@ -1753,10 +1739,21 @@ body.course-landing:not(.thank-you-page) {
 @media (max-width: 430px) {
   .course-shell { width: calc(100% - 24px); }
   .launch-bar__inner { width: calc(100% - 20px); }
-  .countdown > span { min-width: 21px; }
+  .launch-bar__copy strong { letter-spacing: 0.01em; }
+  .countdown > span { min-width: 24px; }
   .course-header__inner { width: calc(100% - 24px); }
   .course-logo { width: 148px; }
+  .hero__grid { width: calc(100% - 28px); }
+  .hero__product,
   .eyebrow { font-size: 0.65rem; }
+  .hero h1 { font-size: clamp(2.55rem, 13vw, 3.45rem); }
+  .hero-console { min-height: 410px; }
+  .hero-route__from,
+  .hero-route__to { font-size: 0.52rem; }
+  .hero-panel { min-width: 128px; }
+  .hero-panel strong { font-size: 0.66rem; }
+  .hero-panel span { font-size: 0.54rem; }
+  .hero-product-dock p { display: none; }
   .value-strip__track { grid-template-columns: repeat(4, 170px); }
   .value-strip__track > div { min-height: 94px; padding: 18px; }
   .phase-map a { padding: 13px; }
@@ -1766,18 +1763,6 @@ body.course-landing:not(.thank-you-page) {
   .offer-card { padding: 28px 20px; }
   .mobile-purchase div { display: none; }
   .mobile-purchase { grid-template-columns: 1fr; }
-}
-
-@media (max-width: 350px) {
-  .launch-bar__copy strong { font-size: 0.58rem; letter-spacing: 0.035em; }
-  .countdown > span { min-width: 19px; }
-  .countdown strong { font-size: 0.64rem; }
-  .hero-mobile { width: calc(100% - 20px); padding-top: 18px; }
-  .hero-mobile h1 { font-size: 3rem; }
-  .hero-mobile__lead { font-size: 0.82rem; }
-  .hero-mobile__product { min-height: 164px; }
-  .hero-mobile__benefits { gap: 5px; }
-  .hero-mobile__benefits span { min-height: 44px; font-size: 0.5rem; }
 }
 
 @media print {

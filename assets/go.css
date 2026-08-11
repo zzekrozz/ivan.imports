@@ -231,6 +231,12 @@ body.go-page {
 .go-utility b i { color: var(--go-gold-light); font-style: normal; transition: transform 180ms ease; }
 
 .featured-product { position: relative; min-width: 0; }
+.promo-progress { position: absolute; z-index: 4; top: 16px; right: 8px; left: 4px; display: grid; gap: 4px; justify-items: end; }
+.promo-progress[hidden] { display: none; }
+.promo-progress__value { color: var(--go-gold-light); font-size: .53rem; font-weight: 900; letter-spacing: .08em; line-height: 1; }
+.promo-progress__segments { display: grid; width: min(100%, 98px); grid-template-columns: repeat(var(--progress-total), minmax(3px, 1fr)); gap: 2px; }
+.promo-progress__segments i { display: block; height: 4px; border-radius: 999px; background: rgba(255,255,255,.16); box-shadow: inset 0 1px 0 rgba(255,255,255,.05); }
+.promo-progress__segments i.is-used { background: linear-gradient(90deg, var(--go-gold), var(--go-gold-light)); box-shadow: 0 0 7px rgba(215,174,88,.35); }
 .product-glow { position: absolute; top: 12%; right: -20%; width: 118%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, rgba(105, 185, 238, 0.17), transparent 66%); filter: blur(7px); }
 .featured-product img { position: absolute; z-index: 2; height: auto; border: 1px solid rgba(255,255,255,.22); border-radius: 7px; box-shadow: 0 20px 42px rgba(0,0,0,.58); }
 .product-guide { right: 28%; bottom: -8px; width: clamp(82px, 23vw, 118px); transform: rotate(-5deg); }
@@ -250,6 +256,8 @@ body.go-page {
 .card-copy .card-kicker { margin: 0 0 3px; color: var(--go-blue); font-size: 0.46rem; }
 .card-copy h2 { margin: 0; font-size: 1.16rem; font-weight: 760; letter-spacing: -0.035em; line-height: 1; text-transform: uppercase; }
 .card-copy p { margin: 6px 0 0; color: var(--go-muted); font-size: 0.64rem; line-height: 1.3; }
+.auction-platforms { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px; }
+.auction-platforms span { display: inline-flex; min-height: 17px; align-items: center; padding: 2px 6px; border: 1px solid rgba(105,185,238,.25); border-radius: 999px; background: rgba(105,185,238,.07); color: #d4e9f7; font-size: .44rem; font-weight: 850; letter-spacing: .08em; }
 .go-card--auction > .card-action { position: absolute; z-index: 3; right: 16px; bottom: 10px; margin: 0; font-size: 0.54rem; }
 
 .auction-display {
@@ -319,6 +327,7 @@ body.go-page {
   .support-note { font-size: 0.65rem; }
   .product-guide { right: 27%; width: 136px; }
   .product-workbook { right: 3%; width: 106px; }
+  .promo-progress { top: 24px; right: 18px; left: auto; width: 126px; }
   .go-card--auction,
   .go-card--soon { min-height: 126px; grid-template-columns: minmax(0,1fr) 116px; padding: 20px 20px 20px 22px; }
   .card-copy h2 { font-size: 1.45rem; }

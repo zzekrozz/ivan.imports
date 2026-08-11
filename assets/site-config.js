@@ -10,6 +10,9 @@ window.IVAN_IMPORTS_CONFIG = Object.freeze({
     active: true,
     label: "50% · 10 PLAZAS",
     code: "AGOSTO50",
+    progressActive: true,
+    used: 3,
+    total: 10,
   },
   contact: {
     whatsappPhone: "34674252436",
@@ -22,7 +25,7 @@ window.IVAN_IMPORTS_CONFIG = Object.freeze({
   },
   products: {
     subastasPro: "https://subastaspro.ivanimports.es",
-    matriculaPro: "https://matriculapro.ivanimports.es",
+    matriculaPro: "",
     importCourse: "/importa-en-7-dias/",
   },
   legal: {

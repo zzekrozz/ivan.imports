@@ -5,6 +5,7 @@ node_modules/
 .env.*
 !.env.example
 *.pdf
+!assets/academia/otorgamiento_ES.pdf
 private-products/
 coverage/
 npm-debug.log*
