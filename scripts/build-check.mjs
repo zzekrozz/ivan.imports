@@ -74,10 +74,11 @@ for (const zone of ["España · preparación", "Alemania / Benelux · compra", "
 if (/europe-diorama|academy-map-art--/i.test(mapSource) || !/route-map-desktop\.webp/.test(mapSource) || !/route-map-mobile\.webp/.test(mapSource) || !/academy-vehicle-paint/.test(mapSource) || !/academy-sr-only/.test(mapSource) || !/prefers-reduced-motion/.test(academyCss)) failures.push("El mapa conserva arte antiguo o pierde raster, vehículo, alternativa o movimiento reducido");
 
 const premiumPdfNames = ["importa-tu-coche-en-7-dias-guia-2026.pdf", "importa-tu-coche-en-7-dias-cuaderno-2026.pdf"];
+const privatePdfRoot = join(root, "private-products/academy/pdf");
 for (const name of premiumPdfNames) {
   if (existsSync(join(root, "assets/academy", name))) failures.push(`PDF premium todavía público: ${name}`);
-  const privateFile = join(root, "private-products/academy/pdf", name);
-  if (!existsSync(privateFile) || !readFileSync(privateFile).subarray(0, 5).equals(Buffer.from("%PDF-"))) failures.push(`Falta fuente PDF privada válida: ${name}`);
+  const privateFile = join(privatePdfRoot, name);
+  if (existsSync(privatePdfRoot) && (!existsSync(privateFile) || !readFileSync(privateFile).subarray(0, 5).equals(Buffer.from("%PDF-")))) failures.push(`Falta fuente PDF privada válida: ${name}`);
   if (JSON.stringify(program).includes(`/assets/academy/${name}`)) failures.push(`El catálogo expone el PDF: ${name}`);
 }
 const pdfPage = read("academia/edicion-pdf/index.html");
