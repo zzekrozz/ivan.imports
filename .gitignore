@@ -1,4 +1,5 @@
 node_modules/
+dist/
 .npm-cache/
 .vercel/
 .env
@@ -8,7 +9,11 @@ node_modules/
 !assets/academia/otorgamiento_ES.pdf
 private-products/
 coverage/
+outputs/
+*.zip
 npm-debug.log*
 .agents/
 .claude/
 skills-lock.json
+.vercel
+.env*

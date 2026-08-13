@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-08-13",
+  "opportunities": [
+    {
+      "id": "subaru-forester-diferencia-precio",
+      "slug": "subaru-forester-diferencia-precio",
+      "title": "Subaru Forester: una diferencia de precio no es todavía una oportunidad",
+      "sourceType": "educational-case",
+      "sourceName": "Ejemplo editorial IvanImports",
+      "sourceUrl": "",
+      "dateFound": "",
+      "lastChecked": "2026-08-13",
+      "listingStatus": "caso educativo",
+      "country": "Alemania / España",
+      "make": "Subaru",
+      "model": "Forester",
+      "listingPrice": "alrededor de 1.950 €",
+      "spanishMarketLow": "desde alrededor de 8.000 €",
+      "verdict": "Investigar antes de decidir",
+      "whyInteresting": "La diferencia visual llama la atención, pero solo sirve como punto de partida para comprobar versión, estado, documentos, gastos y mercado.",
+      "risks": ["No se conocen año, kilómetros ni motorización", "No existe inspección del vehículo", "Los gastos y el margen no están calculados", "No se conoce la disponibilidad del anuncio"],
+      "documentsToRequest": ["Permiso de circulación", "Documento de conformidad o datos de homologación", "Historial disponible", "Información escrita sobre daños y mantenimiento"],
+      "inspectionPoints": ["Identidad exacta de la versión", "Estado estructural y mecánico", "Correspondencia entre documentos y vehículo", "Comparables realmente equivalentes en España"],
+      "relatedLessons": ["lesson-03-01", "lesson-04-01", "lesson-05-01"],
+      "relatedTools": ["analizador-anuncio", "mercado", "coste-total"],
+      "author": "Iván · IvanImports",
+      "editorialStatus": "published",
+      "images": [],
+      "imageCredits": [],
+      "affiliateDisclosure": "Sin afiliación. IvanImports no vende este vehículo.",
+      "published": true,
+      "featured": true
+    }
+  ],
+  "radarCopart": { "enabled": false }
+}

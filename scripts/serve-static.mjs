@@ -15,6 +15,7 @@ createServer((request, response) => {
   let target = resolve(root, relative);
   if (target !== root && !target.startsWith(`${root}${sep}`)) { response.writeHead(403).end(); return; }
   if (existsSync(target) && statSync(target).isDirectory()) target = join(target, "index.html");
+  if ((!existsSync(target) || !statSync(target).isFile()) && pathname.startsWith("/academia/")) target = join(root, "academia", "index.html");
   if (!existsSync(target) || !statSync(target).isFile()) { response.writeHead(404).end("Not found"); return; }
   response.writeHead(200, { "Content-Type": types[extname(target).toLowerCase()] || "application/octet-stream" });
   createReadStream(target).pipe(response);

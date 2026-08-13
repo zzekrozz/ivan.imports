@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-08-13",
+  "formats": [
+    { "id": "qa", "title": "Preguntas y respuestas sobre importación", "price": 0, "priceLabel": "Gratis" },
+    { "id": "clase", "title": "Clase práctica", "price": 19.99, "priceLabel": "19,99 € IVA incluido" },
+    { "id": "subastas", "title": "Clase privada de subastas", "price": 29.99, "priceLabel": "29,99 € IVA incluido" },
+    { "id": "intensivo", "title": "Intensivo: de la búsqueda a la matrícula", "price": 79, "priceLabel": "79 € IVA incluido" }
+  ],
+  "events": []
+}

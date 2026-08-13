@@ -1,5 +1,12 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { get as getPrivateBlob } from "@vercel/blob";
+import {
+  activeAcademyEntitlementForEmail,
+  academyGrantConfigured,
+  academyConfigFromEnv,
+  grantAcademyEntitlementForPurchase,
+} from "./_academy/repository.js";
+import { academyBlobSdkOptions, academyPrivateBlobOptions } from "./_academy/blob.js";
 
 const PRODUCT_SLUG = "importa-en-7-dias";
 const PRODUCT_NAME = "Importa tu coche en 7 días";
@@ -33,6 +40,7 @@ function normalizeBaseUrl(value) {
 }
 
 function serverConfig(env = process.env) {
+  const academy = academyConfigFromEnv(env);
   return {
     stripeSecretKey: env.STRIPE_SECRET_KEY || "",
     stripeWebhookSecret: env.STRIPE_WEBHOOK_SECRET || "",
@@ -53,6 +61,13 @@ function serverConfig(env = process.env) {
     adminEmail: env.IMPORTA_7_DIAS_ADMIN_EMAIL || "",
     adminApiToken: env.IMPORTA_7_DIAS_ADMIN_API_TOKEN || "",
     vercelEnv: env.VERCEL_ENV || "development",
+    academy,
+    blobEnvironment: academy.blobEnvironment,
+    blobPrefix: academy.blobPrefix,
+    blobStoreId: academy.blobStoreId,
+    blobOidcToken: academy.blobOidcToken,
+    blobToken: academy.blobToken,
+    blobAuthMode: academy.blobAuthMode,
   };
 }
 
@@ -260,7 +275,8 @@ export function buildCustomerEmail({ session, paidAt, bonusEligible, supportEnd,
   const supportUrl = bonusEligible ? whatsappLink(config.supportPhone, email) : "";
   const expiry = formatMadridDate(downloadExpiresAt);
   const supportExpiry = bonusEligible ? formatMadridDate(supportEnd) : "";
-  const preheader = "Tu guía, tu cuaderno de trabajo y, si corresponde, 14 días de acompañamiento ya están preparados.";
+  const academyUrl = `${config.baseUrl || "https://ivanimports.es"}/academia/`;
+  const preheader = "Tu Academia, tu guía, tu cuaderno de trabajo y, si corresponde, 14 días de acompañamiento ya están preparados.";
 
   const button = (label, url) => `<a href="${escapeHtml(url)}" style="display:inline-block;margin:6px 8px 6px 0;padding:15px 20px;border-radius:7px;background:#f4b923;color:#071827;text-decoration:none;font-size:13px;font-weight:800;letter-spacing:.05em;">${escapeHtml(label)}</a>`;
   const bonusHtml = bonusEligible ? `
@@ -285,9 +301,11 @@ export function buildCustomerEmail({ session, paidAt, bonusEligible, supportEnd,
     <p style="margin:0;line-height:1.7;">Dentro encontrarás el proceso para buscar, comparar, comprobar, negociar, comprar, traer y matricular un vehículo desde Europa hasta España.</p></td></tr>
     <tr><td style="padding:0 28px 28px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f8fa;border:1px solid #dfe5ea;border-radius:14px;"><tr><td style="padding:26px;">
       <h2 style="margin:0 0 12px;font-size:24px;color:#071827;">Tu sistema ya está listo</h2>
-      <p style="margin:0 0 8px;line-height:1.6;"><strong>Guía principal</strong> · Importa tu coche en 7 días</p><p style="margin:0 0 18px;line-height:1.6;"><strong>Cuaderno de trabajo</strong> · Aplica el sistema a tu vehículo</p>
+      <p style="margin:0 0 16px;line-height:1.6;"><strong>Academia IvanImports es pública y gratuita</strong></p><ol style="margin:0 0 16px;padding-left:22px;line-height:1.7"><li>Abre Academia IvanImports.</li><li>Elige una etapa o busca una respuesta.</li><li>Utiliza las herramientas cuando aparezca una decisión real.</li></ol><p style="margin:0 0 16px;line-height:1.6">Puedes entrar directamente, sin registro.</p>
+      ${button("ENTRAR EN LA ACADEMIA", academyUrl)}
+      <p style="margin:20px 0 8px;line-height:1.6;"><strong>Guía principal</strong> · Importa tu coche en 7 días</p><p style="margin:0 0 18px;line-height:1.6;"><strong>Cuaderno de trabajo</strong> · Aplica el sistema a tu vehículo</p>
       ${button("ABRIR GUÍA PRINCIPAL", guideUrl)}${button("ABRIR CUADERNO DE TRABAJO", workbookUrl)}
-      <p style="margin:16px 0 0;color:#667581;font-size:12px;line-height:1.55;">Los enlaces privados caducan el ${escapeHtml(expiry)}. Guarda los archivos y conserva este email. Será nuestra referencia para actualizaciones y el futuro acceso a la plataforma.</p>
+      <p style="margin:16px 0 0;color:#667581;font-size:12px;line-height:1.55;">Los enlaces privados de descarga caducan el ${escapeHtml(expiry)}. La Academia pública seguirá disponible gratuitamente.</p>
     </td></tr></table></td></tr>
     <tr><td style="padding:4px 28px 28px;"><h2 style="margin:0 0 14px;font-size:24px;color:#071827;">Mi recomendación para empezar</h2>
       <p style="margin:0 0 16px;line-height:1.7;">Haz primero una lectura general para entender cómo encajan todas las piezas. No intentes memorizar las 150 páginas.</p>
@@ -295,9 +313,9 @@ export function buildCustomerEmail({ session, paidAt, bonusEligible, supportEnd,
       <ol style="margin:0;padding-left:22px;line-height:1.9;"><li>Guarda la guía y el cuaderno.</li><li>Lee primero el recorrido completo.</li><li>Abre una ficha cuando aparezca un candidato serio.</li></ol>
     </td></tr>
     ${bonusHtml}
-    <tr><td style="padding:0 28px 30px;"><h2 style="margin:0 0 14px;font-size:24px;color:#071827;">Tu acceso seguirá creciendo</h2>
+    <tr><td style="padding:0 28px 30px;"><h2 style="margin:0 0 14px;font-size:24px;color:#071827;">Tu Academia ya está disponible y seguirá creciendo</h2>
       <p style="margin:0 0 14px;line-height:1.7;">Utilizaré este mismo correo para enviarte actualizaciones relevantes del producto: nuevas versiones, vídeos, clases, recursos y cambios importantes del proceso.</p>
-      <p style="margin:0 0 14px;line-height:1.7;">Cuando esté lista la plataforma interactiva, recibirás acceso sin coste adicional utilizando este mismo email. No tendrás que comprar de nuevo el producto.</p>
+      <p style="margin:0 0 14px;line-height:1.7;">La Academia pública reúne la ruta interactiva, las herramientas y las actualizaciones. Puedes entrar directamente, sin registro.</p>
       <p style="margin:0;color:#667581;font-size:12px;line-height:1.55;">Estos mensajes estarán relacionados con el producto comprado. Esta compra no te suscribe a campañas comerciales generales.</p>
     </td></tr>
     <tr><td style="padding:28px;background:#071827;color:#dce4eb;"><p style="margin:0 0 16px;line-height:1.7;">Estás empezando por el lugar correcto: entender el proceso antes de poner miles de euros sobre la mesa. Cuando aparezca el coche adecuado, ya tendrás una carretera mucho más señalizada.</p>
@@ -309,7 +327,12 @@ export function buildCustomerEmail({ session, paidAt, bonusEligible, supportEnd,
   const bonusText = bonusEligible ? `\nBONUS DE LANZAMIENTO\n14 días de Acompañamiento de Primera Importación\n\nComo has comprado antes del domingo 16 de agosto a las 23:59, tu compra incluye 14 días de acompañamiento directo conmigo.\n\nDurante este periodo puedes escribirme por WhatsApp con dudas concretas relacionadas con el curso o la importación que estés preparando: vehículo candidato, documentación, vendedor, costes, viaje, revisión, placas, ITV o matriculación.\n\nCuando me escribas, indícame el mismo email de la compra: ${email}\nTu acompañamiento estará activo hasta: ${supportExpiry}\n${supportUrl ? `WhatsApp: ${supportUrl}\n` : ""}\nEl acompañamiento está pensado para dudas concretas y aplicación del sistema. No incluye búsqueda integral ilimitada, representación administrativa ni gestión completa de la operación.\n` : "";
   const text = `${firstName ? `Hola ${firstName},` : "Hola,"}\n\nFelicidades. Ya has dado el primer paso.\n\nGracias por confiar en IvanImports.\n\nHas dado un paso importante: en lugar de improvisar una operación de miles de euros, ahora tienes un sistema para entenderla y prepararla de principio a fin.\n\nDentro encontrarás el proceso para buscar, comparar, comprobar, negociar, comprar, traer y matricular un vehículo desde Europa hasta España.\n\nTU SISTEMA YA ESTÁ LISTO\nGuía principal · Importa tu coche en 7 días:\n${guideUrl}\n\nCuaderno de trabajo · Aplica el sistema a tu vehículo:\n${workbookUrl}\n\nEstos enlaces privados caducan el ${expiry}. Guarda ambos archivos y conserva este email. Será nuestra referencia para enviarte actualizaciones y el futuro acceso a la plataforma.\n\nMI RECOMENDACIÓN PARA EMPEZAR\nHaz primero una lectura general para entender cómo encajan todas las piezas. No intentes memorizar las 150 páginas. Después, cuando encuentres un vehículo que realmente estés valorando, abre el cuaderno y crea una ficha para esa operación.\n\n1. Guarda la guía y el cuaderno.\n2. Lee primero el recorrido completo.\n3. Abre una ficha cuando aparezca un candidato serio.\n${bonusText}\nTU ACCESO SEGUIRÁ CRECIENDO\n\nUtilizaré este mismo correo para enviarte actualizaciones relevantes del producto:\n- nuevas versiones mejoradas de la formación;\n- vídeos y clases que se incorporen;\n- materiales y recursos adicionales;\n- cambios importantes que afecten al proceso.\n\nCuando esté lista la plataforma interactiva, recibirás acceso sin coste adicional utilizando este mismo email. No tendrás que comprar de nuevo el producto.\n\nEstos mensajes estarán relacionados con el producto comprado. Esta compra no te suscribe a campañas comerciales generales.\n\nEstás empezando por el lugar correcto: entender el proceso antes de poner miles de euros sobre la mesa.\n\nCuando aparezca el coche adecuado, ya tendrás una carretera mucho más señalizada.\n\nBienvenido a Importa tu coche en 7 días.\n\nIván\nIvanImports\n\nPuedes responder directamente a este correo si tienes un problema con la entrega del material.`;
 
-  const outboundOnlyText = text.replace(
+  const academyText = `ACADEMIA IVANIMPORTS ES PÚBLICA Y GRATUITA\n\n1. Abre Academia IvanImports.\n2. Elige una etapa o busca una respuesta.\n3. Utiliza las herramientas cuando aparezca una decisión real.\n\nENTRAR EN LA ACADEMIA\n${academyUrl}\n\nPuedes entrar directamente, sin registro.`;
+  const outboundOnlyText = `${academyText}\n\n${text}`
+    .replace("Será nuestra referencia para enviarte actualizaciones y el futuro acceso a la plataforma.", "La Academia pública seguirá disponible gratuitamente.")
+    .replace("TU ACCESO SEGUIRÁ CRECIENDO", "TU ACADEMIA YA ESTÁ DISPONIBLE Y SEGUIRÁ CRECIENDO")
+    .replace("Cuando esté lista la plataforma interactiva, recibirás acceso sin coste adicional utilizando este mismo email. No tendrás que comprar de nuevo el producto.", "La Academia pública reúne la ruta interactiva, las herramientas y las actualizaciones. Puedes entrar directamente, sin registro.")
+    .replace(
     "Puedes responder directamente a este correo si tienes un problema con la entrega del material.",
     `Este correo es automático y no admite respuestas. Para contactar con IvanImports, visita ${config.baseUrl}/#contacto.`,
   );
@@ -387,7 +410,7 @@ async function updateBuyerContact(order, config, fetchImpl = fetch) {
       body: JSON.stringify({
         email: order.email,
         first_name: order.firstName || undefined,
-        unsubscribed: false,
+        unsubscribed: true,
         properties,
         segments: [{ id: config.resendSegmentId }],
       }),
@@ -398,7 +421,7 @@ async function updateBuyerContact(order, config, fetchImpl = fetch) {
   const contactId = contact.id || order.email;
   const updated = await resendRequest(`/contacts/${encodeURIComponent(contactId)}`, {
     method: "PATCH",
-    body: JSON.stringify({ unsubscribed: false, properties }),
+    body: JSON.stringify({ properties }),
   }, config, fetchImpl);
   await resendRequest(`/contacts/${encodeURIComponent(contactId)}/segments/${encodeURIComponent(config.resendSegmentId)}`, {
     method: "POST",
@@ -443,6 +466,41 @@ async function fulfillmentPayload(session, paidAt, config, expiresAtOverride) {
   };
 }
 
+function requestFingerprint(request) {
+  const forwarded = request.headers.get("x-vercel-forwarded-for") || request.headers.get("x-forwarded-for") || "unknown";
+  return createHash("sha256").update(forwarded.split(",")[0].trim().slice(0, 128)).digest("hex").slice(0, 24);
+}
+
+async function allowEndpointRequest(request, scope, limit, windowSeconds, config, fetchImpl = fetch) {
+  if (!config.redisUrl || !config.redisToken) return true;
+  const key = `importa7:rate:${scope}:${requestFingerprint(request)}`;
+  try {
+    const count = Number(await redisCommand(config, ["INCR", key], fetchImpl));
+    if (count === 1) await redisCommand(config, ["EXPIRE", key, String(windowSeconds)], fetchImpl);
+    return count <= limit;
+  } catch (error) {
+    logEvent("importa7_rate_limit_unavailable", { scope, reason: safeError(error).slice(0, 80) });
+    return true;
+  }
+}
+
+async function ensureAcademyEntitlement(session, paidAt, config, fetchImpl = fetch) {
+  const validation = validateProductSession(session, config, { requirePaid: true });
+  if (!validation.valid) throw new Error(`Academy entitlement rejected unvalidated purchase: ${validation.errors.join(", ")}`);
+  const email = session.customer_details?.email || session.customer_email || "";
+  const bonusEligible = isBonusEligible(paidAt);
+  const supportEnd = bonusEligible ? supportExpiresAt(paidAt) : null;
+  return grantAcademyEntitlementForPurchase({
+    email,
+    sessionId: session.id,
+    purchasedAt: new Date(paidAt * 1000).toISOString(),
+    bonusEligible,
+    supportExpiresAt: supportEnd ? new Date(supportEnd * 1000).toISOString() : "",
+    config: config.academy,
+    fetchImpl,
+  });
+}
+
 async function fulfillPaidSession(session, event, config, fetchImpl = fetch) {
   requireConfig(config, ["redisUrl", "redisToken", "resendApiKey", "resendFrom", "signingSecret"]);
   const email = session.customer_details?.email || session.customer_email;
@@ -451,7 +509,9 @@ async function fulfillPaidSession(session, event, config, fetchImpl = fetch) {
   const locked = await acquireLock(sessionId, event.id, config, fetchImpl);
   if (!locked) {
     const existing = await getOrder(sessionId, config, fetchImpl);
-    if (existing?.status === "delivered") return { duplicate: true, order: existing };
+    if (existing?.status === "delivered" && (existing.academyAccess === "active" || existing.academyAccess === "revoked" || !academyGrantConfigured(config.academy))) {
+      return { duplicate: true, order: existing };
+    }
     const error = new Error("Fulfillment already in progress");
     error.status = 409;
     throw error;
@@ -459,7 +519,37 @@ async function fulfillPaidSession(session, event, config, fetchImpl = fetch) {
 
   try {
     let existing = await getOrder(sessionId, config, fetchImpl);
-    if (existing?.status === "delivered") return { duplicate: true, order: existing };
+    if (existing?.status === "delivered") {
+      const paidAt = existing.paidAtSeconds || paidAtFromSession(session, event.created);
+      try {
+        const academy = await ensureAcademyEntitlement(session, paidAt, config, fetchImpl);
+        if (academy.status === "active" && existing.academyAccess !== "active") {
+          existing = await setOrder(sessionId, {
+            ...existing,
+            academyAccess: "active",
+            academyEntitlementUpdatedAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          }, config, fetchImpl);
+        } else if (academy.status === "revoked" && existing.academyAccess !== "revoked") {
+          existing = await setOrder(sessionId, {
+            ...existing,
+            academyAccess: "revoked",
+            academyEntitlementUpdatedAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          }, config, fetchImpl);
+        }
+      } catch (error) {
+        await setOrder(sessionId, {
+          ...existing,
+          academyAccess: "pending",
+          academyEntitlementError: safeError(error).slice(0, 200),
+          updatedAt: new Date().toISOString(),
+        }, config, fetchImpl);
+        logEvent("academy_entitlement_grant_failed", { session_ref: sessionId.slice(-8), retryable: true });
+        throw error;
+      }
+      return { duplicate: true, order: existing };
+    }
 
     const now = Math.floor(Date.now() / 1000);
     if (existing?.status === "sending") {
@@ -530,7 +620,7 @@ async function fulfillPaidSession(session, event, config, fetchImpl = fetch) {
       throw error;
     }
 
-    const completed = await setOrder(sessionId, {
+    let completed = await setOrder(sessionId, {
       ...order,
       status: "delivered",
       resendEmailId: emailResult.id || "",
@@ -543,6 +633,35 @@ async function fulfillPaidSession(session, event, config, fetchImpl = fetch) {
       updateBuyerContact(completed, config, fetchImpl).catch((error) => logEvent("importa7_buyer_registry_failed", { session_ref: sessionId.slice(-8), reason: safeError(error).slice(0, 120) })),
       sendAdminEmail(completed, config, fetchImpl).catch((error) => logEvent("importa7_admin_email_failed", { session_ref: sessionId.slice(-8), reason: safeError(error).slice(0, 120) })),
     ]);
+
+    try {
+      const academy = await ensureAcademyEntitlement(session, paidAt, config, fetchImpl);
+      if (academy.status === "active") {
+        completed = await setOrder(sessionId, {
+          ...completed,
+          academyAccess: "active",
+          academyEntitlementUpdatedAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }, config, fetchImpl);
+      } else if (academy.status === "revoked") {
+        completed = await setOrder(sessionId, {
+          ...completed,
+          academyAccess: "revoked",
+          academyEntitlementUpdatedAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }, config, fetchImpl);
+      }
+    } catch (error) {
+      completed = await setOrder(sessionId, {
+        ...completed,
+        academyAccess: "pending",
+        academyEntitlementError: safeError(error).slice(0, 200),
+        updatedAt: new Date().toISOString(),
+      }, config, fetchImpl);
+      logEvent("academy_entitlement_grant_failed", { session_ref: sessionId.slice(-8), retryable: true });
+      throw error;
+    }
+
     return { duplicate: false, order: completed };
   } finally {
     await releaseLock(sessionId, event.id, config, fetchImpl);
@@ -623,6 +742,9 @@ async function handleOrderStatus(request, config, fetchImpl = fetch) {
   try { body = await request.json(); } catch { return responseJson({ status: "unverified" }, 400); }
   const sessionId = String(body?.session_id || "");
   if (!SESSION_PATTERN.test(sessionId)) return responseJson({ status: "unverified" }, 400);
+  if (!await allowEndpointRequest(request, "order-status", 60, 60, config, fetchImpl)) {
+    return responseJson({ status: "unverified" }, 429, { "Retry-After": "60" });
+  }
   requireConfig(config, ["stripeSecretKey", "paymentLinkId", "priceId"]);
 
   try {
@@ -636,11 +758,16 @@ async function handleOrderStatus(request, config, fetchImpl = fetch) {
     const paidAt = paidAtFromSession(session, session.created);
     const bonusEligible = isBonusEligible(paidAt);
     const supportEnd = bonusEligible ? supportExpiresAt(paidAt) : null;
+    const academyEntitlement = await activeAcademyEntitlementForEmail(email, config.academy, fetchImpl).catch((error) => {
+      logEvent("academy_entitlement_status_failed", { session_ref: sessionId.slice(-8), reason: safeError(error).slice(0, 80) });
+      return null;
+    });
     return responseJson({
       status: "confirmed",
       masked_email: maskEmail(email),
       bonus_eligible: bonusEligible,
       support_expires_at: supportEnd ? new Date(supportEnd * 1000).toISOString() : null,
+      ...(academyEntitlement ? { academy_access: "active" } : {}),
     });
   } catch (error) {
     if (error.status === 404 || error.stripeCode === "resource_missing") return responseJson({ status: "unverified" }, 404);
@@ -663,7 +790,8 @@ async function handleDownload(request, config, blobGet = getPrivateBlob, fetchIm
 
   const pathname = file === "guide" ? config.guidePathname : config.workbookPathname;
   const filename = file === "guide" ? "Importa-tu-coche-en-7-dias-Guia-2026.pdf" : "Importa-tu-coche-en-7-dias-Cuaderno-de-trabajo-2026.pdf";
-  const result = await blobGet(pathname, { access: "private", ifNoneMatch: request.headers.get("if-none-match") || undefined });
+  const blobOptions = academyPrivateBlobOptions(config, pathname, { ifNoneMatch: request.headers.get("if-none-match") || undefined });
+  const result = await blobGet(blobOptions.pathname, academyBlobSdkOptions(blobOptions));
   if (!result) return responseJson({ error: "file_not_found" }, 404);
   if (result.statusCode === 304) {
     return new Response(null, { status: 304, headers: { ETag: result.blob.etag, "Cache-Control": "private, no-cache" } });
@@ -688,6 +816,9 @@ function bearerToken(request) {
 
 async function handleReissue(request, config, fetchImpl = fetch) {
   if (request.method !== "POST") return responseJson({ error: "method_not_allowed" }, 405, { Allow: "POST" });
+  if (!await allowEndpointRequest(request, "reissue", 10, 10 * 60, config, fetchImpl)) {
+    return responseJson({ error: "rate_limited" }, 429, { "Retry-After": "600" });
+  }
   requireConfig(config, ["adminApiToken", "stripeSecretKey", "paymentLinkId", "priceId", "signingSecret", "resendApiKey", "resendFrom"]);
   const provided = Buffer.from(bearerToken(request));
   const expected = Buffer.from(config.adminApiToken);

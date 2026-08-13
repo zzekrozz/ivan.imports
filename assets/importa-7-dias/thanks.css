@@ -370,6 +370,17 @@
 .ty-future { background: #eef2f5; }
 .ty-future__grid { display: grid; grid-template-columns: .86fr 1.14fr; gap: 88px; align-items: center; }
 .ty-future__grid > div:first-child > p:last-child { margin: 25px 0 0; color: #596875; line-height: 1.75; }
+.ty-future__grid .ty-academy-state {
+  width: fit-content;
+  margin-top: 18px;
+  padding: 8px 11px;
+  border-radius: 999px;
+  background: #dfece7;
+  color: #155b48;
+  font-size: .78rem;
+  font-weight: 760;
+  line-height: 1.35;
+}
 .ty-evolution { padding: 24px; display: grid; grid-template-columns: 1fr 64px 1fr; align-items: center; border: 1px solid #dbe2e8; border-radius: 20px; background: #fff; box-shadow: 0 20px 60px rgba(16,34,49,.06); }
 .ty-evolution article { min-height: 180px; padding: 26px; display: flex; flex-direction: column; justify-content: center; border-radius: 14px; background: #f6f8fa; }
 .ty-evolution article:last-child { background: var(--ty-navy); color: #fff; }
