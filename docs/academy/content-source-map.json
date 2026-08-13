@@ -1,0 +1,2352 @@
+{
+  "schemaVersion": 1,
+  "programId": "importa-tu-primer-coche",
+  "programVersion": "2026.08",
+  "source": {
+    "id": "importa-7-dias-final-2026",
+    "title": "Importa tu coche en 7 días · Versión definitiva 2026",
+    "edition": "agosto de 2026",
+    "pageCount": 150,
+    "sha256": "07B2ECBBC28AD0FEF691534AF81CA78D19977D491DEDCBD17A2225DE3E5FECB8"
+  },
+  "generatedFromPrivateContent": true,
+  "containsPremiumBodies": false,
+  "stages": [
+    {
+      "id": "stage-0",
+      "slug": "empieza-aqui",
+      "order": 0,
+      "title": "Empieza aquí",
+      "pageRange": "3-6",
+      "lessons": [
+        {
+          "id": "lesson-0-01",
+          "slug": "0-01-bienvenido-a-academia-ivanimports",
+          "order": 1,
+          "title": "Bienvenido a Academia IvanImports",
+          "pages": "3"
+        },
+        {
+          "id": "lesson-0-02",
+          "slug": "0-02-que-vas-a-conseguir",
+          "order": 2,
+          "title": "Qué vas a conseguir",
+          "pages": "3-4"
+        },
+        {
+          "id": "lesson-0-03",
+          "slug": "0-03-por-que-la-primera-importacion-parece-enorme",
+          "order": 3,
+          "title": "Por qué la primera importación parece enorme",
+          "pages": "3"
+        },
+        {
+          "id": "lesson-0-04",
+          "slug": "0-04-el-proceso-completo-de-cero-a-matricula",
+          "order": 4,
+          "title": "El proceso completo, de cero a matrícula",
+          "pages": "4"
+        },
+        {
+          "id": "lesson-0-05",
+          "slug": "0-05-como-usar-la-academia-durante-una-operacion-real",
+          "order": 5,
+          "title": "Cómo usar la academia durante una operación real",
+          "pages": "5"
+        },
+        {
+          "id": "lesson-0-06",
+          "slug": "0-06-experiencia-regla-oficial-recomendacion-y-calculo-rapido",
+          "order": 6,
+          "title": "Experiencia, regla oficial, recomendación y cálculo rápido",
+          "pages": "5"
+        },
+        {
+          "id": "lesson-0-07",
+          "slug": "0-07-que-casos-cubre-la-ruta-principal",
+          "order": 7,
+          "title": "Qué casos cubre la ruta principal",
+          "pages": "5"
+        },
+        {
+          "id": "lesson-0-08",
+          "slug": "0-08-que-casos-necesitan-revision-especial",
+          "order": 8,
+          "title": "Qué casos necesitan revisión especial",
+          "pages": "5"
+        },
+        {
+          "id": "lesson-0-09",
+          "slug": "0-09-crea-tu-primera-operacion",
+          "order": 9,
+          "title": "Crea tu primera operación",
+          "pages": "5"
+        },
+        {
+          "id": "lesson-0-10",
+          "slug": "0-10-checkpoint-ya-conoces-el-mapa",
+          "order": 10,
+          "title": "Checkpoint: ya conoces el mapa",
+          "pages": "6"
+        }
+      ]
+    },
+    {
+      "id": "stage-1",
+      "slug": "antes-de-buscar",
+      "order": 1,
+      "title": "Antes de buscar",
+      "pageRange": "7-13",
+      "lessons": [
+        {
+          "id": "lesson-1-01",
+          "slug": "1-01-el-mapa-general-de-una-importacion",
+          "order": 1,
+          "title": "El mapa general de una importación",
+          "pages": "7-8"
+        },
+        {
+          "id": "lesson-1-02",
+          "slug": "1-02-empieza-por-el-pais-no-por-el-anuncio",
+          "order": 2,
+          "title": "Empieza por el país, no por el anuncio",
+          "pages": "8"
+        },
+        {
+          "id": "lesson-1-03",
+          "slug": "1-03-alemania-como-primera-opcion",
+          "order": 3,
+          "title": "Alemania como primera opción",
+          "pages": "9"
+        },
+        {
+          "id": "lesson-1-04",
+          "slug": "1-04-paises-bajos",
+          "order": 4,
+          "title": "Países Bajos",
+          "pages": "10"
+        },
+        {
+          "id": "lesson-1-05",
+          "slug": "1-05-belgica",
+          "order": 5,
+          "title": "Bélgica",
+          "pages": "10"
+        },
+        {
+          "id": "lesson-1-06",
+          "slug": "1-06-francia-y-furgonetas",
+          "order": 6,
+          "title": "Francia y furgonetas",
+          "pages": "10"
+        },
+        {
+          "id": "lesson-1-07",
+          "slug": "1-07-italia-austria-y-limites-de-experiencia",
+          "order": 7,
+          "title": "Italia, Austria y límites de experiencia",
+          "pages": "10-11"
+        },
+        {
+          "id": "lesson-1-08",
+          "slug": "1-08-suiza-y-noruega-fuera-de-la-ue",
+          "order": 8,
+          "title": "Suiza y Noruega: fuera de la UE",
+          "pages": "11"
+        },
+        {
+          "id": "lesson-1-09",
+          "slug": "1-09-dinamarca-suecia-y-configuraciones-de-dos-plazas",
+          "order": 9,
+          "title": "Dinamarca, Suecia y configuraciones de dos plazas",
+          "pages": "11"
+        },
+        {
+          "id": "lesson-1-10",
+          "slug": "1-10-paises-que-no-recomendaria-para-empezar",
+          "order": 10,
+          "title": "Países que no recomendaría para empezar",
+          "pages": "11-12"
+        },
+        {
+          "id": "lesson-1-11",
+          "slug": "1-11-presupuesto-total-frente-a-precio-del-coche",
+          "order": 11,
+          "title": "Presupuesto total frente a precio del coche",
+          "pages": "13"
+        },
+        {
+          "id": "lesson-1-12",
+          "slug": "1-12-reserva-para-viaje-exportacion-espana-e-imprevistos",
+          "order": 12,
+          "title": "Reserva para viaje, exportación, España e imprevistos",
+          "pages": "13"
+        },
+        {
+          "id": "lesson-1-13",
+          "slug": "1-13-ejemplo-de-presupuesto-de-5-000",
+          "order": 13,
+          "title": "Ejemplo de presupuesto de 5.000 €",
+          "pages": "13"
+        },
+        {
+          "id": "lesson-1-14",
+          "slug": "1-14-herramienta-presupuesto-inicial",
+          "order": 14,
+          "title": "Herramienta: presupuesto inicial",
+          "pages": "13"
+        },
+        {
+          "id": "lesson-1-15",
+          "slug": "1-15-checkpoint-ya-sabes-donde-y-con-cuanto-empezar",
+          "order": 15,
+          "title": "Checkpoint: ya sabes dónde y con cuánto empezar",
+          "pages": "13"
+        }
+      ]
+    },
+    {
+      "id": "stage-2",
+      "slug": "encontrar-el-vehiculo",
+      "order": 2,
+      "title": "Encontrar el vehículo",
+      "pageRange": "14-27",
+      "lessons": [
+        {
+          "id": "lesson-2-01",
+          "slug": "2-01-portales-principales",
+          "order": 1,
+          "title": "Portales principales",
+          "pages": "15-16"
+        },
+        {
+          "id": "lesson-2-02",
+          "slug": "2-02-mobile-de",
+          "order": 2,
+          "title": "Mobile.de",
+          "pages": "15"
+        },
+        {
+          "id": "lesson-2-03",
+          "slug": "2-03-autoscout24",
+          "order": 3,
+          "title": "AutoScout24",
+          "pages": "15"
+        },
+        {
+          "id": "lesson-2-04",
+          "slug": "2-04-truckscout24",
+          "order": 4,
+          "title": "TruckScout24",
+          "pages": "15-16"
+        },
+        {
+          "id": "lesson-2-05",
+          "slug": "2-05-marktplaats",
+          "order": 5,
+          "title": "Marktplaats",
+          "pages": "16"
+        },
+        {
+          "id": "lesson-2-06",
+          "slug": "2-06-2dehands",
+          "order": 6,
+          "title": "2dehands",
+          "pages": "16"
+        },
+        {
+          "id": "lesson-2-07",
+          "slug": "2-07-por-que-las-subastas-van-por-separado",
+          "order": 7,
+          "title": "Por qué las subastas van por separado",
+          "pages": "16"
+        },
+        {
+          "id": "lesson-2-08",
+          "slug": "2-08-buscar-bien-significa-descartar-mejor",
+          "order": 8,
+          "title": "Buscar bien significa descartar mejor",
+          "pages": "17"
+        },
+        {
+          "id": "lesson-2-09",
+          "slug": "2-09-como-entrenar-el-ojo-de-mercado",
+          "order": 9,
+          "title": "Cómo entrenar el ojo de mercado",
+          "pages": "18"
+        },
+        {
+          "id": "lesson-2-10",
+          "slug": "2-10-busqueda-de-un-vehiculo-concreto",
+          "order": 10,
+          "title": "Búsqueda de un vehículo concreto",
+          "pages": "18"
+        },
+        {
+          "id": "lesson-2-11",
+          "slug": "2-11-potencia-y-falsos-chollos",
+          "order": 11,
+          "title": "Potencia y falsos chollos",
+          "pages": "19"
+        },
+        {
+          "id": "lesson-2-12",
+          "slug": "2-12-margen-de-uno-o-dos-caballos",
+          "order": 12,
+          "title": "Margen de uno o dos caballos",
+          "pages": "19-20"
+        },
+        {
+          "id": "lesson-2-13",
+          "slug": "2-13-busqueda-por-categoria",
+          "order": 13,
+          "title": "Búsqueda por categoría",
+          "pages": "20"
+        },
+        {
+          "id": "lesson-2-14",
+          "slug": "2-14-ordenar-por-relevancia-precio-o-mas-recientes",
+          "order": 14,
+          "title": "Ordenar por relevancia, precio o más recientes",
+          "pages": "21"
+        },
+        {
+          "id": "lesson-2-15",
+          "slug": "2-15-busqueda-abierta-por-presupuesto",
+          "order": 15,
+          "title": "Búsqueda abierta por presupuesto",
+          "pages": "21"
+        },
+        {
+          "id": "lesson-2-16",
+          "slug": "2-16-marca-y-modelo-uno-por-uno",
+          "order": 16,
+          "title": "Marca y modelo uno por uno",
+          "pages": "21"
+        },
+        {
+          "id": "lesson-2-17",
+          "slug": "2-17-el-tridente-aleman-como-punto-de-partida",
+          "order": 17,
+          "title": "El tridente alemán como punto de partida",
+          "pages": "22"
+        },
+        {
+          "id": "lesson-2-18",
+          "slug": "2-18-crear-una-seleccion-personal-de-marcas",
+          "order": 18,
+          "title": "Crear una selección personal de marcas",
+          "pages": "22-23"
+        },
+        {
+          "id": "lesson-2-19",
+          "slug": "2-19-construir-filtros-propios",
+          "order": 19,
+          "title": "Construir filtros propios",
+          "pages": "24"
+        },
+        {
+          "id": "lesson-2-20",
+          "slug": "2-20-guardar-busquedas-y-alertas",
+          "order": 20,
+          "title": "Guardar búsquedas y alertas",
+          "pages": "24"
+        },
+        {
+          "id": "lesson-2-21",
+          "slug": "2-21-excluir-danados-y-anuncios-sin-fotos",
+          "order": 21,
+          "title": "Excluir dañados y anuncios sin fotos",
+          "pages": "24"
+        },
+        {
+          "id": "lesson-2-22",
+          "slug": "2-22-encontrar-la-primera-unidad-sana",
+          "order": 22,
+          "title": "Encontrar la primera unidad sana",
+          "pages": "25"
+        },
+        {
+          "id": "lesson-2-23",
+          "slug": "2-23-modelos-con-margen-y-modelos-sin-margen",
+          "order": 23,
+          "title": "Modelos con margen y modelos sin margen",
+          "pages": "25"
+        },
+        {
+          "id": "lesson-2-24",
+          "slug": "2-24-kilometraje-como-criba",
+          "order": 24,
+          "title": "Kilometraje como criba",
+          "pages": "25"
+        },
+        {
+          "id": "lesson-2-25",
+          "slug": "2-25-motor-cilindrada-cadena-y-correa",
+          "order": 25,
+          "title": "Motor, cilindrada, cadena y correa",
+          "pages": "25-26"
+        },
+        {
+          "id": "lesson-2-26",
+          "slug": "2-26-no-compres-kilometros",
+          "order": 26,
+          "title": "No compres kilómetros",
+          "pages": "26"
+        },
+        {
+          "id": "lesson-2-27",
+          "slug": "2-27-ejercicio-tres-busquedas-para-practicar",
+          "order": 27,
+          "title": "Ejercicio: tres búsquedas para practicar",
+          "pages": "27"
+        },
+        {
+          "id": "lesson-2-28",
+          "slug": "2-28-checkpoint-ya-sabes-buscar",
+          "order": 28,
+          "title": "Checkpoint: ya sabes buscar",
+          "pages": "27"
+        }
+      ]
+    },
+    {
+      "id": "stage-3",
+      "slug": "leer-el-anuncio",
+      "order": 3,
+      "title": "Leer el anuncio",
+      "pageRange": "28-38",
+      "lessons": [
+        {
+          "id": "lesson-3-01",
+          "slug": "3-01-leer-como-una-investigacion",
+          "order": 1,
+          "title": "Leer como una investigación",
+          "pages": "29"
+        },
+        {
+          "id": "lesson-3-02",
+          "slug": "3-02-el-titulo-puede-explicar-el-precio",
+          "order": 2,
+          "title": "El título puede explicar el precio",
+          "pages": "29"
+        },
+        {
+          "id": "lesson-3-03",
+          "slug": "3-03-motorschaden",
+          "order": 3,
+          "title": "Motorschaden",
+          "pages": "29"
+        },
+        {
+          "id": "lesson-3-04",
+          "slug": "3-04-getriebeschaden",
+          "order": 4,
+          "title": "Getriebeschaden",
+          "pages": "29"
+        },
+        {
+          "id": "lesson-3-05",
+          "slug": "3-05-unfall-frontschaden-y-hagelschaden",
+          "order": 5,
+          "title": "Unfall, Frontschaden y Hagelschaden",
+          "pages": "29"
+        },
+        {
+          "id": "lesson-3-06",
+          "slug": "3-06-bastlerfahrzeug-y-nur-export",
+          "order": 6,
+          "title": "Bastlerfahrzeug y Nur Export",
+          "pages": "29"
+        },
+        {
+          "id": "lesson-3-07",
+          "slug": "3-07-descripcion-automatica-frente-a-texto-humano",
+          "order": 7,
+          "title": "Descripción automática frente a texto humano",
+          "pages": "30-31"
+        },
+        {
+          "id": "lesson-3-08",
+          "slug": "3-08-que-datos-basicos-deben-cuadrar",
+          "order": 8,
+          "title": "Qué datos básicos deben cuadrar",
+          "pages": "32"
+        },
+        {
+          "id": "lesson-3-09",
+          "slug": "3-09-fecha-km-potencia-cambio-y-vendedor",
+          "order": 9,
+          "title": "Fecha, km, potencia, cambio y vendedor",
+          "pages": "32"
+        },
+        {
+          "id": "lesson-3-10",
+          "slug": "3-10-leer-todas-las-fotografias",
+          "order": 10,
+          "title": "Leer todas las fotografías",
+          "pages": "32"
+        },
+        {
+          "id": "lesson-3-11",
+          "slug": "3-11-asiento-del-conductor",
+          "order": 11,
+          "title": "Asiento del conductor",
+          "pages": "32"
+        },
+        {
+          "id": "lesson-3-12",
+          "slug": "3-12-volante-pomo-pedales-y-botones",
+          "order": 12,
+          "title": "Volante, pomo, pedales y botones",
+          "pages": "33"
+        },
+        {
+          "id": "lesson-3-13",
+          "slug": "3-13-cuadro-rpm-y-testigos",
+          "order": 13,
+          "title": "Cuadro, RPM y testigos",
+          "pages": "33-34"
+        },
+        {
+          "id": "lesson-3-14",
+          "slug": "3-14-diferencia-entre-contacto-y-motor-arrancado",
+          "order": 14,
+          "title": "Diferencia entre contacto y motor arrancado",
+          "pages": "33-34"
+        },
+        {
+          "id": "lesson-3-15",
+          "slug": "3-15-neumaticos",
+          "order": 15,
+          "title": "Neumáticos",
+          "pages": "35"
+        },
+        {
+          "id": "lesson-3-16",
+          "slug": "3-16-aranazos-golpes-y-reflejos",
+          "order": 16,
+          "title": "Arañazos, golpes y reflejos",
+          "pages": "35"
+        },
+        {
+          "id": "lesson-3-17",
+          "slug": "3-17-diferencias-de-color",
+          "order": 17,
+          "title": "Diferencias de color",
+          "pages": "35"
+        },
+        {
+          "id": "lesson-3-18",
+          "slug": "3-18-fotografias-que-faltan",
+          "order": 18,
+          "title": "Fotografías que faltan",
+          "pages": "36"
+        },
+        {
+          "id": "lesson-3-19",
+          "slug": "3-19-precio-km-y-estado-deben-contar-la-misma-historia",
+          "order": 19,
+          "title": "Precio, km y estado deben contar la misma historia",
+          "pages": "36"
+        },
+        {
+          "id": "lesson-3-20",
+          "slug": "3-20-crear-preguntas-pendientes",
+          "order": 20,
+          "title": "Crear preguntas pendientes",
+          "pages": "37"
+        },
+        {
+          "id": "lesson-3-21",
+          "slug": "3-21-telefono-frente-a-whatsapp",
+          "order": 21,
+          "title": "Teléfono frente a WhatsApp",
+          "pages": "37-38"
+        },
+        {
+          "id": "lesson-3-22",
+          "slug": "3-22-no-enviar-un-interrogatorio",
+          "order": 22,
+          "title": "No enviar un interrogatorio",
+          "pages": "38"
+        },
+        {
+          "id": "lesson-3-23",
+          "slug": "3-23-orden-de-conversacion-recomendado",
+          "order": 23,
+          "title": "Orden de conversación recomendado",
+          "pages": "38"
+        },
+        {
+          "id": "lesson-3-24",
+          "slug": "3-24-herramienta-analizador-de-anuncio",
+          "order": 24,
+          "title": "Herramienta: analizador de anuncio",
+          "pages": "29-38"
+        },
+        {
+          "id": "lesson-3-25",
+          "slug": "3-25-checkpoint-anuncio-entendido",
+          "order": 25,
+          "title": "Checkpoint: anuncio entendido",
+          "pages": "38"
+        }
+      ]
+    },
+    {
+      "id": "stage-4",
+      "slug": "comparar-con-espana",
+      "order": 4,
+      "title": "Comparar con España",
+      "pageRange": "39-49",
+      "lessons": [
+        {
+          "id": "lesson-4-01",
+          "slug": "4-01-anuncio-rapido-mercado-rapido-y-analisis-profundo",
+          "order": 1,
+          "title": "Anuncio rápido, mercado rápido y análisis profundo",
+          "pages": "40"
+        },
+        {
+          "id": "lesson-4-02",
+          "slug": "4-02-donde-mirar-el-mercado-espanol",
+          "order": 2,
+          "title": "Dónde mirar el mercado español",
+          "pages": "40"
+        },
+        {
+          "id": "lesson-4-03",
+          "slug": "4-03-precio-anunciado-frente-a-precio-vendido",
+          "order": 3,
+          "title": "Precio anunciado frente a precio vendido",
+          "pages": "40"
+        },
+        {
+          "id": "lesson-4-04",
+          "slug": "4-04-marca-modelo-y-generacion",
+          "order": 4,
+          "title": "Marca, modelo y generación",
+          "pages": "41"
+        },
+        {
+          "id": "lesson-4-05",
+          "slug": "4-05-ventana-de-anos",
+          "order": 5,
+          "title": "Ventana de años",
+          "pages": "41"
+        },
+        {
+          "id": "lesson-4-06",
+          "slug": "4-06-restyling-y-cambio-de-generacion",
+          "order": 6,
+          "title": "Restyling y cambio de generación",
+          "pages": "41-42"
+        },
+        {
+          "id": "lesson-4-07",
+          "slug": "4-07-potencia-exacta",
+          "order": 7,
+          "title": "Potencia exacta",
+          "pages": "42"
+        },
+        {
+          "id": "lesson-4-08",
+          "slug": "4-08-combustible-y-caja",
+          "order": 8,
+          "title": "Combustible y caja",
+          "pages": "42"
+        },
+        {
+          "id": "lesson-4-09",
+          "slug": "4-09-carroceria",
+          "order": 9,
+          "title": "Carrocería",
+          "pages": "43"
+        },
+        {
+          "id": "lesson-4-10",
+          "slug": "4-10-acabados-y-extras",
+          "order": 10,
+          "title": "Acabados y extras",
+          "pages": "42"
+        },
+        {
+          "id": "lesson-4-11",
+          "slug": "4-11-filtros-caseros",
+          "order": 11,
+          "title": "Filtros caseros",
+          "pages": "43"
+        },
+        {
+          "id": "lesson-4-12",
+          "slug": "4-12-la-barrera-de-200-000-km",
+          "order": 12,
+          "title": "La barrera de 200.000 km",
+          "pages": "44"
+        },
+        {
+          "id": "lesson-4-13",
+          "slug": "4-13-el-precio-de-mercado-aparece-en-grupos",
+          "order": 13,
+          "title": "El precio de mercado aparece en grupos",
+          "pages": "44-45"
+        },
+        {
+          "id": "lesson-4-14",
+          "slug": "4-14-falsos-minimos",
+          "order": 14,
+          "title": "Falsos mínimos",
+          "pages": "46"
+        },
+        {
+          "id": "lesson-4-15",
+          "slug": "4-15-outliers",
+          "order": 15,
+          "title": "Outliers",
+          "pages": "46"
+        },
+        {
+          "id": "lesson-4-16",
+          "slug": "4-16-ajustar-por-estado-historial-y-extras",
+          "order": 16,
+          "title": "Ajustar por estado, historial y extras",
+          "pages": "47"
+        },
+        {
+          "id": "lesson-4-17",
+          "slug": "4-17-observar-tiempo-de-venta",
+          "order": 17,
+          "title": "Observar tiempo de venta",
+          "pages": "47"
+        },
+        {
+          "id": "lesson-4-18",
+          "slug": "4-18-formula-de-precio-maximo-europeo",
+          "order": 18,
+          "title": "Fórmula de precio máximo europeo",
+          "pages": "48"
+        },
+        {
+          "id": "lesson-4-19",
+          "slug": "4-19-ejemplo-trabajado-de-precio-maximo",
+          "order": 19,
+          "title": "Ejemplo trabajado de precio máximo",
+          "pages": "48"
+        },
+        {
+          "id": "lesson-4-20",
+          "slug": "4-20-el-margen-compra-tranquilidad",
+          "order": 20,
+          "title": "El margen compra tranquilidad",
+          "pages": "49"
+        },
+        {
+          "id": "lesson-4-21",
+          "slug": "4-21-herramienta-comparador-con-espana",
+          "order": 21,
+          "title": "Herramienta: comparador con España",
+          "pages": "39-49"
+        },
+        {
+          "id": "lesson-4-22",
+          "slug": "4-22-checkpoint-diferencia-real-confirmada",
+          "order": 22,
+          "title": "Checkpoint: diferencia real confirmada",
+          "pages": "49"
+        }
+      ]
+    },
+    {
+      "id": "stage-5",
+      "slug": "hacer-los-numeros",
+      "order": 5,
+      "title": "Hacer los números",
+      "pageRange": "50-63",
+      "lessons": [
+        {
+          "id": "lesson-5-01",
+          "slug": "5-01-ser-mas-barato-no-basta",
+          "order": 1,
+          "title": "Ser más barato no basta",
+          "pages": "51"
+        },
+        {
+          "id": "lesson-5-02",
+          "slug": "5-02-diferencia-bruta-frente-a-margen-real",
+          "order": 2,
+          "title": "Diferencia bruta frente a margen real",
+          "pages": "51"
+        },
+        {
+          "id": "lesson-5-03",
+          "slug": "5-03-fondo-de-sorpresas",
+          "order": 3,
+          "title": "Fondo de sorpresas",
+          "pages": "51-52"
+        },
+        {
+          "id": "lesson-5-04",
+          "slug": "5-04-beneficio-bruto-real-y-capital-inmovilizado",
+          "order": 4,
+          "title": "Beneficio bruto, real y capital inmovilizado",
+          "pages": "52"
+        },
+        {
+          "id": "lesson-5-05",
+          "slug": "5-05-roi-explicado-de-forma-sencilla",
+          "order": 5,
+          "title": "ROI explicado de forma sencilla",
+          "pages": "52"
+        },
+        {
+          "id": "lesson-5-06",
+          "slug": "5-06-roi-y-calidad-de-operacion",
+          "order": 6,
+          "title": "ROI y calidad de operación",
+          "pages": "53"
+        },
+        {
+          "id": "lesson-5-07",
+          "slug": "5-07-tiempo-riesgo-liquidez-demanda-y-trabajo",
+          "order": 7,
+          "title": "Tiempo, riesgo, liquidez, demanda y trabajo",
+          "pages": "53"
+        },
+        {
+          "id": "lesson-5-08",
+          "slug": "5-08-el-presupuesto-completo",
+          "order": 8,
+          "title": "El presupuesto completo",
+          "pages": "54"
+        },
+        {
+          "id": "lesson-5-09",
+          "slug": "5-09-precio-del-vehiculo",
+          "order": 9,
+          "title": "Precio del vehículo",
+          "pages": "54"
+        },
+        {
+          "id": "lesson-5-10",
+          "slug": "5-10-vuelo-y-transporte-local",
+          "order": 10,
+          "title": "Vuelo y transporte local",
+          "pages": "54-58"
+        },
+        {
+          "id": "lesson-5-11",
+          "slug": "5-11-placas-de-exportacion",
+          "order": 11,
+          "title": "Placas de exportación",
+          "pages": "54-58"
+        },
+        {
+          "id": "lesson-5-12",
+          "slug": "5-12-combustible",
+          "order": 12,
+          "title": "Combustible",
+          "pages": "54-59"
+        },
+        {
+          "id": "lesson-5-13",
+          "slug": "5-13-peajes",
+          "order": 13,
+          "title": "Peajes",
+          "pages": "54-60"
+        },
+        {
+          "id": "lesson-5-14",
+          "slug": "5-14-hotel-comida-y-descanso",
+          "order": 14,
+          "title": "Hotel, comida y descanso",
+          "pages": "54-61"
+        },
+        {
+          "id": "lesson-5-15",
+          "slug": "5-15-itv-coc-o-ficha",
+          "order": 15,
+          "title": "ITV, CoC o ficha",
+          "pages": "54"
+        },
+        {
+          "id": "lesson-5-16",
+          "slug": "5-16-ivtm-dgt-y-matriculas",
+          "order": 16,
+          "title": "IVTM, DGT y matrículas",
+          "pages": "54-55"
+        },
+        {
+          "id": "lesson-5-17",
+          "slug": "5-17-modelo-576-como-partida-propia",
+          "order": 17,
+          "title": "Modelo 576 como partida propia",
+          "pages": "54-57"
+        },
+        {
+          "id": "lesson-5-18",
+          "slug": "5-18-antiguedad-y-valoracion",
+          "order": 18,
+          "title": "Antigüedad y valoración",
+          "pages": "56"
+        },
+        {
+          "id": "lesson-5-19",
+          "slug": "5-19-emisiones-y-v-7",
+          "order": 19,
+          "title": "Emisiones y V.7",
+          "pages": "56-57"
+        },
+        {
+          "id": "lesson-5-20",
+          "slug": "5-20-ejemplos-didacticos-del-576",
+          "order": 20,
+          "title": "Ejemplos didácticos del 576",
+          "pages": "57"
+        },
+        {
+          "id": "lesson-5-21",
+          "slug": "5-21-presupuestar-cuando-v-7-esta-vacio",
+          "order": 21,
+          "title": "Presupuestar cuando V.7 está vacío",
+          "pages": "57"
+        },
+        {
+          "id": "lesson-5-22",
+          "slug": "5-22-combustible-con-calculo-conservador",
+          "order": 22,
+          "title": "Combustible con cálculo conservador",
+          "pages": "59"
+        },
+        {
+          "id": "lesson-5-23",
+          "slug": "5-23-peajes-y-fatiga",
+          "order": 23,
+          "title": "Peajes y fatiga",
+          "pages": "60-61"
+        },
+        {
+          "id": "lesson-5-24",
+          "slug": "5-24-estimado-confirmado-y-real",
+          "order": 24,
+          "title": "Estimado, confirmado y real",
+          "pages": "62"
+        },
+        {
+          "id": "lesson-5-25",
+          "slug": "5-25-panel-de-decision",
+          "order": 25,
+          "title": "Panel de decisión",
+          "pages": "63"
+        },
+        {
+          "id": "lesson-5-26",
+          "slug": "5-26-seguir-recalcular-o-no-comprar-vuelo",
+          "order": 26,
+          "title": "Seguir, recalcular o no comprar vuelo",
+          "pages": "63"
+        },
+        {
+          "id": "lesson-5-27",
+          "slug": "5-27-herramienta-calculadora-completa",
+          "order": 27,
+          "title": "Herramienta: calculadora completa",
+          "pages": "50-63"
+        },
+        {
+          "id": "lesson-5-28",
+          "slug": "5-28-checkpoint-numeros-vivos",
+          "order": 28,
+          "title": "Checkpoint: números vivos",
+          "pages": "63"
+        }
+      ]
+    },
+    {
+      "id": "stage-6",
+      "slug": "hablar-documentar-y-negociar",
+      "order": 6,
+      "title": "Hablar, documentar y negociar",
+      "pageRange": "64-80",
+      "lessons": [
+        {
+          "id": "lesson-6-01",
+          "slug": "6-01-cuando-contactar",
+          "order": 1,
+          "title": "Cuándo contactar",
+          "pages": "65"
+        },
+        {
+          "id": "lesson-6-02",
+          "slug": "6-02-no-necesitas-un-c2-de-ingles",
+          "order": 2,
+          "title": "No necesitas un C2 de inglés",
+          "pages": "65"
+        },
+        {
+          "id": "lesson-6-03",
+          "slug": "6-03-el-vendedor-quiere-entenderte",
+          "order": 3,
+          "title": "El vendedor quiere entenderte",
+          "pages": "65"
+        },
+        {
+          "id": "lesson-6-04",
+          "slug": "6-04-pasar-a-whatsapp",
+          "order": 4,
+          "title": "Pasar a WhatsApp",
+          "pages": "65"
+        },
+        {
+          "id": "lesson-6-05",
+          "slug": "6-05-traducir-con-contexto",
+          "order": 5,
+          "title": "Traducir con contexto",
+          "pages": "66"
+        },
+        {
+          "id": "lesson-6-06",
+          "slug": "6-06-como-empezar-la-llamada",
+          "order": 6,
+          "title": "Cómo empezar la llamada",
+          "pages": "66"
+        },
+        {
+          "id": "lesson-6-07",
+          "slug": "6-07-identificar-el-vehiculo",
+          "order": 7,
+          "title": "Identificar el vehículo",
+          "pages": "66"
+        },
+        {
+          "id": "lesson-6-08",
+          "slug": "6-08-tuv-hu-y-vigencia",
+          "order": 8,
+          "title": "TÜV/HU y vigencia",
+          "pages": "67"
+        },
+        {
+          "id": "lesson-6-09",
+          "slug": "6-09-tuv-y-placas-de-exportacion",
+          "order": 9,
+          "title": "TÜV y placas de exportación",
+          "pages": "67"
+        },
+        {
+          "id": "lesson-6-10",
+          "slug": "6-10-mantenimiento",
+          "order": 10,
+          "title": "Mantenimiento",
+          "pages": "67"
+        },
+        {
+          "id": "lesson-6-11",
+          "slug": "6-11-coc",
+          "order": 11,
+          "title": "CoC",
+          "pages": "67-68"
+        },
+        {
+          "id": "lesson-6-12",
+          "slug": "6-12-coc-frente-a-campo-k",
+          "order": 12,
+          "title": "CoC frente a campo K",
+          "pages": "68-72"
+        },
+        {
+          "id": "lesson-6-13",
+          "slug": "6-13-reformas",
+          "order": 13,
+          "title": "Reformas",
+          "pages": "68"
+        },
+        {
+          "id": "lesson-6-14",
+          "slug": "6-14-llegaria-conduciendo-a-espana",
+          "order": 14,
+          "title": "¿Llegaría conduciendo a España?",
+          "pages": "68"
+        },
+        {
+          "id": "lesson-6-15",
+          "slug": "6-15-nombrar-motor-caja-ruedas-y-fugas",
+          "order": 15,
+          "title": "Nombrar motor, caja, ruedas y fugas",
+          "pages": "69"
+        },
+        {
+          "id": "lesson-6-16",
+          "slug": "6-16-pedir-videos-y-fotografias",
+          "order": 16,
+          "title": "Pedir vídeos y fotografías",
+          "pages": "69-70"
+        },
+        {
+          "id": "lesson-6-17",
+          "slug": "6-17-pedir-documentacion",
+          "order": 17,
+          "title": "Pedir documentación",
+          "pages": "70"
+        },
+        {
+          "id": "lesson-6-18",
+          "slug": "6-18-campo-v-7",
+          "order": 18,
+          "title": "Campo V.7",
+          "pages": "70-71"
+        },
+        {
+          "id": "lesson-6-19",
+          "slug": "6-19-campo-k",
+          "order": 19,
+          "title": "Campo K",
+          "pages": "72"
+        },
+        {
+          "id": "lesson-6-20",
+          "slug": "6-20-homologacion-europea-reconocible",
+          "order": 20,
+          "title": "Homologación europea reconocible",
+          "pages": "72"
+        },
+        {
+          "id": "lesson-6-21",
+          "slug": "6-21-k-nacional-o-vacio",
+          "order": 21,
+          "title": "K nacional o vacío",
+          "pages": "72"
+        },
+        {
+          "id": "lesson-6-22",
+          "slug": "6-22-furgonetas-antiguas",
+          "order": 22,
+          "title": "Furgonetas antiguas",
+          "pages": "72"
+        },
+        {
+          "id": "lesson-6-23",
+          "slug": "6-23-posible-origen-estadounidense-o-canadiense",
+          "order": 23,
+          "title": "Posible origen estadounidense o canadiense",
+          "pages": "73"
+        },
+        {
+          "id": "lesson-6-24",
+          "slug": "6-24-verificar-al-vendedor",
+          "order": 24,
+          "title": "Verificar al vendedor",
+          "pages": "73"
+        },
+        {
+          "id": "lesson-6-25",
+          "slug": "6-25-leer-resenas-negativas",
+          "order": 25,
+          "title": "Leer reseñas negativas",
+          "pages": "73-74"
+        },
+        {
+          "id": "lesson-6-26",
+          "slug": "6-26-negociar-desde-la-intencion-real",
+          "order": 26,
+          "title": "Negociar desde la intención real",
+          "pages": "74-75"
+        },
+        {
+          "id": "lesson-6-27",
+          "slug": "6-27-exportacion-a-espana-y-garantia",
+          "order": 27,
+          "title": "Exportación a España y garantía",
+          "pages": "74-75"
+        },
+        {
+          "id": "lesson-6-28",
+          "slug": "6-28-introducir-defectos-concretos",
+          "order": 28,
+          "title": "Introducir defectos concretos",
+          "pages": "74-75"
+        },
+        {
+          "id": "lesson-6-29",
+          "slug": "6-29-dejar-de-buscar",
+          "order": 29,
+          "title": "“Dejar de buscar”",
+          "pages": "74-75"
+        },
+        {
+          "id": "lesson-6-30",
+          "slug": "6-30-ejemplos-de-negociacion",
+          "order": 30,
+          "title": "Ejemplos de negociación",
+          "pages": "75"
+        },
+        {
+          "id": "lesson-6-31",
+          "slug": "6-31-rebajas-realistas",
+          "order": 31,
+          "title": "Rebajas realistas",
+          "pages": "76"
+        },
+        {
+          "id": "lesson-6-32",
+          "slug": "6-32-proceso-sin-hablar-ingles",
+          "order": 32,
+          "title": "Proceso sin hablar inglés",
+          "pages": "76-77"
+        },
+        {
+          "id": "lesson-6-33",
+          "slug": "6-33-reserva-y-riesgo-psicologico",
+          "order": 33,
+          "title": "Reserva y riesgo psicológico",
+          "pages": "77-78"
+        },
+        {
+          "id": "lesson-6-34",
+          "slug": "6-34-cuando-aceptar-una-senal",
+          "order": 34,
+          "title": "Cuándo aceptar una señal",
+          "pages": "79"
+        },
+        {
+          "id": "lesson-6-35",
+          "slug": "6-35-condiciones-de-devolucion",
+          "order": 35,
+          "title": "Condiciones de devolución",
+          "pages": "79"
+        },
+        {
+          "id": "lesson-6-36",
+          "slug": "6-36-senales-de-peligro",
+          "order": 36,
+          "title": "Señales de peligro",
+          "pages": "78-79"
+        },
+        {
+          "id": "lesson-6-37",
+          "slug": "6-37-plan-a-b-y-c",
+          "order": 37,
+          "title": "Plan A, B y C",
+          "pages": "79-80"
+        },
+        {
+          "id": "lesson-6-38",
+          "slug": "6-38-radio-aproximado-de-100-km",
+          "order": 38,
+          "title": "Radio aproximado de 100 km",
+          "pages": "80"
+        },
+        {
+          "id": "lesson-6-39",
+          "slug": "6-39-herramienta-preparador-de-preguntas",
+          "order": 39,
+          "title": "Herramienta: preparador de preguntas",
+          "pages": "65-80"
+        },
+        {
+          "id": "lesson-6-40",
+          "slug": "6-40-herramienta-pasaporte-documental",
+          "order": 40,
+          "title": "Herramienta: pasaporte documental",
+          "pages": "70-73"
+        },
+        {
+          "id": "lesson-6-41",
+          "slug": "6-41-herramienta-plan-a-b-c",
+          "order": 41,
+          "title": "Herramienta: Plan A/B/C",
+          "pages": "79-80"
+        },
+        {
+          "id": "lesson-6-42",
+          "slug": "6-42-checkpoint-listo-para-estudiar-el-viaje",
+          "order": 42,
+          "title": "Checkpoint: listo para estudiar el viaje",
+          "pages": "80"
+        }
+      ]
+    },
+    {
+      "id": "stage-7",
+      "slug": "organizar-el-viaje",
+      "order": 7,
+      "title": "Organizar el viaje",
+      "pageRange": "81-90",
+      "lessons": [
+        {
+          "id": "lesson-7-01",
+          "slug": "7-01-cuando-buscar-el-vuelo",
+          "order": 1,
+          "title": "Cuándo buscar el vuelo",
+          "pages": "82"
+        },
+        {
+          "id": "lesson-7-02",
+          "slug": "7-02-skyscanner",
+          "order": 2,
+          "title": "Skyscanner",
+          "pages": "82"
+        },
+        {
+          "id": "lesson-7-03",
+          "slug": "7-03-aeropuertos-cercanos",
+          "order": 3,
+          "title": "Aeropuertos cercanos",
+          "pages": "82"
+        },
+        {
+          "id": "lesson-7-04",
+          "slug": "7-04-origen-espana",
+          "order": 4,
+          "title": "Origen “España”",
+          "pages": "82"
+        },
+        {
+          "id": "lesson-7-05",
+          "slug": "7-05-comparar-el-coste-completo",
+          "order": 5,
+          "title": "Comparar el coste completo",
+          "pages": "82-83"
+        },
+        {
+          "id": "lesson-7-06",
+          "slug": "7-06-buscar-aeropuertos-en-el-mapa",
+          "order": 6,
+          "title": "Buscar aeropuertos en el mapa",
+          "pages": "83-84"
+        },
+        {
+          "id": "lesson-7-07",
+          "slug": "7-07-aterrizar-en-otro-pais",
+          "order": 7,
+          "title": "Aterrizar en otro país",
+          "pages": "84"
+        },
+        {
+          "id": "lesson-7-08",
+          "slug": "7-08-ejemplos-de-combinaciones",
+          "order": 8,
+          "title": "Ejemplos de combinaciones",
+          "pages": "85"
+        },
+        {
+          "id": "lesson-7-09",
+          "slug": "7-09-horarios-reales",
+          "order": 9,
+          "title": "Horarios reales",
+          "pages": "86"
+        },
+        {
+          "id": "lesson-7-10",
+          "slug": "7-10-ruta-alternativa",
+          "order": 10,
+          "title": "Ruta alternativa",
+          "pages": "86"
+        },
+        {
+          "id": "lesson-7-11",
+          "slug": "7-11-transporte-publico-taxi-o-recogida",
+          "order": 11,
+          "title": "Transporte público, taxi o recogida",
+          "pages": "86"
+        },
+        {
+          "id": "lesson-7-12",
+          "slug": "7-12-domingo-lunes-o-martes",
+          "order": 12,
+          "title": "Domingo, lunes o martes",
+          "pages": "87"
+        },
+        {
+          "id": "lesson-7-13",
+          "slug": "7-13-por-que-jueves-y-viernes-son-peligrosos",
+          "order": 13,
+          "title": "Por qué jueves y viernes son peligrosos",
+          "pages": "87"
+        },
+        {
+          "id": "lesson-7-14",
+          "slug": "7-14-confirmar-antes-de-pagar-el-vuelo",
+          "order": 14,
+          "title": "Confirmar antes de pagar el vuelo",
+          "pages": "88"
+        },
+        {
+          "id": "lesson-7-15",
+          "slug": "7-15-un-vuelo-de-30-puede-ser-carisimo",
+          "order": 15,
+          "title": "Un vuelo de 30 € puede ser carísimo",
+          "pages": "88"
+        },
+        {
+          "id": "lesson-7-16",
+          "slug": "7-16-hablar-con-el-banco",
+          "order": 16,
+          "title": "Hablar con el banco",
+          "pages": "88"
+        },
+        {
+          "id": "lesson-7-17",
+          "slug": "7-17-limites-y-transferencias",
+          "order": 17,
+          "title": "Límites y transferencias",
+          "pages": "88-89"
+        },
+        {
+          "id": "lesson-7-18",
+          "slug": "7-18-la-historia-del-viernes-hasta-el-lunes",
+          "order": 18,
+          "title": "La historia del viernes hasta el lunes",
+          "pages": "89"
+        },
+        {
+          "id": "lesson-7-19",
+          "slug": "7-19-plan-b-c",
+          "order": 19,
+          "title": "Plan B/C",
+          "pages": "90"
+        },
+        {
+          "id": "lesson-7-20",
+          "slug": "7-20-equipaje-y-herramientas",
+          "order": 20,
+          "title": "Equipaje y herramientas",
+          "pages": "89"
+        },
+        {
+          "id": "lesson-7-21",
+          "slug": "7-21-herramienta-planificador-de-viaje",
+          "order": 21,
+          "title": "Herramienta: planificador de viaje",
+          "pages": "81-90"
+        },
+        {
+          "id": "lesson-7-22",
+          "slug": "7-22-checkpoint-billete-como-ultimo-clic",
+          "order": 22,
+          "title": "Checkpoint: billete como último clic",
+          "pages": "90"
+        }
+      ]
+    },
+    {
+      "id": "stage-8",
+      "slug": "revisar-el-vehiculo",
+      "order": 8,
+      "title": "Revisar el vehículo",
+      "pageRange": "91-103",
+      "lessons": [
+        {
+          "id": "lesson-8-01",
+          "slug": "8-01-historial-antes-de-volar",
+          "order": 1,
+          "title": "Historial antes de volar",
+          "pages": "92"
+        },
+        {
+          "id": "lesson-8-02",
+          "slug": "8-02-un-informe-limpio-no-garantiza-un-coche-limpio",
+          "order": 2,
+          "title": "Un informe limpio no garantiza un coche limpio",
+          "pages": "92"
+        },
+        {
+          "id": "lesson-8-03",
+          "slug": "8-03-herramientas-que-llevar",
+          "order": 3,
+          "title": "Herramientas que llevar",
+          "pages": "92-93"
+        },
+        {
+          "id": "lesson-8-04",
+          "slug": "8-04-lector-obd",
+          "order": 4,
+          "title": "Lector OBD",
+          "pages": "93"
+        },
+        {
+          "id": "lesson-8-05",
+          "slug": "8-05-diagnosis-inicial",
+          "order": 5,
+          "title": "Diagnosis inicial",
+          "pages": "93"
+        },
+        {
+          "id": "lesson-8-06",
+          "slug": "8-06-diagnosis-despues-de-la-prueba",
+          "order": 6,
+          "title": "Diagnosis después de la prueba",
+          "pages": "93"
+        },
+        {
+          "id": "lesson-8-07",
+          "slug": "8-07-no-borrar-errores",
+          "order": 7,
+          "title": "No borrar errores",
+          "pages": "93"
+        },
+        {
+          "id": "lesson-8-08",
+          "slug": "8-08-medidor-de-pintura",
+          "order": 8,
+          "title": "Medidor de pintura",
+          "pages": "94"
+        },
+        {
+          "id": "lesson-8-09",
+          "slug": "8-09-no-existe-una-cifra-magica",
+          "order": 9,
+          "title": "No existe una cifra mágica",
+          "pages": "94"
+        },
+        {
+          "id": "lesson-8-10",
+          "slug": "8-10-comparar-paneles",
+          "order": 10,
+          "title": "Comparar paneles",
+          "pages": "94"
+        },
+        {
+          "id": "lesson-8-11",
+          "slug": "8-11-preguntar-por-golpes",
+          "order": 11,
+          "title": "Preguntar por golpes",
+          "pages": "94"
+        },
+        {
+          "id": "lesson-8-12",
+          "slug": "8-12-huecos-de-carroceria",
+          "order": 12,
+          "title": "Huecos de carrocería",
+          "pages": "95"
+        },
+        {
+          "id": "lesson-8-13",
+          "slug": "8-13-tornillos-y-desmontaje",
+          "order": 13,
+          "title": "Tornillos y desmontaje",
+          "pages": "95"
+        },
+        {
+          "id": "lesson-8-14",
+          "slug": "8-14-faros-y-pilotos",
+          "order": 14,
+          "title": "Faros y pilotos",
+          "pages": "96"
+        },
+        {
+          "id": "lesson-8-15",
+          "slug": "8-15-fechas-de-cristales",
+          "order": 15,
+          "title": "Fechas de cristales",
+          "pages": "96"
+        },
+        {
+          "id": "lesson-8-16",
+          "slug": "8-16-pintura-fuera-de-sitio",
+          "order": 16,
+          "title": "Pintura fuera de sitio",
+          "pages": "97"
+        },
+        {
+          "id": "lesson-8-17",
+          "slug": "8-17-selladores-soldaduras-y-simetria",
+          "order": 17,
+          "title": "Selladores, soldaduras y simetría",
+          "pages": "97"
+        },
+        {
+          "id": "lesson-8-18",
+          "slug": "8-18-hueco-de-rueda-de-repuesto",
+          "order": 18,
+          "title": "Hueco de rueda de repuesto",
+          "pages": "98"
+        },
+        {
+          "id": "lesson-8-19",
+          "slug": "8-19-neumaticos-y-alineacion",
+          "order": 19,
+          "title": "Neumáticos y alineación",
+          "pages": "98"
+        },
+        {
+          "id": "lesson-8-20",
+          "slug": "8-20-motor-liquidos-y-fugas",
+          "order": 20,
+          "title": "Motor, líquidos y fugas",
+          "pages": "99"
+        },
+        {
+          "id": "lesson-8-21",
+          "slug": "8-21-prueba-de-conduccion",
+          "order": 21,
+          "title": "Prueba de conducción",
+          "pages": "99"
+        },
+        {
+          "id": "lesson-8-22",
+          "slug": "8-22-via-rapida",
+          "order": 22,
+          "title": "Vía rápida",
+          "pages": "99"
+        },
+        {
+          "id": "lesson-8-23",
+          "slug": "8-23-probar-todos-los-extras",
+          "order": 23,
+          "title": "Probar todos los extras",
+          "pages": "100"
+        },
+        {
+          "id": "lesson-8-24",
+          "slug": "8-24-conducir-y-volver-a-mirar",
+          "order": 24,
+          "title": "Conducir y volver a mirar",
+          "pages": "100"
+        },
+        {
+          "id": "lesson-8-25",
+          "slug": "8-25-coche-usado-frente-a-perfeccion",
+          "order": 25,
+          "title": "Coche usado frente a perfección",
+          "pages": "101"
+        },
+        {
+          "id": "lesson-8-26",
+          "slug": "8-26-semaforo-de-decision",
+          "order": 26,
+          "title": "Semáforo de decisión",
+          "pages": "101"
+        },
+        {
+          "id": "lesson-8-27",
+          "slug": "8-27-comprar-verificar-o-marcharte",
+          "order": 27,
+          "title": "Comprar, verificar o marcharte",
+          "pages": "101-103"
+        },
+        {
+          "id": "lesson-8-28",
+          "slug": "8-28-herramienta-inspeccion-presencial",
+          "order": 28,
+          "title": "Herramienta: inspección presencial",
+          "pages": "91-103"
+        },
+        {
+          "id": "lesson-8-29",
+          "slug": "8-29-hoja-de-medicion-de-pintura",
+          "order": 29,
+          "title": "Hoja de medición de pintura",
+          "pages": "94"
+        },
+        {
+          "id": "lesson-8-30",
+          "slug": "8-30-checkpoint-antes-de-pagar",
+          "order": 30,
+          "title": "Checkpoint: antes de pagar",
+          "pages": "103"
+        }
+      ]
+    },
+    {
+      "id": "stage-9",
+      "slug": "comprar-y-salir",
+      "order": 9,
+      "title": "Comprar y salir",
+      "pageRange": "104-110",
+      "lessons": [
+        {
+          "id": "lesson-9-01",
+          "slug": "9-01-recalcular-delante-del-coche",
+          "order": 1,
+          "title": "Recalcular delante del coche",
+          "pages": "105"
+        },
+        {
+          "id": "lesson-9-02",
+          "slug": "9-02-el-vuelo-ya-esta-gastado",
+          "order": 2,
+          "title": "El vuelo ya está gastado",
+          "pages": "105"
+        },
+        {
+          "id": "lesson-9-03",
+          "slug": "9-03-comprobacion-de-30-segundos",
+          "order": 3,
+          "title": "Comprobación de 30 segundos",
+          "pages": "105"
+        },
+        {
+          "id": "lesson-9-04",
+          "slug": "9-04-factura-contrato-o-ambos",
+          "order": 4,
+          "title": "Factura, contrato o ambos",
+          "pages": "106"
+        },
+        {
+          "id": "lesson-9-05",
+          "slug": "9-05-datos-obligatorios-de-la-operacion",
+          "order": 5,
+          "title": "Datos obligatorios de la operación",
+          "pages": "106"
+        },
+        {
+          "id": "lesson-9-06",
+          "slug": "9-06-el-vin-manda",
+          "order": 6,
+          "title": "El VIN manda",
+          "pages": "106"
+        },
+        {
+          "id": "lesson-9-07",
+          "slug": "9-07-documentacion-alemana",
+          "order": 7,
+          "title": "Documentación alemana",
+          "pages": "106"
+        },
+        {
+          "id": "lesson-9-08",
+          "slug": "9-08-teil-i-y-teil-ii",
+          "order": 8,
+          "title": "Teil I y Teil II",
+          "pages": "106"
+        },
+        {
+          "id": "lesson-9-09",
+          "slug": "9-09-carpeta-neerlandesa",
+          "order": 9,
+          "title": "Carpeta neerlandesa",
+          "pages": "107"
+        },
+        {
+          "id": "lesson-9-10",
+          "slug": "9-10-carpeta-belga",
+          "order": 10,
+          "title": "Carpeta belga",
+          "pages": "107"
+        },
+        {
+          "id": "lesson-9-11",
+          "slug": "9-11-pago-del-vehiculo",
+          "order": 11,
+          "title": "Pago del vehículo",
+          "pages": "108"
+        },
+        {
+          "id": "lesson-9-12",
+          "slug": "9-12-comprobar-iban-y-titular",
+          "order": 12,
+          "title": "Comprobar IBAN y titular",
+          "pages": "108"
+        },
+        {
+          "id": "lesson-9-13",
+          "slug": "9-13-placas-de-exportacion",
+          "order": 13,
+          "title": "Placas de exportación",
+          "pages": "109"
+        },
+        {
+          "id": "lesson-9-14",
+          "slug": "9-14-seguro",
+          "order": 14,
+          "title": "Seguro",
+          "pages": "109"
+        },
+        {
+          "id": "lesson-9-15",
+          "slug": "9-15-tuv-durante-la-vigencia",
+          "order": 15,
+          "title": "TÜV durante la vigencia",
+          "pages": "109"
+        },
+        {
+          "id": "lesson-9-16",
+          "slug": "9-16-la-franja-roja",
+          "order": 16,
+          "title": "La franja roja",
+          "pages": "109-110"
+        },
+        {
+          "id": "lesson-9-17",
+          "slug": "9-17-no-viajar-hasta-el-ultimo-dia",
+          "order": 17,
+          "title": "No viajar hasta el último día",
+          "pages": "110"
+        },
+        {
+          "id": "lesson-9-18",
+          "slug": "9-18-revisar-niveles-antes-de-arrancar",
+          "order": 18,
+          "title": "Revisar niveles antes de arrancar",
+          "pages": "110"
+        },
+        {
+          "id": "lesson-9-19",
+          "slug": "9-19-herramienta-checklist-de-compra-y-salida",
+          "order": 19,
+          "title": "Herramienta: checklist de compra y salida",
+          "pages": "104-110"
+        },
+        {
+          "id": "lesson-9-20",
+          "slug": "9-20-checkpoint-rumbo-a-espana",
+          "order": 20,
+          "title": "Checkpoint: rumbo a España",
+          "pages": "110"
+        }
+      ]
+    },
+    {
+      "id": "stage-10",
+      "slug": "la-vuelta",
+      "order": 10,
+      "title": "La vuelta",
+      "pageRange": "111-118",
+      "lessons": [
+        {
+          "id": "lesson-10-01",
+          "slug": "10-01-comprobacion-antes-de-autopista",
+          "order": 1,
+          "title": "Comprobación antes de autopista",
+          "pages": "112"
+        },
+        {
+          "id": "lesson-10-02",
+          "slug": "10-02-primeros-kilometros",
+          "order": 2,
+          "title": "Primeros kilómetros",
+          "pages": "112"
+        },
+        {
+          "id": "lesson-10-03",
+          "slug": "10-03-peajes-o-evitarlos-en-francia",
+          "order": 3,
+          "title": "Peajes o evitarlos en Francia",
+          "pages": "112-113"
+        },
+        {
+          "id": "lesson-10-04",
+          "slug": "10-04-que-compras-con-el-peaje",
+          "order": 4,
+          "title": "Qué compras con el peaje",
+          "pages": "113"
+        },
+        {
+          "id": "lesson-10-05",
+          "slug": "10-05-areas-de-descanso",
+          "order": 5,
+          "title": "Áreas de descanso",
+          "pages": "113-114"
+        },
+        {
+          "id": "lesson-10-06",
+          "slug": "10-06-duchas-microondas-y-servicios",
+          "order": 6,
+          "title": "Duchas, microondas y servicios",
+          "pages": "114"
+        },
+        {
+          "id": "lesson-10-07",
+          "slug": "10-07-combustible-antes-de-francia",
+          "order": 7,
+          "title": "Combustible antes de Francia",
+          "pages": "114"
+        },
+        {
+          "id": "lesson-10-08",
+          "slug": "10-08-luxemburgo-y-desvios",
+          "order": 8,
+          "title": "Luxemburgo y desvíos",
+          "pages": "114"
+        },
+        {
+          "id": "lesson-10-09",
+          "slug": "10-09-comida-para-carretera",
+          "order": 9,
+          "title": "Comida para carretera",
+          "pages": "114-115"
+        },
+        {
+          "id": "lesson-10-10",
+          "slug": "10-10-hotel-y-parking",
+          "order": 10,
+          "title": "Hotel y parking",
+          "pages": "115"
+        },
+        {
+          "id": "lesson-10-11",
+          "slug": "10-11-no-ahorrar-en-descanso",
+          "order": 11,
+          "title": "No ahorrar en descanso",
+          "pages": "115"
+        },
+        {
+          "id": "lesson-10-12",
+          "slug": "10-12-rutas-alternativas",
+          "order": 12,
+          "title": "Rutas alternativas",
+          "pages": "116"
+        },
+        {
+          "id": "lesson-10-13",
+          "slug": "10-13-entrar-por-lyon-o-paris",
+          "order": 13,
+          "title": "Entrar por Lyon o París",
+          "pages": "116"
+        },
+        {
+          "id": "lesson-10-14",
+          "slug": "10-14-peajes-en-espana",
+          "order": 14,
+          "title": "Peajes en España",
+          "pages": "116"
+        },
+        {
+          "id": "lesson-10-15",
+          "slug": "10-15-que-hacer-si-aparece-un-testigo",
+          "order": 15,
+          "title": "Qué hacer si aparece un testigo",
+          "pages": "116-117"
+        },
+        {
+          "id": "lesson-10-16",
+          "slug": "10-16-perdida-de-potencia-temperatura-o-fugas",
+          "order": 16,
+          "title": "Pérdida de potencia, temperatura o fugas",
+          "pages": "117"
+        },
+        {
+          "id": "lesson-10-17",
+          "slug": "10-17-pausas-y-fatiga",
+          "order": 17,
+          "title": "Pausas y fatiga",
+          "pages": "117"
+        },
+        {
+          "id": "lesson-10-18",
+          "slug": "10-18-documentos-a-mano",
+          "order": 18,
+          "title": "Documentos a mano",
+          "pages": "117"
+        },
+        {
+          "id": "lesson-10-19",
+          "slug": "10-19-herramienta-checklist-de-vuelta",
+          "order": 19,
+          "title": "Herramienta: checklist de vuelta",
+          "pages": "111-118"
+        },
+        {
+          "id": "lesson-10-20",
+          "slug": "10-20-checkpoint-ya-estas-importando",
+          "order": 20,
+          "title": "Checkpoint: ya estás importando",
+          "pages": "118"
+        }
+      ]
+    },
+    {
+      "id": "stage-11",
+      "slug": "matricular-en-espana",
+      "order": 11,
+      "title": "Matricular en España",
+      "pageRange": "119-130",
+      "lessons": [
+        {
+          "id": "lesson-11-01",
+          "slug": "11-01-revisar-reformas-antes-de-itv",
+          "order": 1,
+          "title": "Revisar reformas antes de ITV",
+          "pages": "120"
+        },
+        {
+          "id": "lesson-11-02",
+          "slug": "11-02-bola-de-remolque",
+          "order": 2,
+          "title": "Bola de remolque",
+          "pages": "120"
+        },
+        {
+          "id": "lesson-11-03",
+          "slug": "11-03-llantas-suspension-escape-luces-y-plazas",
+          "order": 3,
+          "title": "Llantas, suspensión, escape, luces y plazas",
+          "pages": "120"
+        },
+        {
+          "id": "lesson-11-04",
+          "slug": "11-04-coc-o-ficha-reducida",
+          "order": 4,
+          "title": "CoC o ficha reducida",
+          "pages": "120-121"
+        },
+        {
+          "id": "lesson-11-05",
+          "slug": "11-05-cuando-sirve-el-coc",
+          "order": 5,
+          "title": "Cuándo sirve el CoC",
+          "pages": "120-121"
+        },
+        {
+          "id": "lesson-11-06",
+          "slug": "11-06-cuando-pedir-ficha-reducida",
+          "order": 6,
+          "title": "Cuándo pedir ficha reducida",
+          "pages": "121"
+        },
+        {
+          "id": "lesson-11-07",
+          "slug": "11-07-fotografias-y-datos-para-el-tecnico",
+          "order": 7,
+          "title": "Fotografías y datos para el técnico",
+          "pages": "121"
+        },
+        {
+          "id": "lesson-11-08",
+          "slug": "11-08-pedir-la-ficha-durante-la-vuelta",
+          "order": 8,
+          "title": "Pedir la ficha durante la vuelta",
+          "pages": "121"
+        },
+        {
+          "id": "lesson-11-09",
+          "slug": "11-09-confirmar-envio-a-la-itv",
+          "order": 9,
+          "title": "Confirmar envío a la ITV",
+          "pages": "122"
+        },
+        {
+          "id": "lesson-11-10",
+          "slug": "11-10-itv-de-matriculacion",
+          "order": 10,
+          "title": "ITV de matriculación",
+          "pages": "122"
+        },
+        {
+          "id": "lesson-11-11",
+          "slug": "11-11-no-es-una-itv-periodica-normal",
+          "order": 11,
+          "title": "No es una ITV periódica normal",
+          "pages": "122"
+        },
+        {
+          "id": "lesson-11-12",
+          "slug": "11-12-buscar-otra-estacion-si-compensa",
+          "order": 12,
+          "title": "Buscar otra estación si compensa",
+          "pages": "123"
+        },
+        {
+          "id": "lesson-11-13",
+          "slug": "11-13-gestoria-o-por-tu-cuenta",
+          "order": 13,
+          "title": "Gestoría o por tu cuenta",
+          "pages": "123"
+        },
+        {
+          "id": "lesson-11-14",
+          "slug": "11-14-dos-caminos-un-destino",
+          "order": 14,
+          "title": "Dos caminos, un destino",
+          "pages": "123-124"
+        },
+        {
+          "id": "lesson-11-15",
+          "slug": "11-15-orden-por-tu-cuenta",
+          "order": 15,
+          "title": "Orden por tu cuenta",
+          "pages": "124"
+        },
+        {
+          "id": "lesson-11-16",
+          "slug": "11-16-itv",
+          "order": 16,
+          "title": "ITV",
+          "pages": "124"
+        },
+        {
+          "id": "lesson-11-17",
+          "slug": "11-17-ivtm",
+          "order": 17,
+          "title": "IVTM",
+          "pages": "124-125"
+        },
+        {
+          "id": "lesson-11-18",
+          "slug": "11-18-modelo-576-05-o-06",
+          "order": 18,
+          "title": "Modelo 576, 05 o 06",
+          "pages": "125"
+        },
+        {
+          "id": "lesson-11-19",
+          "slug": "11-19-tasa-1-1",
+          "order": 19,
+          "title": "Tasa 1.1",
+          "pages": "126"
+        },
+        {
+          "id": "lesson-11-20",
+          "slug": "11-20-cita-dgt",
+          "order": 20,
+          "title": "Cita DGT",
+          "pages": "126"
+        },
+        {
+          "id": "lesson-11-21",
+          "slug": "11-21-particular-o-autonomo",
+          "order": 21,
+          "title": "Particular o autónomo",
+          "pages": "126"
+        },
+        {
+          "id": "lesson-11-22",
+          "slug": "11-22-empresa",
+          "order": 22,
+          "title": "Empresa",
+          "pages": "127"
+        },
+        {
+          "id": "lesson-11-23",
+          "slug": "11-23-solicitud-oficial-de-matriculacion",
+          "order": 23,
+          "title": "Solicitud oficial de matriculación",
+          "pages": "127"
+        },
+        {
+          "id": "lesson-11-24",
+          "slug": "11-24-expediente-dgt",
+          "order": 24,
+          "title": "Expediente DGT",
+          "pages": "128"
+        },
+        {
+          "id": "lesson-11-25",
+          "slug": "11-25-revisar-permiso-y-matricula",
+          "order": 25,
+          "title": "Revisar permiso y matrícula",
+          "pages": "128"
+        },
+        {
+          "id": "lesson-11-26",
+          "slug": "11-26-fabricar-placas",
+          "order": 26,
+          "title": "Fabricar placas",
+          "pages": "128"
+        },
+        {
+          "id": "lesson-11-27",
+          "slug": "11-27-seguro-espanol",
+          "order": 27,
+          "title": "Seguro español",
+          "pages": "128"
+        },
+        {
+          "id": "lesson-11-28",
+          "slug": "11-28-herramienta-carpeta-de-matriculacion",
+          "order": 28,
+          "title": "Herramienta: carpeta de matriculación",
+          "pages": "119-130"
+        },
+        {
+          "id": "lesson-11-29",
+          "slug": "11-29-checkpoint-matricula-espanola",
+          "order": 29,
+          "title": "Checkpoint: matrícula española",
+          "pages": "130"
+        },
+        {
+          "id": "lesson-11-30",
+          "slug": "11-30-final-visual-has-importado-tu-vehiculo",
+          "order": 30,
+          "title": "Final visual: “Has importado tu vehículo”",
+          "pages": "129"
+        }
+      ]
+    },
+    {
+      "id": "stage-12",
+      "slug": "metodo-7-dias",
+      "order": 12,
+      "title": "Método 7 días",
+      "pageRange": "131-141",
+      "lessons": [
+        {
+          "id": "lesson-12-01",
+          "slug": "12-01-importar-en-siete-dias-no-significa-correr",
+          "order": 1,
+          "title": "Importar en siete días no significa correr",
+          "pages": "132"
+        },
+        {
+          "id": "lesson-12-02",
+          "slug": "12-02-los-seis-cuellos-de-botella",
+          "order": 2,
+          "title": "Los seis cuellos de botella",
+          "pages": "132"
+        },
+        {
+          "id": "lesson-12-03",
+          "slug": "12-03-dgt",
+          "order": 3,
+          "title": "DGT",
+          "pages": "132"
+        },
+        {
+          "id": "lesson-12-04",
+          "slug": "12-04-itv",
+          "order": 4,
+          "title": "ITV",
+          "pages": "132"
+        },
+        {
+          "id": "lesson-12-05",
+          "slug": "12-05-placas",
+          "order": 5,
+          "title": "Placas",
+          "pages": "132"
+        },
+        {
+          "id": "lesson-12-06",
+          "slug": "12-06-banco",
+          "order": 6,
+          "title": "Banco",
+          "pages": "132"
+        },
+        {
+          "id": "lesson-12-07",
+          "slug": "12-07-ficha",
+          "order": 7,
+          "title": "Ficha",
+          "pages": "132"
+        },
+        {
+          "id": "lesson-12-08",
+          "slug": "12-08-vendedor",
+          "order": 8,
+          "title": "Vendedor",
+          "pages": "132"
+        },
+        {
+          "id": "lesson-12-09",
+          "slug": "12-09-mirar-dgt-antes-de-encontrar-coche",
+          "order": 9,
+          "title": "Mirar DGT antes de encontrar coche",
+          "pages": "133"
+        },
+        {
+          "id": "lesson-12-10",
+          "slug": "12-10-antes-de-comprar-el-vuelo",
+          "order": 10,
+          "title": "Antes de comprar el vuelo",
+          "pages": "133"
+        },
+        {
+          "id": "lesson-12-11",
+          "slug": "12-11-dia-0-domingo",
+          "order": 11,
+          "title": "Día 0: domingo",
+          "pages": "134"
+        },
+        {
+          "id": "lesson-12-12",
+          "slug": "12-12-dia-1-lunes",
+          "order": 12,
+          "title": "Día 1: lunes",
+          "pages": "135"
+        },
+        {
+          "id": "lesson-12-13",
+          "slug": "12-13-dias-2-y-3-coche-y-papeles-en-paralelo",
+          "order": 13,
+          "title": "Días 2 y 3: coche y papeles en paralelo",
+          "pages": "136"
+        },
+        {
+          "id": "lesson-12-14",
+          "slug": "12-14-dia-4-itv",
+          "order": 14,
+          "title": "Día 4: ITV",
+          "pages": "137"
+        },
+        {
+          "id": "lesson-12-15",
+          "slug": "12-15-dias-5-a-7-por-tu-cuenta",
+          "order": 15,
+          "title": "Días 5 a 7 por tu cuenta",
+          "pages": "138"
+        },
+        {
+          "id": "lesson-12-16",
+          "slug": "12-16-dias-5-a-7-con-gestoria",
+          "order": 16,
+          "title": "Días 5 a 7 con gestoría",
+          "pages": "138"
+        },
+        {
+          "id": "lesson-12-17",
+          "slug": "12-17-norte-y-noreste",
+          "order": 17,
+          "title": "Norte y noreste",
+          "pages": "139"
+        },
+        {
+          "id": "lesson-12-18",
+          "slug": "12-18-centro-y-este",
+          "order": 18,
+          "title": "Centro y este",
+          "pages": "139"
+        },
+        {
+          "id": "lesson-12-19",
+          "slug": "12-19-sur",
+          "order": 19,
+          "title": "Sur",
+          "pages": "139"
+        },
+        {
+          "id": "lesson-12-20",
+          "slug": "12-20-que-puede-romper-el-plan",
+          "order": 20,
+          "title": "Qué puede romper el plan",
+          "pages": "139"
+        },
+        {
+          "id": "lesson-12-21",
+          "slug": "12-21-respuesta-prevista-para-cada-bloqueo",
+          "order": 21,
+          "title": "Respuesta prevista para cada bloqueo",
+          "pages": "139"
+        },
+        {
+          "id": "lesson-12-22",
+          "slug": "12-22-metodo-minimo-viable",
+          "order": 22,
+          "title": "Método mínimo viable",
+          "pages": "140"
+        },
+        {
+          "id": "lesson-12-23",
+          "slug": "12-23-herramienta-calendario-7-dias",
+          "order": 23,
+          "title": "Herramienta: calendario 7 días",
+          "pages": "131-141"
+        },
+        {
+          "id": "lesson-12-24",
+          "slug": "12-24-checkpoint-final",
+          "order": 24,
+          "title": "Checkpoint final",
+          "pages": "141"
+        },
+        {
+          "id": "lesson-12-25",
+          "slug": "12-25-matricula-conseguida",
+          "order": 25,
+          "title": "Matrícula conseguida",
+          "pages": "141"
+        }
+      ]
+    }
+  ]
+}

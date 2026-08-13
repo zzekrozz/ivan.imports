@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "affiliateLinksEnabled": false,
+  "items": [
+    { "id": "obd", "title": "Lector OBD", "category": "inspección", "description": "Para leer fallos y contrastarlos con el estado real del vehículo.", "active": false, "affiliate": false },
+    { "id": "pintura", "title": "Medidor de pintura", "category": "inspección", "description": "Para registrar espesores por panel y localizar zonas que requieren contexto.", "active": false, "affiliate": false },
+    { "id": "linterna", "title": "Linterna de inspección", "category": "inspección", "description": "Para revisar bajos, huecos y zonas con poca luz.", "active": false, "affiliate": false }
+  ]
+}

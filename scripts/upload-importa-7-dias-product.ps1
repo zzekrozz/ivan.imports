@@ -72,13 +72,12 @@ $workbook = Resolve-PrivatePdf -Path $WorkbookPath -Label "El cuaderno"
 $npx = (Get-Command npx.cmd -ErrorAction Stop).Source
 $prefix = "products/importa-7-dias/2026/"
 
-# Force read-write-token authentication so a VERCEL_OIDC_TOKEN left by
-# `vercel env pull` cannot create an inconsistent OIDC/BLOB_STORE_ID pair.
+# BLOB_READ_WRITE_TOKEN se mantiene únicamente en el entorno. No se pasa como
+# argumento para que no pueda aparecer en la lista de procesos del sistema.
 $preflight = Invoke-NativeCapture -FilePath $npx -ArgumentList @(
     "vercel", "blob", "list",
     "--prefix", $prefix,
     "--limit", "10",
-    "--rw-token", $env:BLOB_READ_WRITE_TOKEN,
     "--no-color"
 )
 if ($preflight.ExitCode -ne 0) {
@@ -113,7 +112,6 @@ function Send-PrivateBlob {
         "--content-type", "application/pdf",
         "--access", "private",
         "--multipart", "true",
-        "--rw-token", $env:BLOB_READ_WRITE_TOKEN,
         "--no-color"
     )
     if ($AllowOverwrite) { $arguments += @("--allow-overwrite", "true") }

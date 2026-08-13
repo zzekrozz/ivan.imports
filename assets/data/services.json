@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-08-13",
+  "services": [
+    {
+      "id": "consultoria",
+      "slug": "consultoria",
+      "title": "Consultoría",
+      "eyebrow": "Una decisión concreta",
+      "summary": "Revisamos una duda, un anuncio, documentos, costes o el siguiente paso de una operación real.",
+      "audience": "Para quien ya tiene una duda o un caso concreto y necesita criterio aplicado.",
+      "priceLabel": "60 € / 90 € IVA incluido",
+      "priceOptions": [
+        { "id": "consultoria-30", "minutes": 30, "amount": 60, "vatIncluded": true, "label": "30 min · 60 € IVA incluido" },
+        { "id": "consultoria-60", "minutes": 60, "amount": 90, "vatIncluded": true, "label": "60 min · 90 € IVA incluido" }
+      ],
+      "includes": ["Preparación previa de la duda", "Videollamada de 30 o 60 minutos", "Revisión del material aportado durante la sesión", "Conclusión y siguiente paso"],
+      "excludes": ["Acompañamiento ilimitado", "Búsqueda durante semanas", "Gestiones o compra en nombre del cliente"],
+      "cta": "Reservar consultoría",
+      "ctaType": "whatsapp",
+      "analyticsEvent": "consultation_clicked",
+      "active": true,
+      "featured": false
+    },
+    {
+      "id": "subastaspro",
+      "slug": "subastaspro",
+      "title": "SubastasPRO",
+      "eyebrow": "Formación especializada",
+      "summary": "Aprende a trabajar con AUTO1 y Copart: búsquedas, lotes, costes, riesgos y precio máximo.",
+      "audience": "Para profesionales y compradores que quieren entender las plataformas antes de operar.",
+      "priceLabel": "99 € + IVA",
+      "amount": 99,
+      "vatIncluded": false,
+      "includes": ["Método de trabajo en AUTO1", "Método de trabajo en Copart", "Lectura de fichas, daños y documentos", "Cálculo de costes y puja máxima", "Criterios para descartar"],
+      "excludes": ["Cuenta en las plataformas", "Pujas por cuenta del alumno", "Vídeos todavía no publicados"],
+      "cta": "Ver SubastasPRO",
+      "ctaType": "external",
+      "ctaUrl": "https://subastaspro.ivanimports.es",
+      "analyticsEvent": "service_opened",
+      "active": true,
+      "featured": false
+    },
+    {
+      "id": "puesta-en-marcha-subastas",
+      "slug": "puesta-en-marcha-subastas",
+      "title": "Puesta en marcha de subastas",
+      "eyebrow": "Sesión privada · 75–90 min",
+      "summary": "Configura AUTO1 o Copart conmigo, crea filtros, revisa lotes y construye una rutina de trabajo.",
+      "audience": "Para quien ya dispone de acceso y quiere empezar a utilizar una plataforma con método.",
+      "priceLabel": "149 € + IVA",
+      "amount": 149,
+      "vatIncluded": false,
+      "includes": ["Pantalla compartida", "Configuración de filtros", "Búsqueda y revisión de varios lotes", "Comisiones, riesgos y preguntas", "Rutina de búsqueda"],
+      "excludes": ["Búsqueda durante semanas", "Análisis ilimitado", "Puja por cuenta del cliente", "Transporte, reparación o matriculación"],
+      "cta": "Reservar puesta en marcha",
+      "ctaType": "whatsapp",
+      "analyticsEvent": "auction_setup_clicked",
+      "active": true,
+      "featured": false
+    },
+    {
+      "id": "primera-compra-subasta",
+      "slug": "primera-compra-subasta",
+      "title": "Primera compra en subasta contigo",
+      "eyebrow": "AUTO1 o Copart",
+      "summary": "Elegimos la plataforma que tenga más sentido para tu objetivo y hacemos juntos tu primera operación.",
+      "audience": "Para quien quiere ejecutar una primera compra o puja con un caso y presupuesto reales.",
+      "priceLabel": "397 € IVA incluido",
+      "amount": 397,
+      "vatIncluded": true,
+      "includes": ["Llamada inicial y objetivo", "Una plataforma y una primera operación", "Hasta cinco candidatos razonables", "Costes, mercado y precio o puja máxima", "Revisión de documentación disponible", "Acompañamiento de la primera compra o puja", "Orientación de pago y recogida"],
+      "excludes": ["Garantía de adjudicación", "Búsqueda ilimitada", "Transporte, reparación y matriculación"],
+      "cta": "Solicitar primera compra",
+      "ctaType": "application",
+      "analyticsEvent": "auction_first_purchase_clicked",
+      "active": true,
+      "featured": true
+    },
+    {
+      "id": "primera-importacion-contigo",
+      "slug": "primera-importacion-contigo",
+      "title": "Primera Importación Contigo",
+      "eyebrow": "Acompañamiento integral",
+      "summary": "La primera la hacemos juntos. Las siguientes, tú solo.",
+      "audience": "Para quien quiere completar su primera importación con criterios y límites razonables.",
+      "priceLabel": "997 € IVA incluido",
+      "amount": 997,
+      "vatIncluded": true,
+      "includes": ["Objetivo y presupuesto", "Búsqueda y candidatos", "Comparación, costes y anuncios", "Documentación y vendedor", "Negociación y decisión", "Viaje o transporte", "ITV, impuestos, DGT y matrícula"],
+      "excludes": ["Garantía de encontrar una unidad", "Compra sin límites de tiempo o candidatos", "Costes del vehículo, viaje, transporte, impuestos o tasas"],
+      "cta": "Solicitar plaza",
+      "ctaType": "application",
+      "analyticsEvent": "first_import_application_started",
+      "active": true,
+      "featured": true
+    }
+  ],
+  "future": [
+    { "id": "busqueda-supervisada", "title": "Búsqueda supervisada", "enabled": false, "pilotPrice": "149 € IVA incluido" }
+  ]
+}

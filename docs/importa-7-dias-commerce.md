@@ -54,7 +54,7 @@ La integración Upstash de Vercel puede entregar `KV_REST_API_URL` y `KV_REST_AP
 
 Situarse en la raíz del proyecto:
 
-    Set-Location "C:\Users\pc\Documents\Codex\2026-08-09\https-github-com-zzekrozz-ivan-imports\work\ivan.imports-production"
+    Set-Location "<RUTA_LOCAL_DEL_REPOSITORIO>"
 
 Instalar dependencias y ejecutar la batería:
 
@@ -167,14 +167,14 @@ El token debe estar ya en la variable de entorno, no en el historial:
 Subir por primera vez los originales privados:
 
     .\scripts\upload-importa-7-dias-product.ps1 `
-      -GuidePath "C:\Users\pc\Downloads\IMPORTA-7-DIAS-FINAL-2026.pdf" `
-      -WorkbookPath "C:\Users\pc\Downloads\CUADERNO-IMPORTA-7-DIAS-FINAL-2026.pdf"
+      -GuidePath "<RUTA_PRIVADA>\IMPORTA-7-DIAS-FINAL-2026.pdf" `
+      -WorkbookPath "<RUTA_PRIVADA>\CUADERNO-IMPORTA-7-DIAS-FINAL-2026.pdf"
 
 Validar credencial, privacidad, cabeceras y tamaños sin subir ni sobrescribir:
 
     .\scripts\upload-importa-7-dias-product.ps1 `
-      -GuidePath "C:\Users\pc\Downloads\IMPORTA-7-DIAS-FINAL-2026.pdf" `
-      -WorkbookPath "C:\Users\pc\Downloads\CUADERNO-IMPORTA-7-DIAS-FINAL-2026.pdf" `
+      -GuidePath "<RUTA_PRIVADA>\IMPORTA-7-DIAS-FINAL-2026.pdf" `
+      -WorkbookPath "<RUTA_PRIVADA>\CUADERNO-IMPORTA-7-DIAS-FINAL-2026.pdf" `
       -DryRun -Force
 
 Reemplazar una versión conservando los pathnames:

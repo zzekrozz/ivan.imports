@@ -9,6 +9,8 @@
   const sessionId = url.searchParams.get("session_id") || "";
   const isLocalQa = new Set(["127.0.0.1", "localhost"]).has(url.hostname);
   const localQaState = isLocalQa ? url.searchParams.get("qa_state") || "" : "";
+  const academyEntry = document.querySelector("[data-academy-entry]");
+  const academyStatus = document.querySelector("[data-academy-access-status]");
 
   // El ID se conserva solo en memoria y se elimina antes de cargar cualquier script externo.
   if (window.history?.replaceState && url.search) {
@@ -67,6 +69,10 @@
       document.querySelectorAll("[data-thank-you-launch]").forEach((section) => {
         section.hidden = !data.bonus_eligible;
       });
+      document.querySelectorAll("[data-academy-access-status]").forEach((element) => {
+        element.textContent = "Academia pública disponible.";
+      });
+      updateAcademyAccess();
       initReveal();
       document.title = "Compra confirmada | Importa tu coche en 7 días";
       track("importa7_purchase_verified", { bonus_eligible: Boolean(data.bonus_eligible) });
@@ -78,6 +84,11 @@
       track("importa7_purchase_unverified");
     }
     loadAnalytics();
+  }
+
+  function updateAcademyAccess() {
+    if (academyStatus) academyStatus.textContent = "Academia pública disponible.";
+    if (academyEntry) { academyEntry.hidden = false; academyEntry.href = "/academia/"; }
   }
 
   function initReveal() {
@@ -122,7 +133,7 @@
   }
 
   if (localQaState === "confirmed") {
-    setState("confirmed", { masked_email: "iv******@example.com", bonus_eligible: true });
+    setState("confirmed", { masked_email: "iv******@example.com", bonus_eligible: true, academy_access: "active" });
   } else if (localQaState === "pending" || localQaState === "unverified") {
     setState(localQaState);
   } else {

@@ -1,3 +1,11 @@
 .agents
 .claude
+.env*
+.vercel/
+.npm-cache/
+node_modules/
+outputs/
+*.zip
 skills-lock.json
+private-products/
+coverage/

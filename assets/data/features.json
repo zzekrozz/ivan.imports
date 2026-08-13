@@ -1,0 +1,12 @@
+{
+  "academy": true,
+  "opportunities": true,
+  "directos": true,
+  "services": true,
+  "newsletter": false,
+  "academyPdf": false,
+  "supervisedSearch": false,
+  "radarCopart": false,
+  "affiliateLinks": false,
+  "accounts": false
+}

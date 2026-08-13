@@ -4,7 +4,7 @@ import { dirname, extname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const ignoredDirectories = new Set([".git", ".vercel", "node_modules", "coverage"]);
+const ignoredDirectories = new Set([".git", ".vercel", "node_modules", "coverage", "dist"]);
 const codeExtensions = new Set([".js", ".mjs"]);
 const textExtensions = new Set([".css", ".html", ".js", ".json", ".md", ".mjs", ".ps1", ".txt", ".xml"]);
 const failures = [];
@@ -23,7 +23,11 @@ for (const file of files.filter((candidate) => codeExtensions.has(extname(candid
   if (result.status !== 0) failures.push(`${relative(root, file)}: ${result.stderr.trim()}`);
 }
 
-const publicPdfAllowlist = new Set(["assets/academia/otorgamiento_ES.pdf"]);
+const publicPdfAllowlist = new Set([
+  "assets/academia/otorgamiento_ES.pdf",
+  "private-products/academy/pdf/importa-tu-coche-en-7-dias-guia-2026.pdf",
+  "private-products/academy/pdf/importa-tu-coche-en-7-dias-cuaderno-2026.pdf",
+]);
 const unexpectedPdfs = files
   .filter((file) => extname(file).toLowerCase() === ".pdf")
   .filter((file) => !publicPdfAllowlist.has(relative(root, file).replaceAll("\\", "/")));

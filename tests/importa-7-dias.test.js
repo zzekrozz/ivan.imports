@@ -64,6 +64,12 @@ function env(overrides = {}) {
     UPSTASH_REDIS_REST_TOKEN: "redis-token-placeholder",
     IMPORTA_7_DIAS_DOWNLOAD_SIGNING_SECRET: signingSecret,
     IMPORTA_7_DIAS_BASE_URL: "https://ivanimports.es",
+    VERCEL_ENV: "preview",
+    IMPORTA_7_DIAS_GUIDE_BLOB_PATHNAME: "academy/preview/importa-tu-coche-en-7-dias-guia-2026.pdf",
+    IMPORTA_7_DIAS_WORKBOOK_BLOB_PATHNAME: "academy/preview/importa-tu-coche-en-7-dias-cuaderno.pdf",
+    ACADEMY_PREVIEW_BLOB_STORE_ID: "store-preview-test",
+    ACADEMY_PREVIEW_BLOB_READ_WRITE_TOKEN: "vercel_blob_rw_store-preview-test_secret",
+    VERCEL_OIDC_TOKEN: "opaque-oidc-preview-test-value",
     IMPORTA_7_DIAS_SUPPORT_PHONE_E164: "+34600000000",
     ...overrides,
   };
@@ -74,10 +80,12 @@ function stripeHeader(rawBody, secret, timestamp) {
   return `t=${timestamp},v1=${signature}`;
 }
 
-function createServiceMock({ session = paidSession(), failEmailTimes = 0, emailGate = null } = {}) {
+function createServiceMock({ session = paidSession(), failEmailTimes = 0, emailGate = null, failAcademyTimes = 0, contactExists = false } = {}) {
   const redis = new Map();
   let emailCalls = 0;
   let contactCreates = 0;
+  let academyFailures = 0;
+  const contactWrites = [];
 
   const fetchImpl = async (url, options = {}) => {
     const target = String(url);
@@ -86,12 +94,23 @@ function createServiceMock({ session = paidSession(), failEmailTimes = 0, emailG
     if (target === "https://redis.example.test") {
       const command = JSON.parse(options.body);
       const operation = command[0];
+      const academyCommand = command.some((value) => String(value).startsWith("academy:v1:"));
+      if (academyCommand && academyFailures < failAcademyTimes) {
+        academyFailures += 1;
+        return json({ error: "academy redis unavailable" }, 503);
+      }
       if (operation === "GET") return json({ result: redis.get(command[1]) ?? null });
       if (operation === "SET") {
         if (command.includes("NX") && redis.has(command[1])) return json({ result: null });
         redis.set(command[1], command[2]);
         return json({ result: "OK" });
       }
+      if (operation === "INCR") {
+        const value = Number(redis.get(command[1]) || 0) + 1;
+        redis.set(command[1], String(value));
+        return json({ result: value });
+      }
+      if (operation === "EXPIRE") return json({ result: 1 });
       if (operation === "EVAL") {
         const key = command[3];
         if (redis.get(key) === command[4]) redis.delete(key);
@@ -106,11 +125,19 @@ function createServiceMock({ session = paidSession(), failEmailTimes = 0, emailG
       if (emailCalls <= failEmailTimes) return json({ message: "temporary outage" }, 503);
       return json({ id: `email_${emailCalls}` });
     }
-    if (target.startsWith("https://api.resend.com/contacts/") && (!options.method || options.method === "GET")) return json({}, 404);
+    if (target.startsWith("https://api.resend.com/contacts/") && (!options.method || options.method === "GET")) {
+      return contactExists ? json({ id: "contact_existing" }) : json({}, 404);
+    }
     if (target === "https://api.resend.com/contacts") {
       contactCreates += 1;
+      contactWrites.push({ method: "POST", body: JSON.parse(options.body) });
       return json({ id: "contact_importa7" });
     }
+    if (target === "https://api.resend.com/contacts/contact_existing" && options.method === "PATCH") {
+      contactWrites.push({ method: "PATCH", body: JSON.parse(options.body) });
+      return json({ id: "contact_existing" });
+    }
+    if (target.includes("/segments/") && options.method === "POST") return json({ ok: true });
     throw new Error(`Unexpected request: ${target}`);
   };
 
@@ -118,6 +145,7 @@ function createServiceMock({ session = paidSession(), failEmailTimes = 0, emailG
     fetchImpl,
     redis,
     stats: () => ({ emailCalls, contactCreates }),
+    contactWrites,
   };
 }
 
@@ -174,6 +202,12 @@ test("el email incluye enlaces privados y solo muestra WhatsApp cuando hay bonus
     config: config(),
   });
   assert.match(withBonus.html, /ABRIR GUÍA PRINCIPAL/);
+  assert.match(withBonus.html, /ENTRAR EN LA ACADEMIA/);
+  assert.match(withBonus.text, /ENTRAR EN LA ACADEMIA/);
+  assert.match(withBonus.text, /ivanimports\.es\/academia\//);
+  assert.doesNotMatch(withBonus.text, /código de 6 dígitos|contraseña/i);
+  assert.doesNotMatch(withBonus.html, /cuando esté lista la plataforma/i);
+  assert.doesNotMatch(withBonus.text, /cuando esté lista la plataforma/i);
   assert.match(withBonus.html, /wa\.me\/34600000000/);
   assert.match(withBonus.text, /14 días de Acompañamiento/);
   assert.equal("reply_to" in withBonus, false);
@@ -248,6 +282,66 @@ test("el webhook entrega una vez y un reenvío idéntico no duplica email ni con
   assert.equal(JSON.parse(service.redis.get(`importa7:order:${sessionId}`)).status, "delivered");
 });
 
+test("el webhook otorga Academia tras validar Stripe y reintenta un fallo sin duplicar la entrega", async () => {
+  const service = createServiceMock({ failAcademyTimes: 1 });
+  const academyEnv = env({ ACADEMY_DATA_SECRET: "d".repeat(48) });
+  const handler = createHandler({ env: academyEnv, fetchImpl: service.fetchImpl });
+  const event = { id: "evt_importa7_academy", type: "checkout.session.completed", created: paidSession().created, data: { object: { id: sessionId } } };
+  const raw = JSON.stringify(event);
+  const timestamp = Math.floor(Date.now() / 1000);
+  const request = () => new Request("https://ivanimports.es/api/importa-7-dias?action=webhook", {
+    method: "POST", headers: { "stripe-signature": stripeHeader(raw, academyEnv.STRIPE_WEBHOOK_SECRET, timestamp) }, body: raw,
+  });
+
+  assert.equal((await handler(request())).status, 500);
+  let order = JSON.parse(service.redis.get(`importa7:order:${sessionId}`));
+  assert.equal(order.status, "delivered");
+  assert.equal(order.academyAccess, "pending");
+  assert.equal(service.stats().emailCalls, 1);
+
+  const retried = await handler(request());
+  assert.equal(retried.status, 200);
+  assert.equal((await retried.json()).duplicate, true);
+  order = JSON.parse(service.redis.get(`importa7:order:${sessionId}`));
+  assert.equal(order.academyAccess, "active");
+  assert.equal(service.stats().emailCalls, 1);
+  assert.ok([...service.redis.keys()].some((key) => key.startsWith("academy:v1:entitlement:")));
+
+  const status = await handler(new Request("https://ivanimports.es/api/importa-7-dias?action=order-status", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ session_id: sessionId }),
+  }));
+  const statusBody = await status.json();
+  assert.equal(statusBody.academy_access, "active");
+  assert.equal(JSON.stringify(statusBody).includes("subject"), false);
+});
+
+test("el registro Resend no reactiva bajas comerciales", async () => {
+  const existing = createServiceMock({ contactExists: true });
+  const handler = createHandler({ env: env(), fetchImpl: existing.fetchImpl });
+  const event = { id: "evt_importa7_contact_existing", type: "checkout.session.completed", created: paidSession().created, data: { object: { id: sessionId } } };
+  const raw = JSON.stringify(event);
+  const timestamp = Math.floor(Date.now() / 1000);
+  const response = await handler(new Request("https://ivanimports.es/api/importa-7-dias?action=webhook", {
+    method: "POST", headers: { "stripe-signature": stripeHeader(raw, env().STRIPE_WEBHOOK_SECRET, timestamp) }, body: raw,
+  }));
+  assert.equal(response.status, 200);
+  const patch = existing.contactWrites.find((write) => write.method === "PATCH");
+  assert.ok(patch);
+  assert.equal("unsubscribed" in patch.body, false);
+  assert.equal(patch.body.properties.general_marketing_consent, "false");
+
+  const created = createServiceMock();
+  const createHandlerInstance = createHandler({ env: env(), fetchImpl: created.fetchImpl });
+  const createdEvent = { ...event, id: "evt_importa7_contact_new" };
+  const createdRaw = JSON.stringify(createdEvent);
+  await createHandlerInstance(new Request("https://ivanimports.es/api/importa-7-dias?action=webhook", {
+    method: "POST", headers: { "stripe-signature": stripeHeader(createdRaw, env().STRIPE_WEBHOOK_SECRET, timestamp) }, body: createdRaw,
+  }));
+  const contact = created.contactWrites.find((write) => write.method === "POST");
+  assert.equal(contact.body.unsubscribed, true);
+  assert.equal(contact.body.properties.general_marketing_consent, "false");
+});
+
 test("un fallo conocido de Resend no marca entrega y el reintento posterior puede completarla", async () => {
   const service = createServiceMock({ failEmailTimes: 1 });
   const handler = createHandler({ env: env({ RESEND_IMPORTA_7_DIAS_SEGMENT_ID: "" }), fetchImpl: service.fetchImpl });
@@ -306,6 +400,9 @@ test("la descarga solo transmite un Blob privado para un pedido durable entregad
     blobGet: async (pathname, options) => {
       requestedPath = pathname;
       assert.equal(options.access, "private");
+      assert.equal(options.storeId, "store-preview-test");
+      assert.equal(options.oidcToken, "opaque-oidc-preview-test-value");
+      assert.equal(Object.hasOwn(options, "token"), false);
       return { statusCode: 200, stream: new Blob(["%PDF-test"]).stream(), blob: { etag: "etag-test" } };
     },
   });
@@ -314,7 +411,7 @@ test("la descarga solo transmite un Blob privado para un pedido durable entregad
   assert.equal(response.headers.get("content-type"), "application/pdf");
   assert.equal(response.headers.get("content-disposition"), 'attachment; filename="Importa-tu-coche-en-7-dias-Guia-2026.pdf"');
   assert.equal(response.headers.get("cache-control"), "private, no-store");
-  assert.equal(requestedPath, "products/importa-7-dias/2026/guia-principal.pdf");
+  assert.equal(requestedPath, "academy/preview/importa-tu-coche-en-7-dias-guia-2026.pdf");
   assert.equal(Buffer.from(await response.arrayBuffer()).toString(), "%PDF-test");
 
   requestedPath = "";

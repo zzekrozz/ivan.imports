@@ -1,74 +1,43 @@
 window.IVAN_IMPORTS_CONFIG = Object.freeze({
-  brand: {
-    name: "IvanImports",
-    legalName: "",
-    taxId: "",
-    address: "",
-  },
+  brand: { name: "IvanImports", legalName: "", taxId: "", address: "" },
   siteUrl: "https://ivanimports.es",
-  promoGo: {
-    active: true,
-    label: "50% · 10 PLAZAS",
-    code: "AGOSTO50",
-    progressActive: true,
-    used: 3,
-    total: 10,
-  },
-  contact: {
-    whatsappPhone: "34674252436",
-    email: "",
-  },
+  contact: { whatsappPhone: "34674252436", email: "" },
   social: {
     tiktok: "https://www.tiktok.com/@ivan.imports",
     youtube: "https://www.youtube.com/@IvanPogg",
-    instagram: "",
+    instagram: ""
   },
-  products: {
-    subastasPro: "https://subastaspro.ivanimports.es",
-    matriculaPro: "",
-    importCourse: "/importa-en-7-dias/",
+  legal: { notice: "", privacy: "", cookies: "", purchaseTerms: "" },
+  features: {
+    academy: true,
+    opportunities: true,
+    directos: true,
+    services: true,
+    newsletter: false,
+    academyPdf: false,
+    supervisedSearch: false,
+    radarCopart: false,
+    affiliateLinks: false,
+    accounts: false
   },
-  legal: {
-    notice: "",
-    privacy: "",
-    cookies: "",
-    purchaseTerms: "",
+  routes: {
+    academy: "/academia/",
+    opportunities: "/oportunidades/",
+    directos: "/directos/",
+    tools: "/academia/herramientas/",
+    services: "/servicios/",
+    updates: "/actualizaciones/",
+    firstImport: "/servicios/primera-importacion-contigo/",
+    firstAuction: "/servicios/primera-compra-subasta/",
+    auctionSetup: "/servicios/puesta-en-marcha-subastas/",
+    consultation: "/servicios/consultoria/",
+    subastasPro: "/subastaspro/"
   },
-  prices: {
-    copart: {
-      amount: 397,
-      baseAmount: 328.10,
-      vatRate: 21,
-      vatAmount: 68.90,
-      label: "397 € IVA incluido",
-    },
-    consultation30: {
-      amount: 60,
-      minutes: 30,
-      vatIncluded: true,
-      label: "60 € IVA incluido",
-      bookingUrl: "",
-      fallbackHref: "/consultoria/#consulta-30",
-    },
-    consultation60: {
-      amount: 90,
-      minutes: 60,
-      vatIncluded: true,
-      label: "90 € IVA incluido",
-      bookingUrl: "",
-      fallbackHref: "/consultoria/#consulta-60",
-    },
-  },
-  dossier: {
-    url: "/docs/guia-compra-guiada-copart.pdf",
-    available: false,
-  },
-  linkHub: [
-    { title: "Compra guiada Copart Alemania", label: "Para compraventas", marker: "C", href: "/copart/", track: "click_copart_service", featured: true },
-    { title: "Aprender subastas con SubastasPro", label: "Copart, Auto1 y plataformas profesionales", marker: "S", linkKey: "subastasPro", track: "click_subastaspro" },
-    { title: "Importa tu coche en 7 días", label: "Formación práctica paso a paso", marker: "7", linkKey: "importCourse", track: "click_import_course", fallbackWaMessage: "Hola Iván, quiero información sobre la formación Importa tu coche en 7 días." },
-    { title: "MatriculaPRO", label: "Herramientas para matricular en España", marker: "M", linkKey: "matriculaPro", track: "click_matriculapro" },
-    { title: "Reservar una consultoría", label: "Revisa tu caso conmigo", marker: "?", href: "/consultoria/", track: "click_consultoria" },
-    { title: "Hablar por WhatsApp", label: "Cuéntame en qué punto estás", marker: "W", whatsappMessage: "Hola Iván, vengo de la página Empieza y quiero consultarte mi caso.", track: "click_whatsapp" },
-  ],
+  external: { subastasPro: "https://subastaspro.ivanimports.es" },
+  data: {
+    services: "/assets/data/services.json",
+    opportunities: "/assets/data/opportunities.json",
+    directos: "/assets/data/directos.json",
+    recommendations: "/assets/data/recommendations.json"
+  }
 });

@@ -1,29 +1,74 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-"outputDirectory": ".",
+  "outputDirectory": "dist",
   "cleanUrls": true,
   "functions": {
-    "api/importa-7-dias.js": {
-      "maxDuration": 60
-    }
+    "api/importa-7-dias.js": { "maxDuration": 60 },
+    "api/academy.js": { "maxDuration": 60 }
   },
+  "redirects": [
+    { "source": "/importa-en-7-dias", "destination": "/academia/", "permanent": true },
+    { "source": "/academia/acceso", "destination": "/academia/", "permanent": true },
+    { "source": "/academia/acceso/:path*", "destination": "/academia/", "permanent": true },
+    { "source": "/academia/importa-tu-primer-coche", "destination": "/academia/", "permanent": true },
+    { "source": "/academia/importa-tu-primer-coche/:path*", "destination": "/academia/:path*", "permanent": true },
+    { "source": "/academia/cuenta", "destination": "/academia/", "permanent": true },
+    { "source": "/academia/ruta/", "destination": "/academia/ruta", "permanent": true },
+    { "source": "/academia/herramientas/", "destination": "/academia/herramientas", "permanent": true },
+    { "source": "/academia/respuestas/", "destination": "/academia/respuestas", "permanent": true },
+    { "source": "/academia/recursos/", "destination": "/academia/recursos", "permanent": true },
+    { "source": "/academia/actualizaciones/", "destination": "/academia/actualizaciones", "permanent": true },
+    { "source": "/ruta", "destination": "/academia/ruta", "permanent": true },
+    { "source": "/ruta/", "destination": "/academia/ruta", "permanent": true },
+    { "source": "/etapa/:slug", "destination": "/academia/etapa/:slug", "permanent": true },
+    { "source": "/paso/:slug", "destination": "/academia/paso/:slug", "permanent": true },
+    { "source": "/mi-operacion", "destination": "/academia/mi-operacion", "permanent": true },
+    { "source": "/candidatos", "destination": "/academia/candidatos", "permanent": true },
+    { "source": "/herramientas", "destination": "/academia/herramientas", "permanent": true },
+    { "source": "/herramientas/", "destination": "/academia/herramientas", "permanent": true },
+    { "source": "/herramientas/:tool", "destination": "/academia/herramientas/:tool", "permanent": true },
+    { "source": "/respuestas", "destination": "/academia/respuestas", "permanent": true },
+    { "source": "/recursos", "destination": "/academia/recursos", "permanent": true },
+    { "source": "/soporte", "destination": "/academia/ayuda/", "permanent": true },
+    { "source": "/academia/soporte", "destination": "/academia/ayuda/", "permanent": true },
+    { "source": "/consultoria", "destination": "/servicios/consultoria/", "permanent": true },
+    { "source": "/consultoria/", "destination": "/servicios/consultoria/", "permanent": true },
+    { "source": "/primera-importacion-contigo", "destination": "/servicios/primera-importacion-contigo/", "permanent": true },
+    { "source": "/copart", "destination": "/servicios/primera-compra-subasta/", "permanent": true },
+    { "source": "/empieza", "destination": "/go/", "permanent": true },
+    { "source": "/servicios/consultas", "destination": "/servicios/consultoria/", "permanent": true },
+    { "source": "/servicios/revision-anuncio", "destination": "/servicios/consultoria/", "permanent": true },
+    { "source": "/servicios/calculo-coste-real", "destination": "/servicios/consultoria/", "permanent": true },
+    { "source": "/servicios/vendedor-documentacion", "destination": "/servicios/consultoria/", "permanent": true },
+    { "source": "/servicios/compra-preparada", "destination": "/servicios/primera-importacion-contigo/", "permanent": true },
+    { "source": "/servicios/compra-preparada-online", "destination": "/servicios/primera-importacion-contigo/", "permanent": true },
+    { "source": "/servicios/pack-personalizado", "destination": "/servicios/primera-importacion-contigo/", "permanent": true },
+    { "source": "/servicios/busco-filtro-compruebo", "destination": "/servicios/primera-importacion-contigo/", "permanent": true },
+    { "source": "/servicios/busco-y-filtro", "destination": "/servicios/primera-importacion-contigo/", "permanent": true },
+    { "source": "/servicios/mini-filtro-gratuito", "destination": "/academia/", "permanent": true },
+    { "source": "/servicios/acompanamiento-matriculacion", "destination": "/servicios/primera-importacion-contigo/", "permanent": true }
+  ],
   "rewrites": [
-    {
-      "source": "/api/stripe-importa-7-dias",
-      "destination": "/api/importa-7-dias?action=webhook"
-    },
-    {
-      "source": "/api/importa-7-dias/order-status",
-      "destination": "/api/importa-7-dias?action=order-status"
-    },
-    {
-      "source": "/api/importa-7-dias/download",
-      "destination": "/api/importa-7-dias?action=download"
-    },
-    {
-      "source": "/api/importa-7-dias/reissue",
-      "destination": "/api/importa-7-dias?action=reissue"
-    }
+    { "source": "/api/stripe-importa-7-dias", "destination": "/api/importa-7-dias?action=webhook" },
+    { "source": "/api/importa-7-dias/order-status", "destination": "/api/importa-7-dias?action=order-status" },
+    { "source": "/api/importa-7-dias/download", "destination": "/api/importa-7-dias?action=download" },
+    { "source": "/api/importa-7-dias/reissue", "destination": "/api/importa-7-dias?action=reissue" },
+    { "source": "/api/academy/auth/request", "destination": "/api/academy?action=auth-request" },
+    { "source": "/api/academy/auth/verify", "destination": "/api/academy?action=auth-verify" },
+    { "source": "/api/academy/demo", "destination": "/api/academy?action=demo" },
+    { "source": "/api/academy/admin/entitlement", "destination": "/api/academy?action=admin-entitlement" },
+    { "source": "/api/academy/session", "destination": "/api/academy?action=session" },
+    { "source": "/api/academy/program", "destination": "/api/academy?action=program" },
+    { "source": "/api/academy/state", "destination": "/api/academy?action=state" },
+    { "source": "/api/academy/logout", "destination": "/api/academy?action=logout" },
+    { "source": "/api/academy/resource", "destination": "/api/academy?action=resource" },
+    { "source": "/academia/ruta", "destination": "/academia/" },
+    { "source": "/academia/mi-operacion", "destination": "/academia/" },
+    { "source": "/academia/candidatos", "destination": "/academia/" },
+    { "source": "/academia/herramientas", "destination": "/academia/" },
+    { "source": "/academia/respuestas", "destination": "/academia/" },
+    { "source": "/academia/recursos", "destination": "/academia/" },
+    { "source": "/academia/actualizaciones", "destination": "/academia/" }
   ],
   "headers": [
     {
@@ -40,6 +85,13 @@
       "headers": [
         { "key": "X-Content-Type-Options", "value": "nosniff" },
         { "key": "Cache-Control", "value": "private, no-store" }
+      ]
+    },
+    {
+      "source": "/academia/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
       ]
     }
   ]
