@@ -72,11 +72,20 @@ function academyPage({ title, description, path, route, schema = [], content, en
   return `<!doctype html><html lang="es">${head({ title, description, path, schema, academy: true })}<body data-academy-route="${esc(route)}"><a class="skip-link" href="#academy-static-main">Saltar al contenido</a>${analyticsBody()}<div id="academy-app" data-academy-app><main id="academy-static-main" class="hub-page academy-static-fallback"><div class="hub-shell hub-section">${content}</div></main></div><script type="module" src="/assets/academy/app.js"></script></body></html>`;
 }
 
+function canonicalizeAcademyHubLinks(source) {
+  return source
+    .replaceAll('href="/academia/ruta/"', 'href="/academia/ruta"')
+    .replaceAll('href="/academia/herramientas/"', 'href="/academia/herramientas"')
+    .replaceAll('href="/academia/respuestas/"', 'href="/academia/respuestas"')
+    .replaceAll('href="/academia/recursos/"', 'href="/academia/recursos"')
+    .replaceAll('href="/academia/actualizaciones/"', 'href="/academia/actualizaciones"');
+}
+
 async function writeRoute(relative, source) {
   const target = resolve(root, relative, "index.html");
   if (!target.startsWith(`${root}${sep}`)) throw new Error(`Ruta fuera del proyecto: ${target}`);
   await mkdir(dirname(target), { recursive: true });
-  await writeFile(target, source, "utf8");
+  await writeFile(target, canonicalizeAcademyHubLinks(source), "utf8");
 }
 
 function pageSchemas({ path, title, description, kind = "WebPage", breadcrumbs: crumbs = [] }) {
@@ -232,7 +241,14 @@ await writeFile(join(root, "go/index.html"), basePage({ title: "Enlaces IvanImpo
 await writeRoute("subastaspro", servicePage(servicesData.services.find((item) => item.id === "subastaspro")));
 
 const sitemapRoutes = ["/", "/academia/", "/academia/ruta/", "/academia/respuestas/", "/academia/recursos/", "/academia/actualizaciones/", "/academia/ayuda/", "/academia/edicion-pdf/", "/oportunidades/", "/directos/", "/servicios/", "/recomendaciones/", "/go/", "/actualizaciones/", "/placasverdes/", ...program.stages.map((stage) => `/academia/etapa/${stage.slug}/`), ...program.lessons.map((lesson) => `/academia/paso/${lesson.slug}/`), ...program.concepts.filter((concept) => standaloneConceptIds.has(concept.id)).map((concept) => `/academia/conceptos/${slugify(concept.title)}/`), placasPath, ...program.tools.map((tool) => `/academia/herramientas/${tool.slug}/`), ...opportunitiesData.opportunities.filter((item) => item.published).map((item) => `/oportunidades/${item.slug}/`), ...servicesData.services.filter((item) => item.active).map(servicePath)];
-const uniqueRoutes = [...new Set(sitemapRoutes)];
+const academyHubCanonicals = new Map([
+  ["/academia/ruta/", "/academia/ruta"],
+  ["/academia/respuestas/", "/academia/respuestas"],
+  ["/academia/recursos/", "/academia/recursos"],
+  ["/academia/actualizaciones/", "/academia/actualizaciones"]
+]);
+sitemapRoutes.push("/academia/herramientas");
+const uniqueRoutes = [...new Set(sitemapRoutes.map((route) => academyHubCanonicals.get(route) || route))];
 await writeFile(join(root, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${uniqueRoutes.map((route) => `  <url><loc>${siteUrl}${route}</loc><lastmod>2026-08-13</lastmod></url>`).join("\n")}\n</urlset>\n`, "utf8");
 
 console.log(`Páginas públicas generadas: ${program.stages.length} etapas, ${program.lessons.length} lecciones, ${standaloneConceptIds.size + 1} conceptos SEO, ${program.tools.length} herramientas, ${servicesData.services.filter((item) => item.active).length} servicios.`);

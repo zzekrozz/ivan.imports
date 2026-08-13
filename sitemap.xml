@@ -2,10 +2,10 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://ivanimports.es/</loc><lastmod>2026-08-13</lastmod></url>
   <url><loc>https://ivanimports.es/academia/</loc><lastmod>2026-08-13</lastmod></url>
-  <url><loc>https://ivanimports.es/academia/ruta/</loc><lastmod>2026-08-13</lastmod></url>
-  <url><loc>https://ivanimports.es/academia/respuestas/</loc><lastmod>2026-08-13</lastmod></url>
-  <url><loc>https://ivanimports.es/academia/recursos/</loc><lastmod>2026-08-13</lastmod></url>
-  <url><loc>https://ivanimports.es/academia/actualizaciones/</loc><lastmod>2026-08-13</lastmod></url>
+  <url><loc>https://ivanimports.es/academia/ruta</loc><lastmod>2026-08-13</lastmod></url>
+  <url><loc>https://ivanimports.es/academia/respuestas</loc><lastmod>2026-08-13</lastmod></url>
+  <url><loc>https://ivanimports.es/academia/recursos</loc><lastmod>2026-08-13</lastmod></url>
+  <url><loc>https://ivanimports.es/academia/actualizaciones</loc><lastmod>2026-08-13</lastmod></url>
   <url><loc>https://ivanimports.es/academia/ayuda/</loc><lastmod>2026-08-13</lastmod></url>
   <url><loc>https://ivanimports.es/academia/edicion-pdf/</loc><lastmod>2026-08-13</lastmod></url>
   <url><loc>https://ivanimports.es/oportunidades/</loc><lastmod>2026-08-13</lastmod></url>
@@ -142,4 +142,5 @@
   <url><loc>https://ivanimports.es/servicios/puesta-en-marcha-subastas/</loc><lastmod>2026-08-13</lastmod></url>
   <url><loc>https://ivanimports.es/servicios/primera-compra-subasta/</loc><lastmod>2026-08-13</lastmod></url>
   <url><loc>https://ivanimports.es/servicios/primera-importacion-contigo/</loc><lastmod>2026-08-13</lastmod></url>
+  <url><loc>https://ivanimports.es/academia/herramientas</loc><lastmod>2026-08-13</lastmod></url>
 </urlset>

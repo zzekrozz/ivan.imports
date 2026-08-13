@@ -130,7 +130,22 @@ if (/europe-diorama|\/assets\/academy\/map\//i.test(distSource)) failures.push("
 
 const configuredPublicSources = new Set([...(vercel.redirects || []), ...(vercel.rewrites || [])]
   .filter((entry) => !entry.source.includes(":"))
-  .map((entry) => entry.source.replace(/\/$/, "") || "/"));
+  .map((entry) => entry.source));
+const exactRedirects = new Map((vercel.redirects || [])
+  .filter((entry) => !entry.source.includes(":"))
+  .map((entry) => [entry.source, entry.destination]));
+for (const source of exactRedirects.keys()) {
+  const visited = new Set();
+  let cursor = source;
+  while (exactRedirects.has(cursor)) {
+    if (visited.has(cursor)) {
+      failures.push(`Bucle de redirección: ${[...visited, cursor].join(" -> ")}`);
+      break;
+    }
+    visited.add(cursor);
+    cursor = exactRedirects.get(cursor);
+  }
+}
 const brokenLinks = [];
 for (const file of walk(dist).filter((entry) => extname(entry).toLowerCase() === ".html")) {
   const source = readFileSync(file, "utf8");
@@ -145,10 +160,10 @@ for (const file of walk(dist).filter((entry) => extname(entry).toLowerCase() ===
     const cleanPath = pathname.replace(/\/$/, "") || "/";
     const relativePath = cleanPath === "/" ? "" : cleanPath.slice(1);
     const candidates = [join(dist, relativePath), join(dist, relativePath, "index.html"), join(dist, `${relativePath}.html`)];
-    if (!candidates.some(existsSync) && !configuredPublicSources.has(cleanPath)) brokenLinks.push(`${relative(dist, file)} → ${pathname}`);
+    if (!candidates.some(existsSync) && !configuredPublicSources.has(pathname)) brokenLinks.push(`${relative(dist, file)} → ${pathname}`);
   }
 }
 if (brokenLinks.length) failures.push(`Enlaces internos sin destino (${brokenLinks.length}):\n${brokenLinks.slice(0, 20).join("\n")}`);
 if (failures.length) { rmSync(dist, { recursive: true, force: true }); console.error(failures.join("\n")); process.exit(1); }
 
-console.log(`Build validado: ${stagePages.length} etapas, ${lessonPages.length} lecciones, ${conceptPages.length} conceptos SEO, ${toolPages.length} herramientas y ${activeServices.length} servicios; cero PDFs premium públicos.`);
+console.log(`Build validado: ${stagePages.length} etapas, ${lessonPages.length} lecciones, ${conceptPages.length} conceptos SEO, ${toolPages.length} herramientas y ${activeServices.length} servicios; 0 enlaces internos sin destino y cero PDFs premium públicos.`);
