@@ -3221,6 +3221,19 @@
   @media (max-width: 900px) {
     :root { --academy-topbar: 66px; }
 
+    .academy-lesson-layout:is([data-lesson-id="lesson-01-01"], [data-lesson-id="lesson-01-02"], [data-lesson-id="lesson-01-03"]) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .academy-lesson-layout:is([data-lesson-id="lesson-01-01"], [data-lesson-id="lesson-01-02"], [data-lesson-id="lesson-01-03"]) .academy-lesson-aside {
+      position: static;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .academy-lesson-layout:is([data-lesson-id="lesson-01-01"], [data-lesson-id="lesson-01-02"], [data-lesson-id="lesson-01-03"]) .academy-lesson-index {
+      grid-column: 1 / -1;
+    }
+
     .access-shell {
       width: min(100% - 1rem, 760px);
       grid-template-columns: 1fr;

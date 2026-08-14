@@ -277,6 +277,9 @@ console.log(JSON.stringify({
   videosPlanned: program.videos.filter((video) => video.status === 'planned').length,
   sourceSegments: sourceSegmentAudit.segmentCount,
   sourceSegmentPages: sourceSegmentAudit.coveredPages,
+  sourceSegmentSectionMappings: sourceSegmentAudit.sectionMappingCount,
+  sourceSegmentVisualMappings: sourceSegmentAudit.visualMappingCount,
+  sourceSegmentEditorialIdeas: sourceSegmentAudit.editorialIdeaCount,
   sourceSegmentMarkers,
   sourceAudit: auditResult
 }, null, 2));

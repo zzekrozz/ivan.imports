@@ -144,7 +144,9 @@ export function renderLessonVisual(visual, index = 0) {
   else if (/inspection|paint|car-body|vehicle/.test(kind)) body = renderInspection(visual);
   if (!body) body = renderEditorial(visual);
   const id = visual.id || `visual-${index + 1}`;
-  return `<figure class="academy-lesson-visual" id="${esc(id)}" data-visual-kind="${esc(kind)}" data-lesson-section="${esc(id)}" data-visual-interaction="lesson-visual" tabindex="0"><figcaption><span>${iconSvg("experience")}</span><div><small>Visual de la lección</small><strong>${esc(visual.title || visual.purpose || "Comprender de un vistazo")}</strong>${visual.purpose && visual.title ? `<p>${esc(visual.purpose)}</p>` : ""}</div>${visual.sourcePages ? `<em>Pág. ${esc(list(visual.sourcePages).join("–"))}</em>` : ""}</figcaption>${body}${visual.alt ? `<p class="academy-visual-alt">${esc(visual.alt)}</p>` : ""}</figure>`;
+  const sourceSegmentIds = list(visual.sourceSegmentIds).map(String).filter(Boolean);
+  const sourceSegmentAttribute = sourceSegmentIds.length ? ` data-source-segments="${esc(sourceSegmentIds.join(" "))}"` : "";
+  return `<figure class="academy-lesson-visual" id="${esc(id)}" data-visual-kind="${esc(kind)}" data-lesson-section="${esc(id)}" data-visual-interaction="lesson-visual"${sourceSegmentAttribute} tabindex="0"><figcaption><span>${iconSvg("experience")}</span><div><small>Visual de la lección</small><strong>${esc(visual.title || visual.purpose || "Comprender de un vistazo")}</strong>${visual.purpose && visual.title ? `<p>${esc(visual.purpose)}</p>` : ""}</div>${visual.sourcePages ? `<em>Pág. ${esc(list(visual.sourcePages).join("–"))}</em>` : ""}</figcaption>${body}${visual.alt ? `<p class="academy-visual-alt">${esc(visual.alt)}</p>` : ""}</figure>`;
 }
 
 export function renderLessonVisuals(lesson) {

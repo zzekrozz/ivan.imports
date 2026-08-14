@@ -17,7 +17,151 @@ export const PILOT_SOURCE_SEGMENT_ASSIGNMENTS = Object.freeze([
   ["importa7-p012-final-recommendation", "importa-7-dias-final-2026:p012:2.12-final-recommendation", 12, "lesson-01-03"],
 ].map(([id, coverageKey, page, lessonId]) => Object.freeze({ id, coverageKey, page, lessonId })));
 
+export const PILOT_SOURCE_SEGMENT_EDITORIAL_EXPECTATIONS = Object.freeze({
+  "importa7-p007-before-search": Object.freeze([
+    "Empezamos despacio",
+    "PROCESO → PAÍS → PRESUPUESTO → BÚSQUEDA",
+  ]),
+  "importa7-p008-terrain-overview": Object.freeze([
+    "No buscamos el país con un anuncio barato",
+    "Alemania",
+    "Países Bajos",
+    "Bélgica",
+    "Mi recomendación para tu primera importación",
+    "Mercado",
+    "Transparencia",
+    "Salida del país",
+    "Riesgo añadido",
+    "Después vendrá el presupuesto",
+  ]),
+  "importa7-p009-germany": Object.freeze([
+    "Alemania: mi TOP 1",
+    "cantidad enorme de vehículos",
+    "vendedores acostumbrados a exportar",
+    "proceso de placas de exportación",
+    "Piratas",
+    "vienes desde España",
+    "volver conduciendo",
+    "mucha sinceridad",
+    "WhatsApp",
+    "el mismo día o para el siguiente",
+    "confirmarlo antes de comprar el vuelo",
+    "región",
+    "horario",
+    "primera opción por equilibrio",
+    "no convierte cualquier coche alemán en una buena compra",
+  ]),
+  "importa7-p010-netherlands": Object.freeze([
+    "una de mis alternativas favoritas",
+    "sistema de exportación organizado",
+    "llegaron originalmente desde Alemania",
+    "RDW",
+    "certificado de exportación",
+    "capa adicional",
+    "No sustituye el historial, la documentación ni la inspección",
+  ]),
+  "importa7-p010-belgium": Object.freeze([
+    "muchísimo mercado",
+    "2dehands.be",
+    "particulares",
+    "profesionales",
+    "placas X",
+    "residencia fuera de Bélgica",
+    "documentación original",
+    "seguro",
+    "inspección técnica",
+    "compraventa acostumbrada a exportar",
+  ]),
+  "importa7-p010-france": Object.freeze([
+    "menos oportunidades",
+    "modelos alemanes",
+    "vehículos franceses",
+    "Peugeot, Citroën y Renault",
+    "Citroën Jumper",
+    "Peugeot Boxer",
+    "Renault Master",
+    "Citroën Jumpy",
+    "Peugeot Expert",
+    "procedimiento detallado de exportación francés",
+    "ejecutado de principio a fin",
+    "experiencia que no tengo",
+  ]),
+  "importa7-p010-italy-start": Object.freeze([
+    "Italia mediante subasta",
+    "no voy a afirmar cómo funciona en la práctica",
+    "gestión de placas",
+    "directamente a un concesionario",
+  ]),
+  "importa7-p011-italy-continuation": Object.freeze([
+    "Los precios pueden ser interesantes",
+    "para una primera importación",
+    "mercado cuyo proceso conozco mejor",
+  ]),
+  "importa7-p011-austria": Object.freeze([
+    "Nunca he comprado allí",
+    "óxido",
+    "clima, nieve y sal",
+    "No significa que todos los coches estén oxidados",
+    "bajos y la corrosión",
+  ]),
+  "importa7-p011-switzerland-norway": Object.freeze([
+    "Suiza y Noruega",
+    "fuera de la Unión Europea",
+    "aduanas",
+    "IVA de importación",
+    "derechos arancelarios",
+    "no complicarse",
+    "coche comunitario",
+  ]),
+  "importa7-p011-denmark": Object.freeze([
+    "primer coche que importé",
+    "Synsrapport",
+    "servicios públicos",
+    "inspecciones y datos",
+    "información gratuita útil",
+    "kilometrajes muy altos",
+    "furgoneta o dos plazas",
+    "configuración real",
+    "configuraciones comerciales",
+    "pagar menos impuestos locales",
+    "turismo normal de cinco plazas",
+    "categoría y el número de plazas",
+  ]),
+  "importa7-p011-sweden-finland": Object.freeze([
+    "Suecia y Finlandia",
+    "óxido, uso intensivo y configuraciones comerciales",
+    "no tengo experiencia suficiente",
+    "estrategia concreta",
+    "Prefiero decirlo claramente",
+  ]),
+  "importa7-p011-portugal": Object.freeze([
+    "precios más altos que en España",
+    "unidad interesante",
+    "gran diferencia de precio",
+  ]),
+  "importa7-p012-final-recommendation": Object.freeze([
+    "Empieza donde haya menos fricción",
+    "El mejor equilibrio general para empezar",
+    "Mercado amplio y exportación organizada",
+    "Mucha oferta y buena alternativa geográfica",
+    "sin abrir quince países a la vez",
+    "Como máximo, ampliaría a Países Bajos y Bélgica",
+    "El país no compra el coche por ti",
+    "Un coche alemán también puede estar mal",
+    "uno de otro mercado puede ser excelente",
+    "comprobar, exportar y reaccionar con menos fricción",
+    "Siguiente paso",
+  ]),
+});
+
 const REQUIRED_SEGMENT_FIELDS = ["id", "coverageKey", "sourceId", "section", "startMarker", "endMarker"];
+
+const normalizeEditorialText = (value) => String(value ?? "")
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .toLocaleLowerCase("es")
+  .replace(/\s+/g, " ")
+  .trim();
 
 function fail(errors, message) {
   errors.push(message);
@@ -29,6 +173,9 @@ export function auditPilotSourceSegments(program) {
   const expectedById = new Map(PILOT_SOURCE_SEGMENT_ASSIGNMENTS.map((segment) => [segment.id, segment]));
   const seenIds = new Map();
   const seenCoverage = new Map();
+  let sectionMappingCount = 0;
+  let visualMappingCount = 0;
+  let editorialIdeaCount = 0;
 
   for (const lessonId of ["lesson-01-01", "lesson-01-02", "lesson-01-03"]) {
     const lesson = lessonById.get(lessonId);
@@ -67,6 +214,52 @@ export function auditPilotSourceSegments(program) {
     if (JSON.stringify(lesson.sourcePages) !== JSON.stringify(expectedPages)) {
       fail(errors, `${lessonId}: sourcePages ${JSON.stringify(lesson.sourcePages)} no coincide con los segmentos ${JSON.stringify(expectedPages)}.`);
     }
+
+    const ownedSegmentIds = new Set(PILOT_SOURCE_SEGMENT_ASSIGNMENTS.filter((segment) => segment.lessonId === lessonId).map((segment) => segment.id));
+    const editorialTextBySegment = new Map([...ownedSegmentIds].map((segmentId) => [segmentId, []]));
+    for (const section of lesson.sections || []) {
+      const sourceSegmentIds = Array.isArray(section.sourceSegmentIds) ? section.sourceSegmentIds : [];
+      if (sourceSegmentIds.length === 0) {
+        fail(errors, `${lessonId}:${section.id || "sección"}: sourceSegmentIds es obligatorio.`);
+        continue;
+      }
+      for (const segmentId of sourceSegmentIds) {
+        sectionMappingCount += 1;
+        if (!ownedSegmentIds.has(segmentId)) {
+          fail(errors, `${lessonId}:${section.id || "sección"}: ${segmentId} está fuera de su hogar canónico.`);
+          continue;
+        }
+        editorialTextBySegment.get(segmentId).push(JSON.stringify(section));
+      }
+    }
+
+    for (const visual of lesson.visuals || []) {
+      const sourceSegmentIds = Array.isArray(visual.sourceSegmentIds) ? visual.sourceSegmentIds : [];
+      if (sourceSegmentIds.length === 0) {
+        fail(errors, `${lessonId}:${visual.id || "visual"}: sourceSegmentIds es obligatorio.`);
+        continue;
+      }
+      for (const segmentId of sourceSegmentIds) {
+        visualMappingCount += 1;
+        if (!ownedSegmentIds.has(segmentId)) {
+          fail(errors, `${lessonId}:${visual.id || "visual"}: ${segmentId} está fuera de su hogar canónico.`);
+          continue;
+        }
+        editorialTextBySegment.get(segmentId).push(JSON.stringify(visual));
+      }
+    }
+
+    for (const segmentId of ownedSegmentIds) {
+      const mappedEditorialText = normalizeEditorialText(editorialTextBySegment.get(segmentId).join(" "));
+      if (!mappedEditorialText) fail(errors, `${lessonId}: ${segmentId} no tiene contenido editorial asignado.`);
+      const expectations = PILOT_SOURCE_SEGMENT_EDITORIAL_EXPECTATIONS[segmentId] || [];
+      editorialIdeaCount += expectations.length;
+      for (const idea of expectations) {
+        if (!mappedEditorialText.includes(normalizeEditorialText(idea))) {
+          fail(errors, `${lessonId}:${segmentId}: falta contenido editorial requerido: ${idea}`);
+        }
+      }
+    }
   }
 
   for (const expected of PILOT_SOURCE_SEGMENT_ASSIGNMENTS) {
@@ -82,6 +275,9 @@ export function auditPilotSourceSegments(program) {
     lessonCount: 3,
     segmentCount: PILOT_SOURCE_SEGMENT_ASSIGNMENTS.length,
     coveredPages,
+    sectionMappingCount,
+    visualMappingCount,
+    editorialIdeaCount,
   };
 }
 
