@@ -1038,7 +1038,7 @@ function safeMediaUrl(value) {
 }
 
 function blockLabel(type) {
-  return ({ simpleExplanation: "En una frase", whyItMatters: "Por qué importa", easyExample: "Ejemplo fácil", ivanExperience: "Experiencia de Iván", officialRule: "Regla oficial", recommendation: "Recomendación", quickCalculation: "Cálculo rápido", commonMistake: "Error frecuente", expensiveMistake: "Error que puede costar", decisionBox: "Decisión", actionNow: "Qué haría ahora", whatIf: "Qué pasa si", sourceCard: "Fuente" })[type] || "Contenido";
+  return ({ simpleExplanation: "En una frase", editorialExplanation: "Explicación", whyItMatters: "Por qué importa", easyExample: "Ejemplo fácil", ivanExperience: "Experiencia de Iván", officialRule: "Regla oficial", recommendation: "Recomendación", quickCalculation: "Cálculo rápido", commonMistake: "Error frecuente", expensiveMistake: "Error que puede costar", decisionBox: "Decisión", actionNow: "Qué haría ahora", whatIf: "Qué pasa si", ideaCentral: "Idea central", trick: "Truco", nextStep: "Siguiente paso", sourceCard: "Fuente" })[type] || "Contenido";
 }
 
 function normalizeBlockType(value) {
