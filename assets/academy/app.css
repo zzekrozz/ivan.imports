@@ -2510,11 +2510,13 @@
 
   .academy-content-flow {
     display: grid;
+    min-width: 0;
     gap: 1rem;
     margin-top: 1.4rem;
   }
 
   .academy-content-section {
+    min-width: 0;
     padding: 1.2rem;
     border: 1px solid var(--academy-border);
     border-radius: 16px;
@@ -2526,6 +2528,13 @@
     margin-bottom: 0.65rem;
     font-size: 1.15rem;
     letter-spacing: -0.02em;
+  }
+
+  .academy-content-section h2,
+  .academy-content-section h3,
+  .academy-content-section p,
+  .academy-content-section li {
+    overflow-wrap: anywhere;
   }
 
   .academy-content-section p + p,
@@ -2541,7 +2550,8 @@
     padding-left: 1.2rem;
   }
 
-  .academy-content-section[data-type="simpleExplanation"] {
+  .academy-content-section[data-type="simpleExplanation"],
+  .academy-content-section[data-type="editorialExplanation"] {
     border-left: 5px solid var(--academy-primary);
     background: #f5f9ff;
   }
@@ -2551,13 +2561,24 @@
     background: rgba(128,100,217,0.06);
   }
 
+  .academy-content-section[data-type="trick"] {
+    border-left: 5px solid var(--academy-primary);
+    background: #f5f9ff;
+  }
+
+  .academy-content-section[data-type="ideaCentral"] {
+    border-left: 5px solid var(--academy-amber);
+    background: rgba(233,169,29,0.07);
+  }
+
   .academy-content-section[data-type="officialRule"],
   .academy-content-section[data-type="sourceCard"] {
     border-left: 5px solid var(--academy-primary);
   }
 
   .academy-content-section[data-type="recommendation"],
-  .academy-content-section[data-type="actionNow"] {
+  .academy-content-section[data-type="actionNow"],
+  .academy-content-section[data-type="nextStep"] {
     border-left: 5px solid var(--academy-teal);
     background: rgba(19,185,177,0.06);
   }
@@ -2875,6 +2896,7 @@
   }
 
   .academy-table-wrap {
+    max-width: 100%;
     overflow-x: auto;
     border: 1px solid var(--academy-border);
     border-radius: 14px;
@@ -3186,6 +3208,19 @@
 @layer academy-responsive {
   @media (max-width: 1120px) {
     :root { --academy-sidebar: 225px; }
+
+    .academy-lesson-layout {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .academy-lesson-layout .academy-lesson-aside {
+      position: static;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .academy-lesson-layout .academy-lesson-index {
+      grid-column: 1 / -1;
+    }
 
     .academy-dashboard-grid,
     .academy-workspace {
