@@ -1,3 +1,10 @@
+import crypto from "node:crypto";
+import {
+  CANONICAL_LESSON_TITLES,
+  CANONICAL_PDF_SOURCE,
+  CANONICAL_SOURCE_SEGMENTS,
+} from "./academy-canonical-map.mjs";
+
 export const PILOT_SOURCE_ID = "importa-7-dias-final-2026";
 
 export const PILOT_SOURCE_SEGMENT_ASSIGNMENTS = Object.freeze([
@@ -554,5 +561,118 @@ export function assertFirstMigrationBatchSourceSegments(program) {
 export function assertCanonicalMigratedSourceSegments(program) {
   const audit = auditCanonicalMigratedSourceSegments(program);
   if (!audit.ok) throw new Error(`Canonical migrated source segments QA:\n- ${audit.errors.join("\n- ")}`);
+  return audit;
+}
+
+const APPROVED_LESSON_IDS = new Set([
+  "lesson-00-01",
+  "lesson-00-02",
+  "lesson-00-03",
+  "lesson-01-01",
+  "lesson-01-02",
+  "lesson-01-03",
+]);
+
+const REQUIRED_CONTENT_CLASSIFICATIONS = [
+  "learningObjective",
+  "objective",
+  "oneSentence",
+  "simpleExplanation",
+  "actionNow",
+  "commonMistake",
+  "example",
+  "decision",
+  "sourceSegments",
+  "sections",
+  "visual",
+  "completion",
+  "checklist",
+  "knowledgeCheck",
+];
+
+const normalizeCanonicalText = (value) => String(value ?? "")
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .replace(/[‐‑‒–—]/g, "-")
+  .replace(/[“”]/g, '"')
+  .replace(/[‘’]/g, "'")
+  .replace(/\s+/g, " ")
+  .trim()
+  .toLocaleLowerCase("es");
+
+const canonicalTextHash = (value) => crypto.createHash("sha256").update(normalizeCanonicalText(value)).digest("hex");
+
+export function auditFullCanonicalSourceSegments(program) {
+  const assignments = CANONICAL_SOURCE_SEGMENTS.map((segment) => ({
+    id: segment.id,
+    coverageKey: segment.coverageKey,
+    page: segment.page,
+    lessonId: segment.lessonId,
+  }));
+  const lessonIds = Object.keys(CANONICAL_LESSON_TITLES);
+  const audit = auditSourceSegmentScope(program, {
+    assignments,
+    expectations: CANONICAL_MIGRATED_SOURCE_SEGMENT_EDITORIAL_EXPECTATIONS,
+    lessonIds,
+    requiredPages: Array.from({ length: CANONICAL_PDF_SOURCE.pages }, (_, index) => index + 1),
+    scopeLabel: "Mapa editorial canónico completo",
+  });
+  const errors = [...audit.errors];
+  const lessonById = new Map((program?.lessons || []).map((lesson) => [lesson.id, lesson]));
+
+  for (const [index, lessonId] of lessonIds.entries()) {
+    const lesson = lessonById.get(lessonId);
+    if (!lesson) continue;
+    if (lesson.title !== CANONICAL_LESSON_TITLES[lessonId]) {
+      fail(errors, `${lessonId}: título ${JSON.stringify(lesson.title)}; se esperaba ${JSON.stringify(CANONICAL_LESSON_TITLES[lessonId])}.`);
+    }
+    const previousLessonId = index > 0 ? lessonIds[index - 1] : null;
+    const nextLessonId = index + 1 < lessonIds.length ? lessonIds[index + 1] : null;
+    if ((lesson.relations?.previousLessonId ?? null) !== previousLessonId) fail(errors, `${lessonId}: navegación anterior incorrecta.`);
+    if ((lesson.relations?.nextLessonId ?? null) !== nextLessonId) fail(errors, `${lessonId}: navegación siguiente incorrecta.`);
+
+    if (!APPROVED_LESSON_IDS.has(lessonId)) {
+      if (lesson.showEssential !== false) fail(errors, `${lessonId}: la capa abstracta debe permanecer oculta.`);
+      if (lesson.showConcepts !== false) fail(errors, `${lessonId}: los conceptos heredados no deben duplicar el desarrollo canónico.`);
+      for (const field of REQUIRED_CONTENT_CLASSIFICATIONS) {
+        const classification = lesson.contentClassification?.[field];
+        if (!["transformacion_fiel", "interfaz_metadato", "ejercicio_derivado", "anadido_editorial", "sin_fuente"].includes(classification)) {
+          fail(errors, `${lessonId}: clasificación ausente o inválida para ${field}.`);
+        }
+      }
+      if (Object.values(lesson.contentClassification || {}).includes("sin_fuente")) fail(errors, `${lessonId}: conserva contenido clasificado como sin_fuente.`);
+    }
+  }
+
+  for (const expected of CANONICAL_SOURCE_SEGMENTS) {
+    const lesson = lessonById.get(expected.lessonId);
+    const actualSegment = lesson?.sourceSegments?.find((segment) => segment.id === expected.id);
+    if (!actualSegment) continue;
+    if (!APPROVED_LESSON_IDS.has(expected.lessonId)) {
+      if (actualSegment.canonicalSha256 !== expected.canonicalSha256) fail(errors, `${expected.id}: huella canónica declarada incorrecta.`);
+      if (actualSegment.canonicalWordCount !== expected.canonicalWordCount) fail(errors, `${expected.id}: recuento canónico declarado incorrecto.`);
+      const mappedBodies = (lesson.sections || [])
+        .filter((section) => section.sourceSegmentIds?.includes(expected.id))
+        .map((section) => section.body ?? section.text ?? "");
+      if (mappedBodies.length !== 1) fail(errors, `${expected.id}: debe tener exactamente una sección canónica; tiene ${mappedBodies.length}.`);
+      else if (canonicalTextHash(mappedBodies[0]) !== expected.canonicalSha256) fail(errors, `${expected.id}: el contenido visible no coincide con la huella del PDF.`);
+    }
+  }
+
+  return {
+    ...audit,
+    ok: errors.length === 0,
+    errors,
+    lessonCount: lessonIds.length,
+    segmentCount: CANONICAL_SOURCE_SEGMENTS.length,
+    coveredPages: Array.from({ length: CANONICAL_PDF_SOURCE.pages }, (_, index) => index + 1),
+    canonicalPdfSha256: CANONICAL_PDF_SOURCE.sha256,
+    classifiedLessons: lessonIds.filter((lessonId) => !APPROVED_LESSON_IDS.has(lessonId)).length,
+  };
+}
+
+export function assertFullCanonicalSourceSegments(program) {
+  const audit = auditFullCanonicalSourceSegments(program);
+  if (!audit.ok) throw new Error(`Full canonical source segments QA:\n- ${audit.errors.join("\n- ")}`);
   return audit;
 }
