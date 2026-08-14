@@ -154,6 +154,232 @@ export const PILOT_SOURCE_SEGMENT_EDITORIAL_EXPECTATIONS = Object.freeze({
   ]),
 });
 
+export const FIRST_BATCH_SOURCE_SEGMENT_ASSIGNMENTS = Object.freeze([
+  ["importa7-p001-full-page", "importa-7-dias-final-2026:p001:full-page", 1, "lesson-00-01"],
+  ["importa7-p002-full-page", "importa-7-dias-final-2026:p002:full-page", 2, "lesson-00-01"],
+  ["importa7-p003-full-page", "importa-7-dias-final-2026:p003:full-page", 3, "lesson-00-01"],
+  ["importa7-p004-full-page", "importa-7-dias-final-2026:p004:full-page", 4, "lesson-00-01"],
+  ["importa7-p005-guide-not-memory", "importa-7-dias-final-2026:p005:guide-not-memory", 5, "lesson-00-02"],
+  ["importa7-p005-four-information-types", "importa-7-dias-final-2026:p005:four-information-types", 5, "lesson-00-02"],
+  ["importa7-p005-how-to-use-in-practice", "importa-7-dias-final-2026:p005:how-to-use-in-practice", 5, "lesson-00-02"],
+  ["importa7-p145-workbook-templates-live-apart", "importa-7-dias-final-2026:p145:workbook-templates-live-apart", 145, "lesson-00-02"],
+  ["importa7-p146-quick-glossary", "importa-7-dias-final-2026:p146:quick-glossary", 146, "lesson-00-02"],
+  ["importa7-p148-official-sources-and-reference", "importa-7-dias-final-2026:p148:official-sources-and-reference", 148, "lesson-00-02"],
+  ["importa7-p149-visual-credits", "importa-7-dias-final-2026:p149:visual-credits", 149, "lesson-00-02"],
+  ["importa7-p005-method-limit", "importa-7-dias-final-2026:p005:method-limit", 5, "lesson-00-03"],
+  ["importa7-p006-full-page", "importa-7-dias-final-2026:p006:full-page", 6, "lesson-00-03"],
+  ["importa7-p147-cases-requiring-review", "importa-7-dias-final-2026:p147:cases-requiring-review", 147, "lesson-00-03"],
+].map(([id, coverageKey, page, lessonId]) => Object.freeze({ id, coverageKey, page, lessonId })));
+
+export const FIRST_BATCH_SOURCE_SEGMENT_EDITORIAL_EXPECTATIONS = Object.freeze({
+  "importa7-p001-full-page": Object.freeze([
+    "Importa tu coche en 7 días",
+    "buscar, comprobar, comprar, traer y matricular",
+    "desde Europa hasta España",
+    "Más de 7 años de experiencia",
+    "método práctico",
+  ]),
+  "importa7-p002-full-page": Object.freeze([
+    "Guía práctica de búsqueda, compra, viaje, comprobación, ITV y matriculación en España",
+    "agosto de 2026",
+    "vehículos usados procedentes principalmente de la Unión Europea",
+    "Alemania, Países Bajos y Bélgica",
+    "experiencia real + procedimientos oficiales + herramientas de trabajo",
+    "pueden cambiar",
+    "Comprueba las fuentes oficiales",
+    "Todos los derechos reservados",
+  ]),
+  "importa7-p003-full-page": Object.freeze([
+    "No quiero que memorices un manual",
+    "sistema al que volver",
+    "más de siete años",
+    "jornadas enteras buscando anuncios",
+    "he volado para ver coches que parecían perfectos y no lo eran",
+    "he negociado sin un inglés perfecto",
+    "he vuelto conduciendo miles de kilómetros",
+    "he perdido fines de semana",
+    "vendedores sinceros",
+    "rutas bien organizadas",
+    "margen suficiente para solucionar una avería",
+    "La primera importación parece enorme",
+    "las siguientes se vuelven muchísimo más sencillas",
+    "acortar esa primera curva",
+    "Trámites oficiales",
+    "horas de búsqueda, llamadas, dudas, viajes, errores, hoteles, peajes, documentación y pequeños trucos",
+    "ENTENDER",
+    "Ver el proceso completo sin niebla",
+    "DECIDIR",
+    "Descartar operaciones que no merecen la pena",
+    "EJECUTAR",
+    "Usar el curso mientras haces tu primera importación",
+  ]),
+  "importa7-p004-full-page": Object.freeze([
+    "Todo lo que vas a aprender",
+    "mismo orden en el que ocurre una operación real",
+    "Países",
+    "Buscar",
+    "Filtrar",
+    "Leer anuncio",
+    "Comparar España",
+    "Coste total",
+    "Vendedor",
+    "Documentos",
+    "Negociar",
+    "Viaje",
+    "Revisar",
+    "Comprar",
+    "Volver",
+    "ITV",
+    "DGT",
+    "Conocer todas las piezas",
+    "El método de los 7 días",
+    "anticipar bloqueos",
+    "hacer varias tareas en paralelo",
+    "Los 7 días no son una promesa",
+    "El banco, el vendedor, la ITV o DGT pueden retrasarte",
+    "qué reservar, qué adelantar y qué no dejar para un viernes",
+    "Ahora entiendo el proceso",
+    "Podría hacerlo yo",
+  ]),
+  "importa7-p005-guide-not-memory": Object.freeze([
+    "Una guía para consultar, no para memorizar",
+    "El contenido principal explica el proceso completo con ejemplos y experiencia",
+    "Las hojas operativas viven en un cuaderno de trabajo separado",
+    "Explicación, ejemplos, decisiones, fotografías, tablas, procesos y casos prácticos",
+    "Presupuesto, candidato, mercado, preguntas, Plan A/B/C, inspección, costes, ITV y DGT",
+  ]),
+  "importa7-p005-four-information-types": Object.freeze([
+    "Experiencia personal",
+    "Lo que he vivido, hago habitualmente o he observado en operaciones reales",
+    "Una recomendación nacida de la práctica",
+    "Regla oficial",
+    "Un requisito de DGT, AEAT, BOE, ITV u otra administración",
+    "Comprueba siempre la versión vigente",
+    "Recomendación",
+    "Una forma de reducir riesgo o ganar tiempo",
+    "Puede haber otras maneras válidas",
+    "Cálculo rápido",
+    "Una aproximación para decidir si merece la pena seguir investigando",
+    "No sustituye el cálculo final",
+  ]),
+  "importa7-p005-how-to-use-in-practice": Object.freeze([
+    "Cómo usarlo en la práctica",
+    "abre el capítulo que corresponda al momento de la operación",
+    "No necesitas acordarte de todo",
+    "Necesitas saber dónde volver a mirar",
+  ]),
+  "importa7-p145-workbook-templates-live-apart": Object.freeze([
+    "Las plantillas útiles viven aparte",
+    "duplicarlo por cada vehículo",
+    "Presupuesto inicial",
+    "Filtros y búsquedas",
+    "Vehículo candidato",
+    "Mercado español",
+    "Preguntas / llamada",
+    "Plan A/B/C",
+    "Coste total",
+    "Inspección",
+    "Documentación",
+    "España y 7 días",
+    "guarda una copia por coche",
+    "Comparar el estimado con el coste real",
+  ]),
+  "importa7-p146-quick-glossary": Object.freeze([
+    "CoC",
+    "Certificado de conformidad europeo del vehículo",
+    "Ficha reducida",
+    "VIN / bastidor",
+    "V.7",
+    "Campo K",
+    "TÜV / HU",
+    "Teil I / Teil II",
+    "Motorschaden",
+    "Getriebeschaden",
+    "Unfallfrei",
+    "Placas de exportación",
+    "IVTM",
+    "Modelo 576",
+    "ROI",
+    "beneficio ÷ inversión total × 100",
+  ]),
+  "importa7-p148-official-sources-and-reference": Object.freeze([
+    "Comprueba siempre la versión vigente antes de ejecutar",
+    "Las tasas, formularios y procedimientos pueden cambiar",
+    "DGT",
+    "Agencia Tributaria",
+    "BOE",
+    "Ministerio de Industria",
+    "RDW",
+    "Movilidad Bélgica",
+    "Administración alemana",
+    "usa este curso para saber qué buscar y qué preguntar",
+    "fuente oficial para confirmar el importe y procedimiento exactos",
+  ]),
+  "importa7-p149-visual-credits": Object.freeze([
+    "Imágenes utilizadas con intención, no para rellenar",
+    "Capturas de portales y anuncios",
+    "Fotografías propias",
+    "Fotografías editoriales",
+    "Placa alemana de exportación",
+    "Gráficos e infografías",
+    "Pexels",
+    "Wikimedia Commons",
+    "explica, compara, contextualiza o ayuda a recordar",
+    "Si no aporta, sobra",
+  ]),
+  "importa7-p005-method-limit": Object.freeze([
+    "Límite del método",
+    "usados con documentación europea",
+    "homologación que permita matricularlos en España",
+    "EE. UU., Canadá, terceros países o reformas complejas",
+    "requieren más revisión",
+  ]),
+  "importa7-p006-full-page": Object.freeze([
+    "ÍNDICE ORIENTADO A RESULTADO",
+    "Antes de buscar",
+    "Encontrar el vehículo",
+    "Leer el anuncio",
+    "Comparar con España",
+    "Saber si merece la pena",
+    "Hablar y negociar",
+    "Organizar el viaje",
+    "Revisar el vehículo",
+    "Comprar y salir",
+    "La vuelta",
+    "Ya en España",
+    "El método de los 7 días",
+    "Checklists, glosario y fuentes",
+    "Referencia rápida para futuras operaciones",
+  ]),
+  "importa7-p147-cases-requiring-review": Object.freeze([
+    "Saber frenar también forma parte de saber importar",
+    "Campo K vacío o formato no europeo",
+    "Confirma la vía de homologación",
+    "Origen EE. UU. o Canadá",
+    "Historial norteamericano, millas, luces distintas",
+    "Reformas importantes",
+    "Suspensión, escape, plazas, bola, iluminación o medidas",
+    "Vehículo de carga antiguo",
+    "furgonetas anteriores a 2012",
+    "Fuera de la UE",
+    "Aduanas, IVA de importación y posible arancel",
+    "VIN o documentos incoherentes",
+    "no pagues hasta aclararlo",
+    "No es saber menos",
+    "te evita pagar por aprender el problema después",
+  ]),
+});
+
+export const CANONICAL_MIGRATED_SOURCE_SEGMENT_ASSIGNMENTS = Object.freeze([
+  ...FIRST_BATCH_SOURCE_SEGMENT_ASSIGNMENTS,
+  ...PILOT_SOURCE_SEGMENT_ASSIGNMENTS,
+]);
+
+export const CANONICAL_MIGRATED_SOURCE_SEGMENT_EDITORIAL_EXPECTATIONS = Object.freeze({
+  ...FIRST_BATCH_SOURCE_SEGMENT_EDITORIAL_EXPECTATIONS,
+  ...PILOT_SOURCE_SEGMENT_EDITORIAL_EXPECTATIONS,
+});
+
 const REQUIRED_SEGMENT_FIELDS = ["id", "coverageKey", "sourceId", "section", "startMarker", "endMarker"];
 
 const normalizeEditorialText = (value) => String(value ?? "")
@@ -167,17 +393,17 @@ function fail(errors, message) {
   errors.push(message);
 }
 
-export function auditPilotSourceSegments(program) {
+function auditSourceSegmentScope(program, { assignments, expectations, lessonIds, requiredPages, scopeLabel }) {
   const errors = [];
   const lessonById = new Map((program?.lessons || []).map((lesson) => [lesson.id, lesson]));
-  const expectedById = new Map(PILOT_SOURCE_SEGMENT_ASSIGNMENTS.map((segment) => [segment.id, segment]));
+  const expectedById = new Map(assignments.map((segment) => [segment.id, segment]));
   const seenIds = new Map();
   const seenCoverage = new Map();
   let sectionMappingCount = 0;
   let visualMappingCount = 0;
   let editorialIdeaCount = 0;
 
-  for (const lessonId of ["lesson-01-01", "lesson-01-02", "lesson-01-03"]) {
+  for (const lessonId of lessonIds) {
     const lesson = lessonById.get(lessonId);
     if (!lesson) {
       fail(errors, `Falta ${lessonId} para validar sourceSegments.`);
@@ -210,12 +436,12 @@ export function auditPilotSourceSegments(program) {
       if (expected.coverageKey !== segment.coverageKey) fail(errors, `${segment.id}: coverageKey no coincide con el manifiesto.`);
     }
 
-    const expectedPages = [...new Set(PILOT_SOURCE_SEGMENT_ASSIGNMENTS.filter((segment) => segment.lessonId === lessonId).map((segment) => segment.page))];
+    const expectedPages = [...new Set(assignments.filter((segment) => segment.lessonId === lessonId).map((segment) => segment.page))];
     if (JSON.stringify(lesson.sourcePages) !== JSON.stringify(expectedPages)) {
       fail(errors, `${lessonId}: sourcePages ${JSON.stringify(lesson.sourcePages)} no coincide con los segmentos ${JSON.stringify(expectedPages)}.`);
     }
 
-    const ownedSegmentIds = new Set(PILOT_SOURCE_SEGMENT_ASSIGNMENTS.filter((segment) => segment.lessonId === lessonId).map((segment) => segment.id));
+    const ownedSegmentIds = new Set(assignments.filter((segment) => segment.lessonId === lessonId).map((segment) => segment.id));
     const editorialTextBySegment = new Map([...ownedSegmentIds].map((segmentId) => [segmentId, []]));
     for (const section of lesson.sections || []) {
       const sourceSegmentIds = Array.isArray(section.sourceSegmentIds) ? section.sourceSegmentIds : [];
@@ -252,9 +478,9 @@ export function auditPilotSourceSegments(program) {
     for (const segmentId of ownedSegmentIds) {
       const mappedEditorialText = normalizeEditorialText(editorialTextBySegment.get(segmentId).join(" "));
       if (!mappedEditorialText) fail(errors, `${lessonId}: ${segmentId} no tiene contenido editorial asignado.`);
-      const expectations = PILOT_SOURCE_SEGMENT_EDITORIAL_EXPECTATIONS[segmentId] || [];
-      editorialIdeaCount += expectations.length;
-      for (const idea of expectations) {
+      const segmentExpectations = expectations[segmentId] || [];
+      editorialIdeaCount += segmentExpectations.length;
+      for (const idea of segmentExpectations) {
         if (!mappedEditorialText.includes(normalizeEditorialText(idea))) {
           fail(errors, `${lessonId}:${segmentId}: falta contenido editorial requerido: ${idea}`);
         }
@@ -262,18 +488,20 @@ export function auditPilotSourceSegments(program) {
     }
   }
 
-  for (const expected of PILOT_SOURCE_SEGMENT_ASSIGNMENTS) {
+  for (const expected of assignments) {
     if (!seenIds.has(expected.id)) fail(errors, `Segmento sin asignar: ${expected.id}.`);
   }
 
-  const coveredPages = [...new Set(PILOT_SOURCE_SEGMENT_ASSIGNMENTS.map((segment) => segment.page))];
-  if (JSON.stringify(coveredPages) !== JSON.stringify([7, 8, 9, 10, 11, 12])) fail(errors, "La cobertura piloto debe abarcar exactamente las páginas 7-12.");
+  const coveredPages = [...new Set(assignments.map((segment) => segment.page))].sort((a, b) => a - b);
+  if (JSON.stringify(coveredPages) !== JSON.stringify(requiredPages)) {
+    fail(errors, `${scopeLabel}: cobertura ${JSON.stringify(coveredPages)}; se esperaba ${JSON.stringify(requiredPages)}.`);
+  }
 
   return {
     ok: errors.length === 0,
     errors,
-    lessonCount: 3,
-    segmentCount: PILOT_SOURCE_SEGMENT_ASSIGNMENTS.length,
+    lessonCount: lessonIds.length,
+    segmentCount: assignments.length,
     coveredPages,
     sectionMappingCount,
     visualMappingCount,
@@ -281,8 +509,50 @@ export function auditPilotSourceSegments(program) {
   };
 }
 
+export function auditPilotSourceSegments(program) {
+  return auditSourceSegmentScope(program, {
+    assignments: PILOT_SOURCE_SEGMENT_ASSIGNMENTS,
+    expectations: PILOT_SOURCE_SEGMENT_EDITORIAL_EXPECTATIONS,
+    lessonIds: ["lesson-01-01", "lesson-01-02", "lesson-01-03"],
+    requiredPages: [7, 8, 9, 10, 11, 12],
+    scopeLabel: "Unidad piloto",
+  });
+}
+
+export function auditFirstMigrationBatchSourceSegments(program) {
+  return auditSourceSegmentScope(program, {
+    assignments: FIRST_BATCH_SOURCE_SEGMENT_ASSIGNMENTS,
+    expectations: FIRST_BATCH_SOURCE_SEGMENT_EDITORIAL_EXPECTATIONS,
+    lessonIds: ["lesson-00-01", "lesson-00-02", "lesson-00-03"],
+    requiredPages: [1, 2, 3, 4, 5, 6, 145, 146, 147, 148, 149],
+    scopeLabel: "Primer lote de migración",
+  });
+}
+
+export function auditCanonicalMigratedSourceSegments(program) {
+  return auditSourceSegmentScope(program, {
+    assignments: CANONICAL_MIGRATED_SOURCE_SEGMENT_ASSIGNMENTS,
+    expectations: CANONICAL_MIGRATED_SOURCE_SEGMENT_EDITORIAL_EXPECTATIONS,
+    lessonIds: ["lesson-00-01", "lesson-00-02", "lesson-00-03", "lesson-01-01", "lesson-01-02", "lesson-01-03"],
+    requiredPages: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 145, 146, 147, 148, 149],
+    scopeLabel: "Contenido canónico migrado",
+  });
+}
+
 export function assertPilotSourceSegments(program) {
   const audit = auditPilotSourceSegments(program);
   if (!audit.ok) throw new Error(`Source segments QA:\n- ${audit.errors.join("\n- ")}`);
+  return audit;
+}
+
+export function assertFirstMigrationBatchSourceSegments(program) {
+  const audit = auditFirstMigrationBatchSourceSegments(program);
+  if (!audit.ok) throw new Error(`First migration batch source segments QA:\n- ${audit.errors.join("\n- ")}`);
+  return audit;
+}
+
+export function assertCanonicalMigratedSourceSegments(program) {
+  const audit = auditCanonicalMigratedSourceSegments(program);
+  if (!audit.ok) throw new Error(`Canonical migrated source segments QA:\n- ${audit.errors.join("\n- ")}`);
   return audit;
 }

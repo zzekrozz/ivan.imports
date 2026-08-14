@@ -1,7 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { assertPilotSourceSegments } from './academy-source-segments.mjs';
+import {
+  assertCanonicalMigratedSourceSegments,
+  assertFirstMigrationBatchSourceSegments,
+  assertPilotSourceSegments,
+} from './academy-source-segments.mjs';
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const privateRoot = path.join(repo, 'private-products/academy/v2');
@@ -46,12 +50,14 @@ const conceptById = new Map(program.concepts.map((concept) => [concept.id, conce
 const stageById = new Map(program.stages.map((stage) => [stage.id, stage]));
 assert(lessonById.size === 72, 'lesson ids must be unique');
 assert(conceptById.size === 317, 'concept ids must be unique');
-const sourceSegmentAudit = assertPilotSourceSegments(program);
+const pilotSourceSegmentAudit = assertPilotSourceSegments(program);
+const firstBatchSourceSegmentAudit = assertFirstMigrationBatchSourceSegments(program);
+const sourceSegmentAudit = assertCanonicalMigratedSourceSegments(program);
 
 let sourceSegmentMarkers = 'not-present';
 if (fs.existsSync(pageTextPath)) {
   const pageText = readJson(pageTextPath).pages || {};
-  for (const lessonId of ['lesson-01-01', 'lesson-01-02', 'lesson-01-03']) {
+  for (const lessonId of ['lesson-00-01', 'lesson-00-02', 'lesson-00-03', 'lesson-01-01', 'lesson-01-02', 'lesson-01-03']) {
     for (const segment of lessonById.get(lessonId).sourceSegments) {
       const page = normalizeSourceText(pageText[String(segment.page)]);
       const start = normalizeSourceText(segment.startMarker);
@@ -280,6 +286,9 @@ console.log(JSON.stringify({
   sourceSegmentSectionMappings: sourceSegmentAudit.sectionMappingCount,
   sourceSegmentVisualMappings: sourceSegmentAudit.visualMappingCount,
   sourceSegmentEditorialIdeas: sourceSegmentAudit.editorialIdeaCount,
+  pilotSourceSegments: pilotSourceSegmentAudit.segmentCount,
+  firstBatchSourceSegments: firstBatchSourceSegmentAudit.segmentCount,
+  firstBatchSourceSegmentPages: firstBatchSourceSegmentAudit.coveredPages,
   sourceSegmentMarkers,
   sourceAudit: auditResult
 }, null, 2));
