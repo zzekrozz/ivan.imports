@@ -218,6 +218,12 @@ body.hub-page { background: var(--hub-bg); color: var(--hub-ink); font-family: I
 .hub-service-row:first-child { margin-top:0; border-radius:14px 14px 0 0; }
 .hub-service-row:last-child { border-radius:0 0 14px 14px; }
 .hub-service-index { font-size:.72rem; letter-spacing:.12em; }
+.hub-service-spectrum { display:grid; grid-template-columns:auto minmax(180px,1fr) auto; align-items:center; gap:16px; margin:26px 0 20px; color:#5d7287; font-size:.72rem; font-weight:750; }
+.hub-service-spectrum > div { position:relative; display:flex; align-items:center; justify-content:space-between; min-height:24px; }
+.hub-service-spectrum > div::before { position:absolute; left:0; right:0; height:2px; content:""; background:linear-gradient(90deg,#8ddde2,var(--hub-blue)); }
+.hub-service-spectrum i { --dot:calc(7px + (var(--level) * 2px)); position:relative; width:var(--dot); height:var(--dot); border:2px solid #fff; border-radius:50%; background:color-mix(in srgb,var(--hub-teal) calc(100% - (var(--level) * 10%)),var(--hub-blue)); box-shadow:0 0 0 1px rgba(11,103,217,.16); }
+.hub-service-list--progressive .hub-service-row::before { position:absolute; left:0; top:0; bottom:0; width:calc(2px + (var(--service-level) * 1px)); content:""; background:linear-gradient(180deg,var(--hub-teal),var(--hub-blue)); }
+.hub-service-mode { display:block; margin-bottom:4px; color:var(--hub-blue); font-size:.64rem; font-weight:850; letter-spacing:.08em; text-transform:uppercase; }
 .hub-page-hero { padding:clamp(68px,7vw,100px) 0 56px; }
 .hub-page-hero h1 { max-width:860px; font-size:clamp(2.65rem,4.8vw,4.65rem); line-height:.98; letter-spacing:-.055em; text-wrap:balance; }
 .hub-page-hero--visual { position:relative; min-height:560px; display:grid; align-items:end; overflow:hidden; padding:100px 0 64px; isolation:isolate; background:#061a2f; }
@@ -280,6 +286,9 @@ body.hub-page { background: var(--hub-bg); color: var(--hub-ink); font-family: I
   .hub-opportunity-card .hub-actions { align-items:stretch; }
   .hub-service-row,.hub-go-list .hub-service-row { grid-template-columns:46px 1fr; padding:20px 15px; }
   .hub-service-row .hub-price,.hub-go-arrow { grid-column:2; }
+  .hub-service-spectrum { grid-template-columns:1fr auto; gap:8px 12px; margin:22px 0 14px; }
+  .hub-service-spectrum > div { grid-column:1 / -1; grid-row:2; }
+  .hub-service-spectrum > span:last-child { grid-column:2; grid-row:1; }
   .hub-go-arrow { margin-top:4px; }
   .hub-heading--spaced { margin-top:56px; }
 }

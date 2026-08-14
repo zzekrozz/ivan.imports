@@ -45,12 +45,12 @@ function analyticsBody() {
   return `<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PRKZJFTT" height="0" width="0" style="display:none;visibility:hidden" title="Google Tag Manager"></iframe></noscript>`;
 }
 
-function head({ title, description, path, type = "website", schema = [], academy = false }) {
+function head({ title, description, path, type = "website", schema = [], academy = false, robots = "index,follow,max-image-preview:large" }) {
   const canonical = `${siteUrl}${path}`;
   return `<head>
   ${analyticsHead()}
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>${esc(title)}</title><meta name="description" content="${esc(description)}"><meta name="robots" content="index,follow,max-image-preview:large">
+  <title>${esc(title)}</title><meta name="description" content="${esc(description)}"><meta name="robots" content="${esc(robots)}">
   <link rel="canonical" href="${canonical}"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><meta name="theme-color" content="#f4f8fc">
   <meta property="og:site_name" content="IvanImports"><meta property="og:locale" content="es_ES"><meta property="og:type" content="${type}"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(description)}"><meta property="og:url" content="${canonical}"><meta property="og:image" content="${siteUrl}/assets/og-ivanimports.jpg">
   <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(description)}"><meta name="twitter:image" content="${siteUrl}/assets/og-ivanimports.jpg">
@@ -63,8 +63,8 @@ function breadcrumbs(items) {
   return `<nav aria-label="Migas de pan"><ol class="hub-breadcrumbs">${items.map((item, index) => `<li>${index === items.length - 1 ? `<span aria-current="page">${esc(item.label)}</span>` : `<a href="${item.href}">${esc(item.label)}</a>`}</li>`).join("")}</ol></nav>`;
 }
 
-function basePage({ title, description, path, schema = [], body, pageEvent = "", pageType = "page", className = "" }) {
-  return `<!doctype html><html lang="es">${head({ title, description, path, schema })}<body class="hub-page ${className}" data-page-event="${pageEvent}" data-page-type="${pageType}"><a class="skip-link" href="#contenido">Saltar al contenido</a>${analyticsBody()}<site-header></site-header><main id="contenido">${body}</main><site-footer></site-footer><script src="/assets/site-config.js"></script><script src="/assets/site.js"></script></body></html>`;
+function basePage({ title, description, path, schema = [], body, pageEvent = "", pageType = "page", className = "", robots }) {
+  return `<!doctype html><html lang="es">${head({ title, description, path, schema, robots })}<body class="hub-page ${className}" data-page-event="${pageEvent}" data-page-type="${pageType}"><a class="skip-link" href="#contenido">Saltar al contenido</a>${analyticsBody()}<site-header></site-header><main id="contenido">${body}</main><site-footer></site-footer><script src="/assets/site-config.js"></script><script src="/assets/site.js"></script></body></html>`;
 }
 
 function academyPage({ title, description, path, route, schema = [], content, enhance = true }) {
@@ -196,7 +196,8 @@ function servicePage(service) {
 
 for (const service of servicesData.services.filter((item) => item.active && item.id !== "subastaspro")) await writeRoute(`servicios/${service.slug}`, servicePage(service));
 
-const servicesBody = `<section class="hub-page-hero hub-page-hero--visual hub-page-hero--service hub-page-hero--services-index"><picture class="hub-page-hero-media"><img src="/assets/visuals/final/services-pro-generic.webp" alt="" width="1672" height="941" fetchpriority="high" decoding="async"></picture><div class="hub-shell"><span class="hub-kicker">Servicios PRO</span><h1>Cuando la duda ya depende de tu coche, tus documentos y tus cifras.</h1><p>La Academia explica cómo funciona. Los servicios responden qué hacer con tu caso real.</p></div></section><section class="hub-section"><div class="hub-shell"><div class="hub-heading"><span class="hub-kicker">Criterio aplicado</span><h2>Elige el nivel de intervención que necesitas.</h2></div><div class="hub-service-list">${servicesData.services.filter((item) => item.active).map((service, index) => `<a class="hub-service-row" href="${servicePath(service)}"><span class="hub-service-index">0${index + 1}</span><div><h3>${esc(service.title)}</h3><p>${esc(service.summary)}</p></div><span class="hub-price">${esc(service.priceLabel)}</span></a>`).join("")}</div></div></section>`;
+const activeServices = servicesData.services.filter((item) => item.active);
+const servicesBody = `<section class="hub-page-hero hub-page-hero--visual hub-page-hero--service hub-page-hero--services-index"><picture class="hub-page-hero-media"><img src="/assets/visuals/final/services-pro-generic.webp" alt="" width="1672" height="941" fetchpriority="high" decoding="async"></picture><div class="hub-shell"><span class="hub-kicker">Servicios PRO</span><h1>Cuando la duda ya depende de tu coche, tus documentos y tus cifras.</h1><p>La Academia explica cómo funciona. Los servicios responden qué hacer con tu caso real.</p></div></section><section class="hub-section"><div class="hub-shell"><div class="hub-heading"><span class="hub-kicker">Criterio aplicado</span><h2>Elige el nivel de intervención que necesitas.</h2><p>La lista avanza de una decisión puntual a un acompañamiento integral.</p></div><div class="hub-service-spectrum" aria-label="De menos a más intervención de Iván"><span>Menos intervención</span><div aria-hidden="true">${activeServices.map((_, index) => `<i style="--level:${index + 1}"></i>`).join("")}</div><span>Más intervención</span></div><div class="hub-service-list hub-service-list--progressive">${activeServices.map((service, index) => `<a class="hub-service-row" href="${servicePath(service)}" style="--service-level:${index + 1}"><span class="hub-service-index">0${index + 1}</span><div><small class="hub-service-mode">${esc(service.eyebrow)}</small><h3>${esc(service.title)}</h3><p>${esc(service.summary)}</p></div><span class="hub-price">${esc(service.priceLabel)}</span></a>`).join("")}</div></div></section>`;
 await writeRoute("servicios", basePage({ title: "Servicios PRO | IvanImports", description: "Consultoría, SubastasPRO, puesta en marcha, primera compra en subasta y Primera Importación Contigo.", path: "/servicios/", schema: pageSchemas({ path: "/servicios/", title: "Servicios PRO | IvanImports", description: "Servicios aplicados para revisar y ejecutar operaciones reales.", kind: "ItemList" }), body: servicesBody, pageEvent: "service_opened", pageType: "services" }));
 
 const opportunity = opportunitiesData.opportunities.find((item) => item.published && item.featured);
@@ -241,6 +242,15 @@ const goItems = [
 await writeFile(join(root, "go/index.html"), basePage({ title: "Enlaces IvanImports | Academia, oportunidades y servicios", description: "Accesos rápidos a la Academia gratuita, oportunidades, directos y servicios PRO de IvanImports.", path: "/go/", schema: pageSchemas({ path: "/go/", title: "Enlaces IvanImports", description: "Accesos rápidos al ecosistema IvanImports." }), body: `<section class="hub-page-hero hub-go-hero"><div class="hub-shell"><span class="hub-kicker">IvanImports · enlaces</span><h1>Aprende gratis. Analiza. Pasa a la acción cuando lo necesites.</h1><p>Un acceso limpio al ecosistema IvanImports, ordenado por el momento en el que estás.</p></div></section><section class="hub-section"><div class="hub-shell hub-go-list">${goItems.map((item, index) => `<a class="hub-service-row" href="${item[2]}"${item[2].startsWith("http") ? ' target="_blank" rel="noopener noreferrer"' : ""}><span class="hub-service-index">${String(index + 1).padStart(2, "0")}</span><div><h3>${esc(item[0])}</h3><p>${esc(item[1])}</p></div><span class="hub-go-arrow">→</span></a>`).join("")}</div></section>`, pageType: "go" }), "utf8");
 
 await writeRoute("subastaspro", servicePage(servicesData.services.find((item) => item.id === "subastaspro")));
+
+await writeFile(join(root, "404.html"), basePage({
+  title: "Página no encontrada | IvanImports",
+  description: "La dirección solicitada no existe. Vuelve al centro de IvanImports o continúa en la Academia.",
+  path: "/404.html",
+  robots: "noindex,follow",
+  pageType: "not-found",
+  body: `<section class="hub-page-hero hub-go-hero"><div class="hub-shell"><span class="hub-kicker">Error 404</span><h1>Esta ruta no lleva a ningún coche.</h1><p>Puede que el enlace haya cambiado o que la dirección esté incompleta.</p><div class="hub-actions"><a class="btn btn-primary" href="/">Volver al inicio</a><a class="btn btn-secondary" href="/academia/">Abrir la Academia</a><a class="btn btn-secondary" href="/servicios/">Ver servicios</a></div></div></section>`,
+}), "utf8");
 
 const sitemapRoutes = ["/", "/academia/", "/academia/ruta/", "/academia/respuestas/", "/academia/recursos/", "/academia/actualizaciones/", "/academia/ayuda/", "/academia/edicion-pdf/", "/oportunidades/", "/directos/", "/servicios/", "/recomendaciones/", "/go/", "/actualizaciones/", "/placasverdes/", ...program.stages.map((stage) => `/academia/etapa/${stage.slug}/`), ...program.lessons.map((lesson) => `/academia/paso/${lesson.slug}/`), ...program.concepts.filter((concept) => standaloneConceptIds.has(concept.id)).map((concept) => `/academia/conceptos/${slugify(concept.title)}/`), placasPath, ...program.tools.map((tool) => `/academia/herramientas/${tool.slug}/`), ...opportunitiesData.opportunities.filter((item) => item.published).map((item) => `/oportunidades/${item.slug}/`), ...servicesData.services.filter((item) => item.active).map(servicePath)];
 const academyHubCanonicals = new Map([

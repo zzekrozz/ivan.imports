@@ -1464,6 +1464,28 @@
     margin-top: 1.65rem;
   }
 
+  .breadcrumbs a,
+  .article-navigation a,
+  .source-list a,
+  .download-button {
+    min-height: 44px;
+  }
+
+  .breadcrumbs a,
+  .source-list a {
+    display: flex;
+    align-items: center;
+  }
+
+  .breadcrumbs a {
+    min-width: 44px;
+    justify-content: center;
+  }
+
+  .article-navigation a {
+    align-items: center;
+  }
+
   .academy-search input {
     min-height: 56px;
   }

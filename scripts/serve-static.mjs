@@ -16,7 +16,9 @@ createServer((request, response) => {
   if (target !== root && !target.startsWith(`${root}${sep}`)) { response.writeHead(403).end(); return; }
   if (existsSync(target) && statSync(target).isDirectory()) target = join(target, "index.html");
   if ((!existsSync(target) || !statSync(target).isFile()) && pathname.startsWith("/academia/")) target = join(root, "academia", "index.html");
+  const missing = !existsSync(target) || !statSync(target).isFile();
+  if (missing) target = join(root, "404.html");
   if (!existsSync(target) || !statSync(target).isFile()) { response.writeHead(404).end("Not found"); return; }
-  response.writeHead(200, { "Content-Type": types[extname(target).toLowerCase()] || "application/octet-stream" });
+  response.writeHead(missing ? 404 : 200, { "Content-Type": types[extname(target).toLowerCase()] || "application/octet-stream" });
   createReadStream(target).pipe(response);
 }).listen(port, "0.0.0.0", () => console.log(`Static QA: http://127.0.0.1:${port}`));
