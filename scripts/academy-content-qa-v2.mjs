@@ -1,11 +1,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { assertPilotSourceSegments } from './academy-source-segments.mjs';
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const privateRoot = path.join(repo, 'private-products/academy/v2');
 const compiledPath = path.join(privateRoot, 'dist/program-v2.json');
 const auditPath = path.join(repo, 'private-products/academy/source-audit-2026.json');
+const pageTextPath = path.join(repo, 'private-products/academy/page-text.json');
 const EXPECTED_SHA256 = '07B2ECBBC28AD0FEF691534AF81CA78D19977D491DEDCBD17A2225DE3E5FECB8';
 const EXPECTED_STAGE_COUNTS = [3, 5, 7, 6, 5, 7, 8, 5, 7, 4, 4, 7, 4];
 
@@ -15,6 +17,7 @@ const assert = (condition, message) => {
 };
 const words = (value) => String(value ?? '').trim().split(/\s+/).filter(Boolean).length;
 const countOccurrences = (haystack, needle) => String(haystack).split(needle).length - 1;
+const normalizeSourceText = (value) => String(value ?? '').normalize('NFKC').toLocaleLowerCase('es').replace(/\s+/g, ' ').trim();
 
 assert(fs.existsSync(compiledPath), `Missing compiled private program: ${compiledPath}`);
 const program = readJson(compiledPath);
@@ -43,6 +46,25 @@ const conceptById = new Map(program.concepts.map((concept) => [concept.id, conce
 const stageById = new Map(program.stages.map((stage) => [stage.id, stage]));
 assert(lessonById.size === 72, 'lesson ids must be unique');
 assert(conceptById.size === 317, 'concept ids must be unique');
+const sourceSegmentAudit = assertPilotSourceSegments(program);
+
+let sourceSegmentMarkers = 'not-present';
+if (fs.existsSync(pageTextPath)) {
+  const pageText = readJson(pageTextPath).pages || {};
+  for (const lessonId of ['lesson-01-01', 'lesson-01-02', 'lesson-01-03']) {
+    for (const segment of lessonById.get(lessonId).sourceSegments) {
+      const page = normalizeSourceText(pageText[String(segment.page)]);
+      const start = normalizeSourceText(segment.startMarker);
+      const end = normalizeSourceText(segment.endMarker);
+      const startIndex = page.indexOf(start);
+      const endIndex = page.indexOf(end);
+      assert(startIndex >= 0, `${segment.id}: startMarker not found on page ${segment.page}`);
+      assert(endIndex >= 0, `${segment.id}: endMarker not found on page ${segment.page}`);
+      assert(startIndex <= endIndex, `${segment.id}: markers are out of order on page ${segment.page}`);
+    }
+  }
+  sourceSegmentMarkers = 'validated-against-page-text';
+}
 assert(stageById.size === 13, 'stage ids must be unique');
 
 for (let order = 0; order < 13; order += 1) {
@@ -253,5 +275,8 @@ console.log(JSON.stringify({
   purposefulVisuals: program.lessons.filter((lesson) => lesson.visual?.purpose).length,
   practicalExamples: program.lessons.filter((lesson) => words(lesson.example?.body) >= 15).length,
   videosPlanned: program.videos.filter((video) => video.status === 'planned').length,
+  sourceSegments: sourceSegmentAudit.segmentCount,
+  sourceSegmentPages: sourceSegmentAudit.coveredPages,
+  sourceSegmentMarkers,
   sourceAudit: auditResult
 }, null, 2));
