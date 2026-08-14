@@ -962,6 +962,7 @@ function lessonConcepts(lesson) {
 }
 
 function renderLessonConcepts(lesson) {
+  if (lesson.showConcepts === false) return "";
   const concepts = lessonConcepts(lesson);
   if (!concepts.length) return "";
   return `<section class="academy-lesson-concepts" data-lesson-section="concepts" aria-labelledby="lesson-concepts-title"><div class="academy-section-head"><div><span class="academy-eyebrow">Respuestas dentro de la lección</span><h2 id="lesson-concepts-title">Conceptos que puedes consultar</h2></div></div><div class="academy-concept-grid">${concepts.map((concept) => `<details class="academy-concept-card" id="${escapeAttribute(concept.anchor || concept.slug || concept.id)}" data-concept-id="${escapeAttribute(concept.id)}"><summary><span>${iconSvg(concept.type === "official" ? "official" : "answers")}</span><strong>${escapeHtml(concept.title)}</strong>${iconSvg("chevron")}</summary><div>${concept.shortAnswer ? `<p class="academy-concept-short">${escapeHtml(concept.shortAnswer)}</p>` : ""}${concept.explanation ? `<p>${escapeHtml(concept.explanation)}</p>` : ""}${concept.action ? `<div class="academy-status-message" data-tone="info"><strong>Qué hacer:</strong> ${escapeHtml(concept.action)}</div>` : ""}${renderBlockLinks(concept)}</div></details>`).join("")}</div></section>`;

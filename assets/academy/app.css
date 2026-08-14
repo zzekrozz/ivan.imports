@@ -2530,6 +2530,13 @@
     letter-spacing: -0.02em;
   }
 
+  .academy-content-section h2,
+  .academy-content-section h3,
+  .academy-content-section p,
+  .academy-content-section li {
+    overflow-wrap: anywhere;
+  }
+
   .academy-content-section p + p,
   .academy-content-section ul + p,
   .academy-content-section p + ul {
