@@ -24,6 +24,26 @@ test("los aliases públicos resuelven las variantes con y sin barra", () => {
   assert.equal(redirects.get("/herramientas/"), "/academia/herramientas");
   assert.equal(redirects.get("/consultoria"), "/servicios/consultoria/");
   assert.equal(redirects.get("/consultoria/"), "/servicios/consultoria/");
+  assert.equal(redirects.get("/primera-importacion-contigo"), "/servicios/primera-importacion-contigo/");
+  assert.equal(redirects.get("/primera-importacion-contigo/"), "/servicios/primera-importacion-contigo/");
+  assert.match(read("primera-importacion-contigo/index.html"), /noindex,follow/);
+  assert.match(read("primera-importacion-contigo/index.html"), /https:\/\/ivanimports\.es\/servicios\/primera-importacion-contigo\//);
+});
+
+test("los slugs históricos de herramientas redirigen a páginas públicas reales", () => {
+  const aliases = new Map([
+    ["presupuesto", "budget-calculator"], ["filtros", "search-filter-builder"], ["analizador-anuncio", "ad-analyzer"],
+    ["preguntas", "question-builder"], ["mercado", "market-comparator"], ["coste-total", "cost-calculator"],
+    ["documentos", "document-passport"], ["viaje", "travel-planner"], ["inspeccion", "inspection-checklist"],
+    ["pintura", "paint-sheet"], ["compra-salida", "purchase-exit-checklist"], ["vuelta", "return-checklist"],
+    ["espana", "spain-folder"], ["metodo-7-dias", "method7-planner"],
+  ]);
+  for (const [legacy, publicSlug] of aliases) {
+    const destination = `/academia/herramientas/${publicSlug}/`;
+    assert.equal(redirects.get(`/academia/herramientas/${legacy}`), destination);
+    assert.equal(redirects.get(`/academia/herramientas/${legacy}/`), destination);
+    assert.match(read(`academia/herramientas/${publicSlug}/index.html`), new RegExp(`https://ivanimports\\.es${destination}`));
+  }
 });
 
 test("las redirecciones exactas no forman bucles", () => {

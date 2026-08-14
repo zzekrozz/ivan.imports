@@ -3,6 +3,7 @@ import { renderEuropeRouteMap, renderMobileRoute } from "./private/europe-map.js
 import { renderLessonVisuals, renderStageScene } from "./private/lesson-visuals.js";
 import { migrateAcademyStateV1ToV2, normalizeLegacyLessonMap, resolveLegacyDeepLink, resolveLegacyLessonTarget } from "./private/migration.js";
 import { ACADEMY_SEARCH_SUGGESTIONS, answerSemanticQuery } from "./private/semantic-search.js";
+import { normalizeNumberFieldValue } from "./private/form-values.js";
 import { ACADEMY_PATCH_NOTES, ACADEMY_VERSION } from "./patch-notes.js";
 
 const PROGRAM_ROOT = "/academia/";
@@ -50,6 +51,27 @@ const TOOL_ALIASES = Object.freeze({
   "method7-planner": "metodo-7-dias",
 });
 
+const TOOL_PUBLIC_SLUGS = Object.freeze(Object.fromEntries(
+  Object.entries(TOOL_ALIASES).map(([publicSlug, internalSlug]) => [internalSlug, publicSlug]),
+));
+
+const TOOL_STATE_KEYS = Object.freeze({
+  presupuesto: "budget",
+  filtros: "searchFilters",
+  "analizador-anuncio": "adAnalyzer",
+  mercado: "market",
+  "coste-total": "costs",
+  documentos: "documents",
+  preguntas: "questions",
+  viaje: "travel",
+  inspeccion: "inspection",
+  pintura: "paint",
+  "compra-salida": "purchaseExit",
+  vuelta: "returnTrip",
+  espana: "spain",
+  "metodo-7-dias": "method7",
+});
+
 const OPERATION_FIELDS = Object.freeze([
   ["title", "Nombre de la operación", "text", "Mi primera importación"],
   ["purpose", "Finalidad", "select", [["personal", "Comprar para mí"], ["resale", "Estudiar una reventa"], ["learning", "Aprender"], ["helping", "Ayudar a otra persona"]]],
@@ -80,6 +102,13 @@ const COST_ROWS = Object.freeze([
   ["dgt", "Tasa DGT"], ["registrationPlates", "Matrículas"], ["tax576", "Modelo 576"],
   ["maintenance", "Mantenimiento"], ["repairs", "Reparaciones"], ["contingency", "Imprevistos"],
   ["carrier", "Transportista"], ["other", "Otras partidas"],
+]);
+
+const COST_GROUPS = Object.freeze([
+  ["Compra", ["purchase"]], ["Viaje", ["flight", "localTransport", "hotel", "food"]],
+  ["Vuelta", ["plates", "insurance", "fuel", "tolls", "carrier"]],
+  ["España", ["itv", "coc", "ivtm", "dgt", "registrationPlates", "tax576"]],
+  ["Puesta a punto", ["maintenance", "repairs"]], ["Reserva", ["contingency", "other"]],
 ]);
 
 const DOCUMENTS = Object.freeze([
@@ -304,6 +333,30 @@ function defaultState() {
   };
 }
 
+function normalizeStoredNumbers(state) {
+  const normalizeKeys = (object, keys, options = { min: "0" }) => {
+    if (!object || typeof object !== "object") return;
+    keys.forEach((key) => {
+      if (object[key] !== undefined) object[key] = normalizeNumberFieldValue(object[key], options);
+    });
+  };
+  normalizeKeys(state.operation, ["totalBudget", "year", "powerCv", "powerKw", "mileage", "price"]);
+  (state.candidates || []).forEach((candidate) => normalizeKeys(candidate, ["year", "mileage", "price"]));
+  const tools = state.tools || {};
+  normalizeKeys(tools.budget, ["total", "travel", "plates", "return", "spain", "contingency"]);
+  normalizeKeys(tools.searchFilters, ["yearMin", "yearMax", "mileageMax", "powerMin", "priceMin", "priceMax", "radius"]);
+  normalizeKeys(tools.adAnalyzer, ["price", "mileage"]);
+  normalizeKeys(tools.market, ["conservativeValue"]);
+  (tools.market?.comparables || []).forEach((comparable) => {
+    normalizeKeys(comparable, ["price", "mileage", "power"]);
+    normalizeKeys(comparable, ["year"], { min: "1900" });
+  });
+  normalizeKeys(tools.costs, ["marketValue", "desiredProfit"]);
+  Object.values(tools.costs?.rows || {}).forEach((row) => normalizeKeys(row, ["estimated", "confirmed", "actual"]));
+  normalizeKeys(tools.paint?.panels, ["bonnet", "roof", "boot", "frontLeft", "frontRight", "doorLeft", "doorRight", "rearLeft", "rearRight"]);
+  return state;
+}
+
 function normalizeState(payload) {
   const source = clone(unwrap(payload, "state"));
   const base = defaultState();
@@ -320,7 +373,7 @@ function normalizeState(payload) {
   state.tools = source.tools && typeof source.tools === "object" ? source.tools : {};
   state.preferences = { ...base.preferences, ...(source.preferences || {}) };
   state.revision = finite(payload?.revision ?? source.revision, 0);
-  return state;
+  return normalizeStoredNumbers(state);
 }
 
 function serializableState(state) {
@@ -400,14 +453,18 @@ function stageStatus(stage, progress = progressInfo()) {
   return "pending";
 }
 
-function lessonHref(lesson) { return `/academia/paso/${encodeURIComponent(lesson.slug)}`; }
-function stageHref(stage) { return `/academia/etapa/${encodeURIComponent(stage.slug)}`; }
+function lessonHref(lesson) { return `/academia/paso/${encodeURIComponent(lesson.slug)}/`; }
+function stageHref(stage) { return `/academia/etapa/${encodeURIComponent(stage.slug)}/`; }
 function canonicalToolSlug(slug) { return TOOL_ALIASES[slug] || slug; }
+function publicToolSlug(slug) {
+  const internal = canonicalToolSlug(slug);
+  return TOOL_PUBLIC_SLUGS[internal] || slug;
+}
 function toolHref(slug) {
   const canonical = canonicalToolSlug(slug);
   if (canonical === "operation-dashboard") return "/academia/mi-operacion";
   if (canonical === "candidate-board") return "/academia/candidatos";
-  return `/academia/herramientas/${encodeURIComponent(canonical)}`;
+  return `/academia/herramientas/${encodeURIComponent(publicToolSlug(canonical))}/`;
 }
 
 function parseRoute(pathname = location.pathname) {
@@ -432,10 +489,49 @@ function parseRoute(pathname = location.pathname) {
 }
 
 function routePath(route) {
-  if (route.name === "stage") return `/academia/etapa/${route.slug}`;
-  if (route.name === "lesson") return `/academia/paso/${route.slug}`;
-  if (route.name === "tool") return `/academia/herramientas/${route.slug}`;
+  if (route.name === "stage") return `/academia/etapa/${route.slug}/`;
+  if (route.name === "lesson") return `/academia/paso/${route.slug}/`;
+  if (route.name === "tool") return `/academia/herramientas/${publicToolSlug(route.slug)}/`;
   return ({ route: "/academia/ruta", operation: "/academia/mi-operacion", candidates: "/academia/candidatos", tools: "/academia/herramientas", answers: "/academia/respuestas", resources: "/academia/recursos", support: "/academia/soporte", updates: "/academia/actualizaciones", account: "/academia/cuenta", dashboard: PROGRAM_ROOT })[route.name] || PROGRAM_ROOT;
+}
+
+function normalizeRenderedNavigation(root = document) {
+  const fixed = {
+    "/ruta": "/academia/ruta", "/academia/ruta": "/academia/ruta",
+    "/mi-operacion": "/academia/mi-operacion", "/academia/mi-operacion": "/academia/mi-operacion",
+    "/candidatos": "/academia/candidatos", "/academia/candidatos": "/academia/candidatos",
+    "/herramientas": "/academia/herramientas", "/academia/herramientas": "/academia/herramientas",
+    "/respuestas": "/academia/respuestas", "/academia/respuestas": "/academia/respuestas",
+    "/recursos": "/academia/recursos", "/academia/recursos": "/academia/recursos",
+    "/actualizaciones": "/academia/actualizaciones", "/academia/actualizaciones": "/academia/actualizaciones",
+    "/cuenta": "/academia/cuenta", "/academia/cuenta": "/academia/cuenta",
+  };
+  root.querySelectorAll?.("a[data-nav]").forEach((anchor) => {
+    const raw = anchor.getAttribute("href") || "";
+    const url = new URL(raw, location.origin);
+    if (url.origin !== location.origin) return;
+    if (["/soporte", "/academia/soporte", "/academia/ayuda", "/academia/ayuda/"].includes(url.pathname)) {
+      anchor.href = `/academia/ayuda/${url.hash}`;
+      anchor.removeAttribute("data-nav");
+      return;
+    }
+    const toolMatch = url.pathname.replace(/\/+$/, "").match(/^\/(?:academia\/)?herramientas\/([^/]+)$/i);
+    const stageMatch = url.pathname.replace(/\/+$/, "").match(/^\/(?:academia\/)?etapa\/([^/]+)$/i);
+    const lessonMatch = url.pathname.replace(/\/+$/, "").match(/^\/(?:academia\/)?paso\/([^/]+)$/i);
+    let path = fixed[url.pathname.replace(/\/+$/, "")] || url.pathname;
+    if (toolMatch) path = toolHref(decodeURIComponent(toolMatch[1]));
+    if (stageMatch) path = `/academia/etapa/${encodeURIComponent(decodeURIComponent(stageMatch[1]))}/`;
+    if (lessonMatch) path = `/academia/paso/${encodeURIComponent(decodeURIComponent(lessonMatch[1]))}/`;
+    anchor.href = `${path}${url.search}${url.hash}`;
+  });
+}
+
+function addPageResetControl(root = document) {
+  const toolId = app.route.name === "operation" ? "operation-dashboard" : app.route.name === "candidates" ? "candidate-board" : "";
+  if (!toolId) return;
+  const actions = root.querySelector?.("[data-view-root] .academy-page-head .academy-page-actions");
+  if (!actions || actions.querySelector('[data-action="tool-reset"]')) return;
+  actions.insertAdjacentHTML("afterbegin", `<button class="academy-button academy-button--ghost academy-button--small" type="button" data-action="tool-reset" data-tool-id="${toolId}">Vaciar datos</button>`);
 }
 
 function navigate(path, { replace = false } = {}) {
@@ -626,6 +722,8 @@ function renderView() {
     const progress = progressInfo();
     const showCompletion = ["dashboard", "route", "stage", "lesson"].includes(app.route.name);
     view.innerHTML = `${renderMigrationNotice()}${showCompletion ? renderCompletionHeroes(progress, app.route.name === "dashboard") : ""}${(renderers[app.route.name] || renderDashboard)()}${renderFeedbackStrip()}`;
+    normalizeRenderedNavigation(app.root);
+    addPageResetControl(app.root);
     trackCompletionTransitions(progress);
     document.title = `${pageTitle()} | Academia IvanImports`;
     const canonical = document.querySelector('link[rel="canonical"]');
@@ -688,8 +786,11 @@ function trackCompletionTransitions(progress) {
   } else app.realCompletionTracked = false;
 }
 
-function renderErrorState(title, copy) {
-  return `<div class="academy-error-state"><div class="academy-state-copy"><strong>${escapeHtml(title)}</strong><p>${escapeHtml(copy)}</p><button class="academy-button academy-button--primary" type="button" data-action="retry">Reintentar</button></div></div>`;
+function renderErrorState(title, copy, { retry = true } = {}) {
+  const actions = retry
+    ? `<button class="academy-button academy-button--primary" type="button" data-action="retry">Reintentar</button>`
+    : `<div class="academy-error-actions"><a class="academy-button academy-button--primary" href="/academia/ruta" data-nav>Volver a la ruta</a><button class="academy-button academy-button--secondary" type="button" data-action="search-open">Buscar en la Academia</button></div>`;
+  return `<div class="academy-error-state"><div class="academy-state-copy"><h1>${escapeHtml(title)}</h1><p>${escapeHtml(copy)}</p>${actions}</div></div>`;
 }
 
 function renderPageHead(eyebrow, title, copy = "", actions = "") {
@@ -898,7 +999,7 @@ function renderRoutePage() {
 
 function renderStageLegacy() {
   const stage = findStage(app.route.slug);
-  if (!stage) return renderErrorState("No encontramos esta etapa.", "Abre la ruta completa para elegir una etapa disponible.");
+  if (!stage) return renderErrorState("No encontramos esta etapa.", "Abre la ruta completa para elegir una etapa disponible.", { retry: false });
   const completed = completedLessonSet();
   const completeCount = (stage.lessons || []).filter((lesson) => completed.has(String(lesson.id))).length;
   const percentage = stage.lessons?.length ? Math.round((completeCount / stage.lessons.length) * 100) : 0;
@@ -914,7 +1015,7 @@ function renderStageLegacy() {
 
 function renderStage() {
   const stage = findStage(app.route.slug);
-  if (!stage) return renderErrorState("No encontramos esta etapa.", "Abre la ruta completa para elegir una etapa disponible.");
+  if (!stage) return renderErrorState("No encontramos esta etapa.", "Abre la ruta completa para elegir una etapa disponible.", { retry: false });
   const completed = completedLessonSet();
   const lessons = stage.lessons || [];
   const completeCount = lessons.filter((lesson) => completed.has(String(lesson.id))).length;
@@ -934,7 +1035,7 @@ function renderLessonCard(lesson, index, completed) {
 
 function renderLessonLegacy() {
   const lesson = findLesson(app.route.slug);
-  if (!lesson) return renderErrorState("No encontramos este paso.", "Utiliza la ruta o la búsqueda para abrir un contenido disponible.");
+  if (!lesson) return renderErrorState("No encontramos este paso.", "Utiliza la ruta o la búsqueda para abrir un contenido disponible.", { retry: false });
   const stage = findStage(lesson.stageId);
   const completed = completedLessonSet().has(String(lesson.id));
   app.state.progress.currentLessonId = String(lesson.id);
@@ -977,7 +1078,7 @@ function renderKnowledgeCheck(lesson) {
 
 function renderLesson() {
   const lesson = findLesson(app.route.slug);
-  if (!lesson) return renderErrorState("No encontramos esta lección.", "Utiliza la ruta o la búsqueda para abrir un contenido disponible.");
+  if (!lesson) return renderErrorState("No encontramos esta lección.", "Utiliza la ruta o la búsqueda para abrir un contenido disponible.", { retry: false });
   const stage = findStage(lesson.stageId);
   const completed = completedLessonSet().has(String(lesson.id));
   app.state.progress.currentLessonId = String(lesson.id);
@@ -1152,7 +1253,7 @@ function renderOperationLegacy() {
   const operationStatus = operation.status === "zero" ? "learning" : operation.status;
   const statusLabel = OPERATION_FIELDS.find(([key]) => key === "status")?.[3]?.find(([value]) => value === operationStatus)?.[1] || "Aprendiendo";
   const transportLabel = { driving: "Volver conduciendo", carrier: "Transportista", unknown: "Transporte pendiente" }[operation.transportMode] || "Transporte pendiente";
-  return `${renderPageHead("Operación real", "Mi operación", "Guarda en un único expediente la información del vehículo y tu siguiente acción.", `<a class="academy-button academy-button--secondary" href="/candidatos" data-nav>Ver candidatos</a>`)}
+  return `${renderPageHead("Operación real", "Mi operación", "Guarda en un único expediente la información del vehículo y tu siguiente acción.", `<a class="academy-button academy-button--secondary" href="/academia/candidatos" data-nav>Ver candidatos</a>`)}
     <div class="academy-workspace"><form class="academy-card academy-form-card" data-operation-form novalidate>
       <div class="academy-form-section"><h2>Identificación y estado</h2><div class="academy-form-grid">${OPERATION_FIELDS.slice(0, 8).map((field) => renderOperationField(field, operation)).join("")}</div></div>
       <div class="academy-form-section"><h2>Vehículo</h2><div class="academy-form-grid">${OPERATION_FIELDS.slice(8, 21).map((field) => renderOperationField(field, operation)).join("")}</div></div>
@@ -1179,7 +1280,7 @@ function renderOperation() {
     ["03", "Vendedor y documentación", "Datos que debes verificar fuera de la analítica.", OPERATION_FIELDS.slice(21, 33), false],
     ["04", "Decisión", "Razón, riesgos, notas y siguiente acción.", OPERATION_FIELDS.slice(33), false],
   ];
-  return `${renderPageHead("Operación real", "Mi expediente de importación", "Esta zona describe un caso real. Completar la ruta de aprendizaje no cambia automáticamente su estado.", `<a class="academy-button academy-button--secondary" href="/candidatos" data-nav>${iconSvg("candidates")} Ver candidatos</a>`)}<section class="academy-operation-overview"><article class="academy-card academy-operation-command"><div><span class="academy-eyebrow">Estado actual</span><h2>${escapeHtml(operation.title || operation.carWanted || "Sin operación creada")}</h2><p>${escapeHtml(operation.nextAction || "Completa el primer bloque para definir la siguiente acción.")}</p></div><div><span class="academy-badge">${escapeHtml(statusLabel)}</span><strong>${currency(operation.totalBudget)}</strong><small>presupuesto disponible</small></div></article><div class="academy-grid academy-grid--3"><article class="academy-card academy-stat-card"><span>Vehículo</span><strong>${escapeHtml([operation.brand, operation.model].filter(Boolean).join(" ") || "Pendiente")}</strong><small>${escapeHtml(operation.version || operation.carWanted || "")}</small></article><article class="academy-card academy-stat-card"><span>País / ubicación</span><strong>${escapeHtml(operation.country || "Pendiente")}</strong><small>${escapeHtml(operation.location || "")}</small></article><article class="academy-card academy-stat-card"><span>Cierre real</span><strong>${realOperationCompleted() ? "Confirmado" : "Pendiente"}</strong><a href="/herramientas/espana" data-nav>Revisar carpeta →</a></article></div></section><form class="academy-operation-sections" data-operation-form novalidate>${sections.map(([number, title, copy, fields, open]) => `<details class="academy-card academy-operation-section"${open ? " open" : ""}><summary><span>${number}</span><div><strong>${title}</strong><small>${copy}</small></div>${iconSvg("chevron")}</summary><div class="academy-form-grid">${fields.map((field) => renderOperationField(field, operation)).join("")}</div></details>`).join("")}</form>`;
+  return `${renderPageHead("Operación real", "Mi expediente de importación", "Esta zona describe un caso real. Completar la ruta de aprendizaje no cambia automáticamente su estado.", `<a class="academy-button academy-button--secondary" href="/academia/candidatos" data-nav>${iconSvg("candidates")} Ver candidatos</a>`)}<section class="academy-operation-overview"><article class="academy-card academy-operation-command"><div><span class="academy-eyebrow">Estado actual</span><h2>${escapeHtml(operation.title || operation.carWanted || "Sin operación creada")}</h2><p>${escapeHtml(operation.nextAction || "Completa el primer bloque para definir la siguiente acción.")}</p></div><div><span class="academy-badge">${escapeHtml(statusLabel)}</span><strong>${currency(operation.totalBudget)}</strong><small>presupuesto disponible</small></div></article><div class="academy-grid academy-grid--3"><article class="academy-card academy-stat-card"><span>Vehículo</span><strong>${escapeHtml([operation.brand, operation.model].filter(Boolean).join(" ") || "Pendiente")}</strong><small>${escapeHtml(operation.version || operation.carWanted || "")}</small></article><article class="academy-card academy-stat-card"><span>País / ubicación</span><strong>${escapeHtml(operation.country || "Pendiente")}</strong><small>${escapeHtml(operation.location || "")}</small></article><article class="academy-card academy-stat-card"><span>Cierre real</span><strong>${realOperationCompleted() ? "Confirmado" : "Pendiente"}</strong><a href="${toolHref("espana")}" data-nav>Revisar carpeta →</a></article></div></section><form class="academy-operation-sections" data-operation-form novalidate>${sections.map(([number, title, copy, fields, open]) => `<details class="academy-card academy-operation-section"${open ? " open" : ""}><summary><span>${number}</span><div><strong>${title}</strong><small>${copy}</small></div>${iconSvg("chevron")}</summary><div class="academy-form-grid">${fields.map((field) => renderOperationField(field, operation)).join("")}</div></details>`).join("")}</form>`;
 }
 
 function renderCandidates() {
@@ -1223,7 +1324,7 @@ function renderTools() {
     ["ejecutar", "Compra, vuelve y matricula", "Viaje, inspección, documentos y España."],
   ];
   const card = (tool) => `<a class="academy-card academy-tool-card" href="${toolHref(tool.slug)}" data-nav><span class="academy-tool-icon">${iconSvg(toolIconName(tool.sourceSlug || tool.slug), { className: "academy-tool-svg" })}</span><span class="academy-badge">${escapeHtml(tool.group || "operativa")}</span><h3>${escapeHtml(tool.title)}</h3><p>${escapeHtml(tool.description || "Herramienta de la ruta.")}</p><strong>Abrir herramienta ${iconSvg("chevron")}</strong></a>`;
-  return `<section class="academy-tools-hero">${renderPageHead("Centro operativo", "17 herramientas para una operación real", "Cada herramienta guarda datos de tu expediente. La ruta de aprendizaje permanece separada.", `<a class="academy-button academy-button--secondary" href="/mi-operacion" data-nav>${iconSvg("car")} Abrir operación</a>`)}<picture class="academy-tools-hero-media" aria-hidden="true"><img src="/assets/visuals/final/tools-operations.webp" alt="" width="1672" height="941" decoding="async" fetchpriority="high"></picture></section><div class="academy-tool-groups">${groups.map(([key, title, copy]) => { const members = tools.filter((tool) => (tool.group || TOOL_CATALOG.find((item) => item.slug === tool.slug)?.group || "ejecutar") === key); return members.length ? `<section class="academy-tool-group"><div class="academy-section-head"><div><span class="academy-eyebrow">${String(members.length).padStart(2, "0")} herramientas</span><h2>${title}</h2><p>${copy}</p></div></div><div class="academy-tool-grid">${members.map(card).join("")}</div></section>` : ""; }).join("")}</div>`;
+  return `<section class="academy-tools-hero">${renderPageHead("Centro operativo", "17 herramientas para una operación real", "Cada herramienta guarda datos de tu expediente. La ruta de aprendizaje permanece separada.", `<a class="academy-button academy-button--secondary" href="/academia/mi-operacion" data-nav>${iconSvg("car")} Abrir operación</a>`)}<picture class="academy-tools-hero-media" aria-hidden="true"><img src="/assets/visuals/final/tools-operations.webp" alt="" width="1672" height="941" decoding="async" fetchpriority="high"></picture></section><div class="academy-tool-groups">${groups.map(([key, title, copy]) => { const members = tools.filter((tool) => (tool.group || TOOL_CATALOG.find((item) => item.slug === tool.slug)?.group || "ejecutar") === key); return members.length ? `<section class="academy-tool-group"><div class="academy-section-head"><div><span class="academy-eyebrow">${String(members.length).padStart(2, "0")} herramientas</span><h2>${title}</h2><p>${copy}</p></div></div><div class="academy-tool-grid">${members.map(card).join("")}</div></section>` : ""; }).join("")}</div>`;
 }
 
 function renderTool() {
@@ -1232,14 +1333,15 @@ function renderTool() {
   academyTrack("academy_tool_used", { programId: app.program.id, toolId: tool.slug });
   const renderer = ({ presupuesto: renderBudgetTool, filtros: renderSearchFilterTool, "analizador-anuncio": renderAdAnalyzerTool, mercado: renderMarketTool, "coste-total": renderCostTool, documentos: renderDocumentsTool, preguntas: renderQuestionsTool, "plan-abc": renderPlanTool, viaje: renderTravelTool, inspeccion: renderInspectionTool, pintura: renderPaintTool, "compra-salida": renderPurchaseExitTool, vuelta: renderReturnTool, espana: renderSpainTool, "metodo-7-dias": renderMethodTool })[tool.slug];
   const completed = Boolean(app.state.tools?._completed?.[tool.slug]);
-  const content = renderer ? renderer() : tool.slug === "operation-dashboard" ? renderDashboardOperation() : tool.slug === "candidate-board" ? renderCandidates() : `<div class="academy-empty"><div class="academy-state-copy"><strong>Definición interactiva no recibida</strong><p>El catálogo identifica esta herramienta, pero todavía no existe un componente operativo asociado.</p><a class="academy-button academy-button--secondary" href="/herramientas" data-nav>Volver al centro</a></div></div>`;
-  return `<nav aria-label="Migas de pan"><ol class="academy-breadcrumbs"><li><a href="${PROGRAM_ROOT}" data-nav>Inicio</a></li><li><a href="/herramientas" data-nav>Herramientas</a></li><li aria-current="page">${escapeHtml(tool.title || tool.slug)}</li></ol></nav>${renderPageHead("Herramienta", tool.title || tool.slug, tool.description || "Tus cambios se guardan automáticamente.", `<span class="academy-tool-head-icon">${iconSvg(toolIconName(tool.sourceSlug || tool.slug))}</span>`)}<div class="academy-tool-workbench" data-tool-id="${escapeAttribute(tool.slug)}">${content}${!["operation-dashboard", "candidate-board"].includes(tool.slug) ? `<section class="academy-tool-complete-card"><div><strong>${completed ? "Herramienta revisada" : "¿Has terminado esta comprobación?"}</strong><p>Marcarla no certifica el vehículo; registra que has terminado tu revisión actual.</p></div><button class="academy-button ${completed ? "academy-button--secondary" : "academy-button--primary"}" type="button" data-action="tool-complete" data-tool-id="${escapeAttribute(tool.slug)}">${completed ? "Volver a abrir" : "Marcar como revisada"}</button></section>` : ""}</div>`;
+  const content = renderer ? renderer() : tool.slug === "operation-dashboard" ? renderDashboardOperation() : tool.slug === "candidate-board" ? renderCandidates() : `<div class="academy-empty"><div class="academy-state-copy"><strong>Definición interactiva no recibida</strong><p>El catálogo identifica esta herramienta, pero todavía no existe un componente operativo asociado.</p><a class="academy-button academy-button--secondary" href="/academia/herramientas" data-nav>Volver al centro</a></div></div>`;
+  const headActions = `<button class="academy-button academy-button--ghost academy-button--small" type="button" data-action="tool-reset" data-tool-id="${escapeAttribute(tool.slug)}">Vaciar herramienta</button><span class="academy-tool-head-icon">${iconSvg(toolIconName(tool.sourceSlug || tool.slug))}</span>`;
+  return `<nav aria-label="Migas de pan"><ol class="academy-breadcrumbs"><li><a href="${PROGRAM_ROOT}" data-nav>Inicio</a></li><li><a href="/academia/herramientas" data-nav>Herramientas</a></li><li aria-current="page">${escapeHtml(tool.title || tool.slug)}</li></ol></nav>${renderPageHead("Herramienta", tool.title || tool.slug, tool.description || "Tus cambios se guardan automáticamente.", headActions)}<div class="academy-tool-workbench" data-tool-id="${escapeAttribute(tool.slug)}">${content}${!["operation-dashboard", "candidate-board"].includes(tool.slug) ? `<section class="academy-tool-complete-card"><div><strong>${completed ? "Herramienta revisada" : "¿Has terminado esta comprobación?"}</strong><p>Marcarla no certifica el vehículo; registra que has terminado tu revisión actual.</p></div><button class="academy-button ${completed ? "academy-button--secondary" : "academy-button--primary"}" type="button" data-action="tool-complete" data-tool-id="${escapeAttribute(tool.slug)}">${completed ? "Volver a abrir" : "Marcar como revisada"}</button></section>` : ""}</div>`;
 }
 
 function renderBudgetTool() {
   const data = app.state.tools.budget || {};
   const fields = [["total", "Presupuesto total"], ["travel", "Viaje o transporte"], ["plates", "Placas y seguro"], ["return", "Vuelta"], ["spain", "Gastos en España"], ["contingency", "Fondo de sorpresas"]];
-  return `<div class="academy-workspace"><section class="academy-card academy-form-card"><div class="academy-form-grid">${fields.map(([key, label]) => `<div class="academy-field"><label for="budget-${key}">${label} (€)</label><input id="budget-${key}" type="number" min="0" step="any" value="${escapeAttribute(data[key] || "")}" data-tool-field="budget.${key}"></div>`).join("")}</div></section><aside class="academy-card academy-result-card academy-sticky-card"><span class="academy-eyebrow">Resultado orientativo</span><div class="academy-decision-panel" style="margin-top:1rem"><div><span>Precio máximo inicial</span><strong data-budget-result>${currency(budgetResult())}</strong><small>Presupuesto menos reservas e imprevistos.</small></div></div></aside></div>`;
+  return `<div class="academy-workspace"><section class="academy-card academy-form-card"><div class="academy-form-grid">${fields.map(([key, label]) => `<div class="academy-field"><label for="budget-${key}">${label} (€)</label><input id="budget-${key}" type="number" min="0" step="any" value="${escapeAttribute(data[key] ?? "")}" data-tool-field="budget.${key}"></div>`).join("")}</div></section><aside class="academy-card academy-result-card academy-sticky-card"><span class="academy-eyebrow">Resultado orientativo</span><div class="academy-decision-panel" style="margin-top:1rem"><div><span>Precio máximo inicial</span><strong data-budget-result>${currency(budgetResult())}</strong><small>Presupuesto menos reservas e imprevistos.</small></div></div></aside></div>`;
 }
 
 function budgetResult() {
@@ -1257,7 +1359,7 @@ function renderSearchFilterTool() {
   ];
   const numberFields = [["yearMin", "Año mínimo"], ["yearMax", "Año máximo"], ["mileageMax", "Km máximos"], ["powerMin", "Potencia mínima"], ["priceMin", "Precio mínimo (€)"], ["priceMax", "Precio máximo (€)"], ["radius", "Radio de búsqueda (km)"]];
   const coverage = searchFilterCoverage();
-  return `<div class="academy-workspace"><section class="academy-card academy-form-card"><div class="academy-section-head"><div><h2>Criterios comparables</h2><p>Guarda un filtro estable para no cambiar de objetivo con cada anuncio.</p></div></div><div class="academy-form-grid">${textFields.map(([key, label, placeholder]) => `<div class="academy-field${["include", "exclude"].includes(key) ? " academy-field--wide" : ""}"><label for="filter-${key}">${label}</label><input id="filter-${key}" value="${escapeAttribute(data[key] || "")}" placeholder="${escapeAttribute(placeholder)}" maxlength="500" data-tool-field="searchFilters.${key}"></div>`).join("")}${numberFields.map(([key, label]) => `<div class="academy-field"><label for="filter-${key}">${label}</label><input id="filter-${key}" type="number" min="0" step="any" value="${escapeAttribute(data[key] || "")}" data-tool-field="searchFilters.${key}"></div>`).join("")}<div class="academy-field academy-field--wide"><label for="filter-routine">Rutina y portales a revisar</label><textarea id="filter-routine" maxlength="3000" data-tool-field="searchFilters.routine">${escapeHtml(data.routine || "")}</textarea></div></div></section><aside class="academy-card academy-result-card academy-sticky-card"><span class="academy-eyebrow">Resumen guardado</span><div class="academy-tool-gauge" data-filter-gauge style="--gauge:${coverage}"><div><strong data-filter-coverage>${coverage}%</strong><small>criterios definidos</small></div></div><div class="academy-decision-panel"><div><span>Búsqueda actual</span><strong data-filter-summary>${escapeHtml(searchFilterSummary())}</strong><small>Edítala cuando cambie tu objetivo, no por impulso.</small></div></div><div class="academy-tool-signal-row"><span>Objetivo</span><span>Límites</span><span>Exclusiones</span><span>Rutina</span></div></aside></div>`;
+  return `<div class="academy-workspace"><section class="academy-card academy-form-card"><div class="academy-section-head"><div><h2>Criterios comparables</h2><p>Guarda un filtro estable para no cambiar de objetivo con cada anuncio.</p></div></div><div class="academy-form-grid">${textFields.map(([key, label, placeholder]) => `<div class="academy-field${["include", "exclude"].includes(key) ? " academy-field--wide" : ""}"><label for="filter-${key}">${label}</label><input id="filter-${key}" value="${escapeAttribute(data[key] || "")}" placeholder="${escapeAttribute(placeholder)}" maxlength="500" data-tool-field="searchFilters.${key}"></div>`).join("")}${numberFields.map(([key, label]) => `<div class="academy-field"><label for="filter-${key}">${label}</label><input id="filter-${key}" type="number" min="0" step="any" value="${escapeAttribute(data[key] ?? "")}" data-tool-field="searchFilters.${key}"></div>`).join("")}<div class="academy-field academy-field--wide"><label for="filter-routine">Rutina y portales a revisar</label><textarea id="filter-routine" maxlength="3000" data-tool-field="searchFilters.routine">${escapeHtml(data.routine || "")}</textarea></div></div></section><aside class="academy-card academy-result-card academy-sticky-card"><span class="academy-eyebrow">Resumen guardado</span><div class="academy-tool-gauge" data-filter-gauge style="--gauge:${coverage}"><div><strong data-filter-coverage>${coverage}%</strong><small>criterios definidos</small></div></div><div class="academy-decision-panel"><div><span>Búsqueda actual</span><strong data-filter-summary>${escapeHtml(searchFilterSummary())}</strong><small>Edítala cuando cambie tu objetivo, no por impulso.</small></div></div><div class="academy-tool-signal-row"><span>Objetivo</span><span>Límites</span><span>Exclusiones</span><span>Rutina</span></div></aside></div>`;
 }
 
 function searchFilterCoverage() {
@@ -1282,7 +1384,7 @@ function renderAdAnalyzerTool() {
     ["seller", "Vendedor y ubicación verificables"], ["photos", "Fotos suficientes, claras y consistentes"],
   ];
   const score = adAnalyzerScore();
-  return `<div class="academy-workspace"><section class="academy-card academy-form-card"><div class="academy-section-head"><div><h2>Ficha del anuncio</h2><p>Registra evidencias y ausencias antes de interpretar el anuncio.</p></div></div><div class="academy-form-grid"><div class="academy-field academy-field--wide"><label for="ad-url">Enlace o referencia</label><input id="ad-url" type="url" maxlength="1000" value="${escapeAttribute(data.url || "")}" data-tool-field="adAnalyzer.url"></div><div class="academy-field"><label for="ad-price">Precio anunciado (€)</label><input id="ad-price" type="number" min="0" step="any" value="${escapeAttribute(data.price || "")}" data-tool-field="adAnalyzer.price"></div><div class="academy-field"><label for="ad-mileage">Kilometraje anunciado</label><input id="ad-mileage" type="number" min="0" step="1" value="${escapeAttribute(data.mileage || "")}" data-tool-field="adAnalyzer.mileage"></div><div class="academy-field academy-field--wide"><label for="ad-claims">Qué afirma el anuncio</label><textarea id="ad-claims" maxlength="4000" data-tool-field="adAnalyzer.claims">${escapeHtml(data.claims || "")}</textarea></div><div class="academy-field academy-field--wide"><label for="ad-missing">Qué falta o genera dudas</label><textarea id="ad-missing" maxlength="4000" data-tool-field="adAnalyzer.missing">${escapeHtml(data.missing || "")}</textarea></div></div><div class="academy-checklist-grid" style="margin-top:1rem">${checks.map(([key, label]) => `<label class="academy-check"><input type="checkbox" data-tool-field="adAnalyzer.checks.${key}"${data.checks?.[key] ? " checked" : ""}><span>${label}</span></label>`).join("")}</div><div class="academy-form-grid" style="margin-top:1rem"><div class="academy-field"><label for="ad-decision">Decisión provisional</label><select id="ad-decision" data-tool-field="adAnalyzer.decision"><option value="">Sin decidir</option>${[["verify", "Pedir datos"], ["continue", "Seguir verificando"], ["discard", "Descartar"]].map(([value, label]) => `<option value="${value}"${data.decision === value ? " selected" : ""}>${label}</option>`).join("")}</select></div><div class="academy-field"><label for="ad-next">Siguiente comprobación</label><input id="ad-next" maxlength="500" value="${escapeAttribute(data.nextAction || "")}" data-tool-field="adAnalyzer.nextAction"></div></div></section><aside class="academy-card academy-result-card academy-sticky-card"><span class="academy-eyebrow">Cobertura del anuncio</span><div class="academy-tool-gauge" data-ad-gauge style="--gauge:${Math.round((score / checks.length) * 100)}"><div><strong data-ad-score>${score} de ${checks.length}</strong><small>señales registradas</small></div></div><div class="academy-decision-panel"><div><span>Lectura responsable</span><strong>${score === checks.length ? "Cobertura completa" : score >= 4 ? "Verificación en curso" : "Faltan evidencias"}</strong><small>Completar una casilla no sustituye verificar su evidencia.</small></div></div><div class="academy-tool-signal-row"><span>Identidad</span><span>Historial</span><span>Daños</span><span>Documentos</span></div></aside></div>`;
+  return `<div class="academy-workspace"><section class="academy-card academy-form-card"><div class="academy-section-head"><div><h2>Ficha del anuncio</h2><p>Registra evidencias y ausencias antes de interpretar el anuncio.</p></div></div><div class="academy-form-grid"><div class="academy-field academy-field--wide"><label for="ad-url">Enlace o referencia</label><input id="ad-url" type="url" maxlength="1000" value="${escapeAttribute(data.url || "")}" data-tool-field="adAnalyzer.url"></div><div class="academy-field"><label for="ad-price">Precio anunciado (€)</label><input id="ad-price" type="number" min="0" step="any" value="${escapeAttribute(data.price ?? "")}" data-tool-field="adAnalyzer.price"></div><div class="academy-field"><label for="ad-mileage">Kilometraje anunciado</label><input id="ad-mileage" type="number" min="0" step="1" value="${escapeAttribute(data.mileage ?? "")}" data-tool-field="adAnalyzer.mileage"></div><div class="academy-field academy-field--wide"><label for="ad-claims">Qué afirma el anuncio</label><textarea id="ad-claims" maxlength="4000" data-tool-field="adAnalyzer.claims">${escapeHtml(data.claims || "")}</textarea></div><div class="academy-field academy-field--wide"><label for="ad-missing">Qué falta o genera dudas</label><textarea id="ad-missing" maxlength="4000" data-tool-field="adAnalyzer.missing">${escapeHtml(data.missing || "")}</textarea></div></div><div class="academy-checklist-grid" style="margin-top:1rem">${checks.map(([key, label]) => `<label class="academy-check"><input type="checkbox" data-tool-field="adAnalyzer.checks.${key}"${data.checks?.[key] ? " checked" : ""}><span>${label}</span></label>`).join("")}</div><div class="academy-form-grid" style="margin-top:1rem"><div class="academy-field"><label for="ad-decision">Decisión provisional</label><select id="ad-decision" data-tool-field="adAnalyzer.decision"><option value="">Sin decidir</option>${[["verify", "Pedir datos"], ["continue", "Seguir verificando"], ["discard", "Descartar"]].map(([value, label]) => `<option value="${value}"${data.decision === value ? " selected" : ""}>${label}</option>`).join("")}</select></div><div class="academy-field"><label for="ad-next">Siguiente comprobación</label><input id="ad-next" maxlength="500" value="${escapeAttribute(data.nextAction || "")}" data-tool-field="adAnalyzer.nextAction"></div></div></section><aside class="academy-card academy-result-card academy-sticky-card"><span class="academy-eyebrow">Cobertura del anuncio</span><div class="academy-tool-gauge" data-ad-gauge style="--gauge:${Math.round((score / checks.length) * 100)}"><div><strong data-ad-score>${score} de ${checks.length}</strong><small>señales registradas</small></div></div><div class="academy-decision-panel"><div><span>Lectura responsable</span><strong>${score === checks.length ? "Cobertura completa" : score >= 4 ? "Verificación en curso" : "Faltan evidencias"}</strong><small>Completar una casilla no sustituye verificar su evidencia.</small></div></div><div class="academy-tool-signal-row"><span>Identidad</span><span>Historial</span><span>Daños</span><span>Documentos</span></div></aside></div>`;
 }
 
 function adAnalyzerScore() {
@@ -1298,7 +1400,10 @@ function renderMarketToolLegacy() {
 }
 
 function marketStats() {
-  const prices = (app.state.tools.market?.comparables || []).map((item) => finite(item.price, NaN)).filter(Number.isFinite).sort((a, b) => a - b);
+  const prices = (app.state.tools.market?.comparables || [])
+    .map((item) => Number(item.price))
+    .filter((price) => Number.isFinite(price) && price > 0)
+    .sort((a, b) => a - b);
   if (!prices.length) return null;
   const middle = Math.floor(prices.length / 2);
   return { min: prices[0], max: prices.at(-1), median: prices.length % 2 ? prices[middle] : (prices[middle - 1] + prices[middle]) / 2 };
@@ -1310,7 +1415,7 @@ function renderMarketTool() {
   const stats = marketStats();
   const max = stats?.max || 1;
   const chart = comparables.filter((item) => finite(item.price) > 0).slice(0, 12).map((item, index) => `<div class="academy-market-bar"><span style="--bar:${Math.max(8, Math.round((finite(item.price) / max) * 100))}%"></span><small>${escapeHtml(item.title || item.model || `C${index + 1}`)}</small><strong>${currency(item.price)}</strong></div>`).join("");
-  return `<section class="academy-market-lab"><div class="academy-grid academy-grid--3"><article class="academy-card academy-stat-card"><span>Rango observado</span><strong data-market-range>${stats ? `${currency(stats.min)} – ${currency(stats.max)}` : "—"}</strong><small>Solo comparables añadidos por ti.</small></article><article class="academy-card academy-stat-card"><span>Mediana</span><strong data-market-median>${stats ? currency(stats.median) : "—"}</strong><small>Referencia, no precio final de venta.</small></article><article class="academy-card academy-stat-card"><label for="market-conservative">Valor conservador elegido</label><input id="market-conservative" type="number" min="0" value="${escapeAttribute(data.conservativeValue || "")}" data-tool-field="market.conservativeValue"></article></div><section class="academy-card academy-market-chart"><div class="academy-section-head"><div><h2>Panorama de comparables</h2><p>La altura permite detectar dispersión antes de entrar en el detalle.</p></div><button class="academy-button academy-button--primary academy-button--small" type="button" data-action="market-add">Añadir comparable</button></div>${chart ? `<div class="academy-market-bars" role="img" aria-label="Comparación visual de precios introducidos">${chart}</div>` : `<div class="academy-empty"><div class="academy-state-copy"><strong>No hay comparables</strong><p>Añádelos manualmente desde los portales que tú consultes.</p></div></div>`}</section><details class="academy-card academy-tool-advanced"${comparables.length ? "" : " open"}><summary>Editar detalle de comparables (${comparables.length})</summary>${comparables.length ? `<div class="academy-table-wrap"><table class="academy-table"><thead><tr><th>URL / referencia</th><th>Precio</th><th>Km</th><th>Año</th><th>Potencia</th><th>Estado</th><th></th></tr></thead><tbody>${comparables.map((item, index) => `<tr><td><input aria-label="URL comparable ${index + 1}" value="${escapeAttribute(item.url || "")}" data-market-field="${index}.url"></td><td><input aria-label="Precio comparable ${index + 1}" type="number" min="0" value="${escapeAttribute(item.price || "")}" data-market-field="${index}.price"></td><td><input aria-label="Kilómetros comparable ${index + 1}" type="number" min="0" value="${escapeAttribute(item.mileage || "")}" data-market-field="${index}.mileage"></td><td><input aria-label="Año comparable ${index + 1}" type="number" min="1900" value="${escapeAttribute(item.year || "")}" data-market-field="${index}.year"></td><td><input aria-label="Potencia comparable ${index + 1}" type="number" min="0" value="${escapeAttribute(item.power || "")}" data-market-field="${index}.power"></td><td><input aria-label="Estado comparable ${index + 1}" value="${escapeAttribute(item.condition || "")}" data-market-field="${index}.condition"></td><td><button class="academy-icon-button" type="button" data-action="market-remove" data-index="${index}" aria-label="Eliminar comparable ${index + 1}">×</button></td></tr>`).join("")}</tbody></table></div>` : `<p>Añade el primer comparable para abrir la edición.</p>`}</details></section>`;
+  return `<section class="academy-market-lab"><div class="academy-grid academy-grid--3"><article class="academy-card academy-stat-card"><span>Rango observado</span><strong data-market-range>${stats ? `${currency(stats.min)} – ${currency(stats.max)}` : "—"}</strong><small>Solo comparables añadidos por ti.</small></article><article class="academy-card academy-stat-card"><span>Mediana</span><strong data-market-median>${stats ? currency(stats.median) : "—"}</strong><small>Referencia, no precio final de venta.</small></article><article class="academy-card academy-stat-card"><label for="market-conservative">Valor conservador elegido</label><input id="market-conservative" type="number" min="0" value="${escapeAttribute(data.conservativeValue ?? "")}" data-tool-field="market.conservativeValue"></article></div><section class="academy-card academy-market-chart"><div class="academy-section-head"><div><h2>Panorama de comparables</h2><p>La altura permite detectar dispersión antes de entrar en el detalle.</p></div><button class="academy-button academy-button--primary academy-button--small" type="button" data-action="market-add">Añadir comparable</button></div>${chart ? `<div class="academy-market-bars" role="img" aria-label="Comparación visual de precios introducidos">${chart}</div>` : `<div class="academy-empty"><div class="academy-state-copy"><strong>No hay comparables</strong><p>Añádelos manualmente desde los portales que tú consultes.</p></div></div>`}</section><details class="academy-card academy-tool-advanced" data-market-editor${comparables.length ? "" : " open"}><summary>Editar detalle de comparables (${comparables.length})</summary>${comparables.length ? `<div class="academy-table-wrap"><table class="academy-table"><thead><tr><th>URL / referencia</th><th>Precio</th><th>Km</th><th>Año</th><th>Potencia</th><th>Estado</th><th></th></tr></thead><tbody>${comparables.map((item, index) => `<tr><td><input aria-label="URL comparable ${index + 1}" value="${escapeAttribute(item.url || "")}" data-market-field="${index}.url"></td><td><input aria-label="Precio comparable ${index + 1}" type="number" min="0" value="${escapeAttribute(item.price ?? "")}" data-market-field="${index}.price"></td><td><input aria-label="Kilómetros comparable ${index + 1}" type="number" min="0" value="${escapeAttribute(item.mileage ?? "")}" data-market-field="${index}.mileage"></td><td><input aria-label="Año comparable ${index + 1}" type="number" min="1900" value="${escapeAttribute(item.year ?? "")}" data-market-field="${index}.year"></td><td><input aria-label="Potencia comparable ${index + 1}" type="number" min="0" value="${escapeAttribute(item.power ?? "")}" data-market-field="${index}.power"></td><td><input aria-label="Estado comparable ${index + 1}" value="${escapeAttribute(item.condition || "")}" data-market-field="${index}.condition"></td><td><button class="academy-icon-button" type="button" data-action="market-remove" data-index="${index}" aria-label="Eliminar comparable ${index + 1}">×</button></td></tr>`).join("")}</tbody></table></div>` : `<p>Añade el primer comparable para abrir la edición.</p>`}</details></section>`;
 }
 
 function ensureCosts() {
@@ -1338,11 +1443,9 @@ function costTotals() {
 function renderCostTool() {
   const data = ensureCosts();
   const totals = costTotals();
-  const groups = [
-    ["Compra", ["purchase"]], ["Viaje", ["flight", "localTransport", "hotel", "food"]], ["Vuelta", ["plates", "insurance", "fuel", "tolls", "carrier"]], ["España", ["itv", "coc", "ivtm", "dgt", "registrationPlates", "tax576"]], ["Puesta a punto", ["maintenance", "repairs"]], ["Reserva", ["contingency", "other"]],
-  ];
+  const groups = COST_GROUPS;
   const groupTotal = (keys, column) => keys.reduce((sum, key) => sum + finite(data.rows[key]?.[column]), 0);
-  return `<section class="academy-cost-lab"><div class="academy-grid academy-grid--4"><article class="academy-card academy-stat-card"><span>Estimado</span><strong data-cost-total="estimated">${currency(totals.estimated)}</strong></article><article class="academy-card academy-stat-card"><span>Confirmado</span><strong data-cost-total="confirmed">${currency(totals.confirmed)}</strong></article><article class="academy-card academy-stat-card"><span>Real</span><strong data-cost-total="actual">${currency(totals.actual)}</strong></article><article class="academy-card academy-stat-card"><span>Desviación</span><strong>${currency(totals.actual - totals.estimated)}</strong></article></div><div class="academy-cost-blocks">${groups.map(([label, keys], index) => `<article class="academy-card academy-cost-block" data-block="${index + 1}"><span>${String(index + 1).padStart(2, "0")}</span><h2>${label}</h2><div><small>Estimado</small><strong>${currency(groupTotal(keys, "estimated"))}</strong></div><div><small>Real</small><strong>${currency(groupTotal(keys, "actual"))}</strong></div></article>`).join("")}</div><section class="academy-card academy-cost-decision"><div class="academy-form-grid"><div class="academy-field"><label for="cost-market">Mercado español conservador (€)</label><input id="cost-market" type="number" min="0" step="any" value="${escapeAttribute(data.marketValue || "")}" data-tool-field="costs.marketValue"></div><div class="academy-field"><label for="cost-profit">Beneficio mínimo deseado (€)</label><input id="cost-profit" type="number" min="0" step="any" value="${escapeAttribute(data.desiredProfit || "")}" data-tool-field="costs.desiredProfit"></div></div><div class="academy-grid academy-grid--2"><article><span>Margen bruto orientativo</span><strong data-cost-margin>${currency(totals.margin)}</strong></article><article><span>ROI orientativo</span><strong data-cost-roi>${totals.roi.toFixed(1)}%</strong></article></div></section><details class="academy-card academy-tool-advanced"><summary>Editar las ${COST_ROWS.length} partidas</summary><div class="academy-table-wrap"><table class="academy-table"><thead><tr><th>Partida</th><th>Estimado</th><th>Confirmado</th><th>Real</th><th>Desviación</th></tr></thead><tbody>${COST_ROWS.map(([key, label]) => { const row = data.rows[key] || {}; return `<tr><td><strong>${label}</strong></td>${["estimated", "confirmed", "actual"].map((column) => `<td><input type="number" min="0" step="any" value="${escapeAttribute(row[column] || "")}" data-cost-field="${key}.${column}" aria-label="${label}, ${column}"></td>`).join("")}<td data-cost-diff="${key}">${currency(finite(row.actual) - finite(row.estimated))}</td></tr>`; }).join("")}</tbody></table></div></details></section>`;
+  return `<section class="academy-cost-lab"><div class="academy-grid academy-grid--4"><article class="academy-card academy-stat-card"><span>Estimado</span><strong data-cost-total="estimated">${currency(totals.estimated)}</strong></article><article class="academy-card academy-stat-card"><span>Confirmado</span><strong data-cost-total="confirmed">${currency(totals.confirmed)}</strong></article><article class="academy-card academy-stat-card"><span>Real</span><strong data-cost-total="actual">${currency(totals.actual)}</strong></article><article class="academy-card academy-stat-card"><span>Desviación</span><strong>${currency(totals.actual - totals.estimated)}</strong></article></div><div class="academy-cost-blocks">${groups.map(([label, keys], index) => `<article class="academy-card academy-cost-block" data-block="${index + 1}"><span>${String(index + 1).padStart(2, "0")}</span><h2>${label}</h2><div><small>Estimado</small><strong>${currency(groupTotal(keys, "estimated"))}</strong></div><div><small>Real</small><strong>${currency(groupTotal(keys, "actual"))}</strong></div></article>`).join("")}</div><section class="academy-card academy-cost-decision"><div class="academy-form-grid"><div class="academy-field"><label for="cost-market">Mercado español conservador (€)</label><input id="cost-market" type="number" min="0" step="any" value="${escapeAttribute(data.marketValue ?? "")}" data-tool-field="costs.marketValue"></div><div class="academy-field"><label for="cost-profit">Beneficio mínimo deseado (€)</label><input id="cost-profit" type="number" min="0" step="any" value="${escapeAttribute(data.desiredProfit ?? "")}" data-tool-field="costs.desiredProfit"></div></div><div class="academy-grid academy-grid--2"><article><span>Margen bruto orientativo</span><strong data-cost-margin>${currency(totals.margin)}</strong></article><article><span>ROI orientativo</span><strong data-cost-roi>${totals.roi.toFixed(1)}%</strong></article></div></section><details class="academy-card academy-tool-advanced"><summary>Editar las ${COST_ROWS.length} partidas</summary><div class="academy-table-wrap"><table class="academy-table"><thead><tr><th>Partida</th><th>Estimado</th><th>Confirmado</th><th>Real</th><th>Desviación</th></tr></thead><tbody>${COST_ROWS.map(([key, label]) => { const row = data.rows[key] || {}; return `<tr><td><strong>${label}</strong></td>${["estimated", "confirmed", "actual"].map((column) => `<td><input type="number" min="0" step="any" value="${escapeAttribute(row[column] ?? "")}" data-cost-field="${key}.${column}" aria-label="${label}, ${column}"></td>`).join("")}<td data-cost-diff="${key}">${currency(finite(row.actual) - finite(row.estimated))}</td></tr>`; }).join("")}</tbody></table></div></details></section>`;
 }
 
 function renderDocumentsTool() {
@@ -1394,7 +1497,7 @@ function renderInspectionTool() {
 function renderPaintTool() {
   const data = app.state.tools.paint || {};
   const panels = [["frontLeft", "Aleta delantera izq."], ["frontRight", "Aleta delantera dcha."], ["doorLeft", "Puerta izquierda"], ["doorRight", "Puerta derecha"], ["rearLeft", "Aleta trasera izq."], ["rearRight", "Aleta trasera dcha."], ["bonnet", "Capó"], ["roof", "Techo"], ["boot", "Portón / maletero"]];
-  return `<div class="academy-paint-workbench"><section class="academy-card academy-paint-car" aria-labelledby="paint-map-title"><div class="academy-section-head"><div><span class="academy-eyebrow">Vista del vehículo</span><h2 id="paint-map-title">Mapa de mediciones</h2><p>Anota cada lectura y compara zonas equivalentes; una cifra aislada no diagnostica una reparación.</p></div></div><svg viewBox="0 0 600 280" role="img" aria-labelledby="paint-car-title paint-car-desc"><title id="paint-car-title">Silueta superior de un vehículo</title><desc id="paint-car-desc">Nueve paneles relacionados con los campos de medición que aparecen junto al dibujo.</desc><g class="academy-paint-silhouette"><path data-panel="bonnet" d="M210 42h180l40 58H170Z"/><path data-panel="roof" d="M210 105h180v70H210Z"/><path data-panel="boot" d="m170 180 40 58h180l40-58Z"/><path data-panel="frontLeft" d="M95 55h105l-35 47H70Z"/><path data-panel="frontRight" d="M400 55h105l25 47h-95Z"/><path data-panel="doorLeft" d="M70 107h135v66H70Z"/><path data-panel="doorRight" d="M395 107h135v66H395Z"/><path data-panel="rearLeft" d="M70 178h95l35 47H95Z"/><path data-panel="rearRight" d="M435 178h95l-25 47H400Z"/></g><circle cx="80" cy="75" r="22"/><circle cx="80" cy="205" r="22"/><circle cx="520" cy="75" r="22"/><circle cx="520" cy="205" r="22"/></svg></section><section class="academy-card academy-form-card"><div class="academy-paint-readings">${panels.map(([key, label]) => `<label><span>${escapeHtml(label)}</span><span><input type="number" min="0" step="1" inputmode="numeric" value="${escapeAttribute(data.panels?.[key] || "")}" data-tool-field="paint.panels.${key}" aria-label="${escapeAttribute(`${label}, micras`)}"><small>µm</small></span></label>`).join("")}</div><div class="academy-field" style="margin-top:1rem"><label for="paint-reference">Referencia de la herramienta y observaciones</label><textarea id="paint-reference" maxlength="3000" data-tool-field="paint.notes">${escapeHtml(data.notes || "")}</textarea></div></section></div>`;
+  return `<div class="academy-paint-workbench"><section class="academy-card academy-paint-car" aria-labelledby="paint-map-title"><div class="academy-section-head"><div><span class="academy-eyebrow">Vista del vehículo</span><h2 id="paint-map-title">Mapa de mediciones</h2><p>Anota cada lectura y compara zonas equivalentes; una cifra aislada no diagnostica una reparación.</p></div></div><svg viewBox="0 0 600 280" role="img" aria-labelledby="paint-car-title paint-car-desc"><title id="paint-car-title">Silueta superior de un vehículo</title><desc id="paint-car-desc">Nueve paneles relacionados con los campos de medición que aparecen junto al dibujo.</desc><g class="academy-paint-silhouette"><path data-panel="bonnet" d="M210 42h180l40 58H170Z"/><path data-panel="roof" d="M210 105h180v70H210Z"/><path data-panel="boot" d="m170 180 40 58h180l40-58Z"/><path data-panel="frontLeft" d="M95 55h105l-35 47H70Z"/><path data-panel="frontRight" d="M400 55h105l25 47h-95Z"/><path data-panel="doorLeft" d="M70 107h135v66H70Z"/><path data-panel="doorRight" d="M395 107h135v66H395Z"/><path data-panel="rearLeft" d="M70 178h95l35 47H95Z"/><path data-panel="rearRight" d="M435 178h95l-25 47H400Z"/></g><circle cx="80" cy="75" r="22"/><circle cx="80" cy="205" r="22"/><circle cx="520" cy="75" r="22"/><circle cx="520" cy="205" r="22"/></svg></section><section class="academy-card academy-form-card"><div class="academy-paint-readings">${panels.map(([key, label]) => `<label><span>${escapeHtml(label)}</span><span><input type="number" min="0" step="1" inputmode="numeric" value="${escapeAttribute(data.panels?.[key] ?? "")}" data-tool-field="paint.panels.${key}" aria-label="${escapeAttribute(`${label}, micras`)}"><small>µm</small></span></label>`).join("")}</div><div class="academy-field" style="margin-top:1rem"><label for="paint-reference">Referencia de la herramienta y observaciones</label><textarea id="paint-reference" maxlength="3000" data-tool-field="paint.notes">${escapeHtml(data.notes || "")}</textarea></div></section></div>`;
 }
 
 function renderOperationalChecklist(path, title, copy, items) {
@@ -1481,7 +1584,7 @@ function renderSearchResultList(query) {
   const response = answerSemanticQuery(query, app.searchItems, { limit: 30 });
   const results = response.results;
   academyTrack("academy_search_used", { programId: app.program.id, contentType: results.length ? "results" : "no_result" });
-  if (!results.length) { container.innerHTML = `<div class="academy-empty"><div class="academy-state-copy"><strong>No encuentro una respuesta respaldada</strong><p>Prueba otra formulación, consulta las lecciones relacionadas o envía tu caso a soporte.</p><a class="academy-button academy-button--secondary" href="/soporte" data-nav>Ir a soporte</a></div></div>`; academyTrack("academy_search_no_result", { programId: app.program.id }); return; }
+  if (!results.length) { container.innerHTML = `<div class="academy-empty"><div class="academy-state-copy"><strong>No encuentro una respuesta respaldada</strong><p>Prueba otra formulación, consulta las lecciones relacionadas o utiliza la guía de ayuda.</p><a class="academy-button academy-button--secondary" href="/academia/ayuda/">Ver opciones de ayuda</a></div></div>`; academyTrack("academy_search_no_result", { programId: app.program.id }); return; }
   const groups = Map.groupBy ? Map.groupBy(results, (result) => result.item.type) : results.reduce((map, result) => map.set(result.item.type, [...(map.get(result.item.type) || []), result]), new Map());
   container.innerHTML = `${renderSemanticAnswer(response.answer)}${[...groups].map(([type, ranked]) => `<section class="academy-search-group"><strong>${escapeHtml(type)}</strong>${ranked.map(renderRankedResult).join("")}</section>`).join("")}`;
 }
@@ -1490,7 +1593,7 @@ function renderAnswers() {
   const answers = app.program.answers || [];
   const glossary = app.program.glossary || [];
   return `${renderPageHead("Centro de respuestas", "Resuelve una duda", "Busca en el contenido real del programa. Esta zona no genera respuestas ni asesoramiento inventado.", `<button class="academy-button academy-button--primary" type="button" data-action="search-open">Abrir búsqueda global</button>`)}
-    <div class="academy-answer-layout"><section><div class="academy-answer-search"><span aria-hidden="true">⌕</span><label class="academy-sr-only" for="answer-filter">Buscar una respuesta</label><input class="academy-input" id="answer-filter" type="search" placeholder="Escribe una duda: CoC, V.7, placas, ROI…" data-answer-filter></div><div class="academy-answer-list" data-answer-list>${renderAnswerItems(answers, glossary)}</div></section><aside class="academy-card academy-card-pad academy-sticky-card"><h2 style="font-size:1.1rem">¿No encuentras tu caso?</h2><p style="margin-top:.45rem;color:var(--academy-muted);font-size:.8rem">No queremos inventar una respuesta para una operación real.</p><a class="academy-button academy-button--secondary academy-button--wide" style="margin-top:.8rem" href="/soporte" data-nav>Consultar soporte</a></aside></div>${renderTraceabilityLibrary()}`;
+    <div class="academy-answer-layout"><section><div class="academy-answer-search"><span aria-hidden="true">⌕</span><label class="academy-sr-only" for="answer-filter">Buscar una respuesta</label><input class="academy-input" id="answer-filter" type="search" placeholder="Escribe una duda: CoC, V.7, placas, ROI…" data-answer-filter></div><div class="academy-answer-list" data-answer-list>${renderAnswerItems(answers, glossary)}</div></section><aside class="academy-card academy-card-pad academy-sticky-card"><h2 style="font-size:1.1rem">¿No encuentras tu caso?</h2><p style="margin-top:.45rem;color:var(--academy-muted);font-size:.8rem">No queremos inventar una respuesta para una operación real.</p><a class="academy-button academy-button--secondary academy-button--wide" style="margin-top:.8rem" href="/academia/ayuda/">Ver opciones de ayuda</a></aside></div>${renderTraceabilityLibrary()}`;
 }
 
 function renderAnswerSearch(query) {
@@ -1519,15 +1622,15 @@ function renderResources() {
 
 function resourceInternalHref(resource) {
   const routes = {
-    "workbook-budget": "/herramientas/presupuesto", "workbook-searches": "/herramientas/filtros",
-    "workbook-candidate": "/candidatos", "workbook-questions": "/herramientas/preguntas",
-    "workbook-market": "/herramientas/mercado", "workbook-total-cost": "/herramientas/coste-total",
-    "workbook-real-costs": "/herramientas/coste-total", "workbook-documents": "/herramientas/documentos",
-    "workbook-plan-abc": "/herramientas/plan-abc", "workbook-travel": "/herramientas/viaje",
-    "workbook-inspection": "/herramientas/inspeccion", "paint-measurement-sheet": "/herramientas/pintura",
-    "workbook-return": "/herramientas/vuelta", "workbook-spain": "/herramientas/espana",
-    "master-checklists": "/herramientas/documentos", glossary: "/respuestas",
-    "official-sources": "/respuestas", "cases-needing-review": "/respuestas",
+    "workbook-budget": toolHref("presupuesto"), "workbook-searches": toolHref("filtros"),
+    "workbook-candidate": "/academia/candidatos", "workbook-questions": toolHref("preguntas"),
+    "workbook-market": toolHref("mercado"), "workbook-total-cost": toolHref("coste-total"),
+    "workbook-real-costs": toolHref("coste-total"), "workbook-documents": toolHref("documentos"),
+    "workbook-plan-abc": toolHref("plan-abc"), "workbook-travel": toolHref("viaje"),
+    "workbook-inspection": toolHref("inspeccion"), "paint-measurement-sheet": toolHref("pintura"),
+    "workbook-return": toolHref("vuelta"), "workbook-spain": toolHref("espana"),
+    "master-checklists": toolHref("documentos"), glossary: "/academia/respuestas",
+    "official-sources": "/academia/respuestas", "cases-needing-review": "/academia/respuestas",
   };
   return routes[resource.id] || "";
 }
@@ -1581,7 +1684,7 @@ function renderUpdates() {
 
 function renderSupport() {
   return `<section class="academy-card academy-support-hero"><div><span class="academy-eyebrow" style="color:#9cecf5">Academia abierta</span><h1>Que una duda no bloquee tu aprendizaje</h1><p>Busca primero una respuesta respaldada por las lecciones y fuentes. Si detectas un problema editorial, envíanos el contexto exacto.</p><div class="academy-dashboard-actions"><a class="academy-button" style="background:#fff;color:var(--academy-primary-deep)" href="/academia/respuestas" data-nav>Resolver una duda</a><a class="academy-button" style="border-color:rgba(255,255,255,.28);color:#fff" href="${escapeAttribute(feedbackUrl("error"))}" target="_blank" rel="noopener noreferrer">Informar de un error</a></div></div><div class="academy-support-status"><span>Acceso</span><strong>Público y gratuito</strong><small>Sin cuenta ni registro</small></div></section>
-    <div class="academy-grid academy-grid--3" style="margin-top:1rem"><article class="academy-card academy-support-card"><h2 style="font-size:1.1rem">1. Busca una respuesta</h2><p style="margin-top:.45rem;color:var(--academy-muted)">Consulta lecciones, conceptos, glosario, herramientas y fuentes.</p><button class="academy-button academy-button--ghost academy-button--small" style="margin-top:.8rem" type="button" data-action="search-open">Buscar</button></article><article class="academy-card academy-support-card"><h2 style="font-size:1.1rem">2. Reúne el contexto</h2><p style="margin-top:.45rem;color:var(--academy-muted)">Indica la pantalla, el texto y qué resultado esperabas. No envíes documentos sensibles.</p></article><article class="academy-card academy-support-card"><h2 style="font-size:1.1rem">3. ¿Necesitas ayuda profesional?</h2><p style="margin-top:.45rem;color:var(--academy-muted)">La formación es gratuita; el acompañamiento personal es una opción separada.</p><a class="academy-button academy-button--secondary academy-button--small" style="margin-top:.8rem" href="/primera-importacion-contigo/">Ver Servicios PRO</a></article></div>`;
+    <div class="academy-grid academy-grid--3" style="margin-top:1rem"><article class="academy-card academy-support-card"><h2 style="font-size:1.1rem">1. Busca una respuesta</h2><p style="margin-top:.45rem;color:var(--academy-muted)">Consulta lecciones, conceptos, glosario, herramientas y fuentes.</p><button class="academy-button academy-button--ghost academy-button--small" style="margin-top:.8rem" type="button" data-action="search-open">Buscar</button></article><article class="academy-card academy-support-card"><h2 style="font-size:1.1rem">2. Reúne el contexto</h2><p style="margin-top:.45rem;color:var(--academy-muted)">Indica la pantalla, el texto y qué resultado esperabas. No envíes documentos sensibles.</p></article><article class="academy-card academy-support-card"><h2 style="font-size:1.1rem">3. ¿Necesitas ayuda profesional?</h2><p style="margin-top:.45rem;color:var(--academy-muted)">La formación es gratuita; el acompañamiento personal es una opción separada.</p><a class="academy-button academy-button--secondary academy-button--small" style="margin-top:.8rem" href="/servicios/primera-importacion-contigo/">Ver Servicios PRO</a></article></div>`;
 }
 
 function renderAccount() {
@@ -1602,7 +1705,7 @@ function renderOnboardingStep() {
   if (step === 0) content = `<span class="academy-eyebrow">Paso 1 de 4</span><h3 id="onboarding-title">¿En qué punto estás?</h3><p>Elegiremos una recomendación inicial, no un bloqueo.</p><div class="academy-choice-grid">${choice("startingPoint", "zero", "Empiezo completamente desde cero")}${choice("startingPoint", "searching", "Ya estoy buscando vehículos")}${choice("startingPoint", "candidate", "Ya tengo un coche mirado")}${choice("startingPoint", "purchased", "Ya he comprado el vehículo")}${choice("startingPoint", "spain", "El vehículo ya está en España")}</div>`;
   if (step === 1) content = `<span class="academy-eyebrow">Paso 2 de 4</span><h3 id="onboarding-title">¿Cuál es tu objetivo?</h3><p>Así podremos dar más contexto a tu operación.</p><div class="academy-choice-grid">${choice("purpose", "personal", "Comprar para mí")}${choice("purpose", "resale", "Estudiar una posible reventa")}${choice("purpose", "learning", "Aprender para futuras operaciones")}${choice("purpose", "helping", "Ayudar a comprar a otra persona")}</div>`;
   if (step === 2) content = `<span class="academy-eyebrow">Paso 3 de 4</span><h3 id="onboarding-title">¿Cómo imaginas traerlo?</h3><p>Podrás cambiarlo más adelante.</p><div class="academy-choice-grid">${choice("transportMode", "driving", "Volver conduciendo")}${choice("transportMode", "carrier", "Utilizar transportista")}${choice("transportMode", "unknown", "Todavía no lo sé")}</div>`;
-  if (step === 3) content = `<span class="academy-eyebrow">Paso 4 de 4</span><h3 id="onboarding-title">Crea tu primera operación</h3><p>Solo lo esencial. También puedes explorar sin tener un coche mirado.</p><div class="academy-form-grid" style="margin-top:1.4rem"><div class="academy-field academy-field--wide"><label for="onboarding-title-input">Nombre opcional</label><input id="onboarding-title-input" name="operationTitle" maxlength="120" value="${escapeAttribute(selected.operationTitle || "")}" placeholder="Mi primera importación"></div><div class="academy-field"><label for="onboarding-country">País principal</label><input id="onboarding-country" name="country" maxlength="80" value="${escapeAttribute(selected.country || "")}" placeholder="Alemania"></div><div class="academy-field"><label for="onboarding-budget">Presupuesto aproximado (€)</label><input id="onboarding-budget" name="totalBudget" type="number" min="0" step="any" value="${escapeAttribute(selected.totalBudget || "")}"></div><div class="academy-field academy-field--wide"><label for="onboarding-car">Coche buscado, si ya lo sabes</label><input id="onboarding-car" name="carWanted" maxlength="180" value="${escapeAttribute(selected.carWanted || "")}"></div></div>`;
+  if (step === 3) content = `<span class="academy-eyebrow">Paso 4 de 4</span><h3 id="onboarding-title">Crea tu primera operación</h3><p>Solo lo esencial. También puedes explorar sin tener un coche mirado.</p><div class="academy-form-grid" style="margin-top:1.4rem"><div class="academy-field academy-field--wide"><label for="onboarding-title-input">Nombre opcional</label><input id="onboarding-title-input" name="operationTitle" maxlength="120" value="${escapeAttribute(selected.operationTitle || "")}" placeholder="Mi primera importación"></div><div class="academy-field"><label for="onboarding-country">País principal</label><input id="onboarding-country" name="country" maxlength="80" value="${escapeAttribute(selected.country || "")}" placeholder="Alemania"></div><div class="academy-field"><label for="onboarding-budget">Presupuesto aproximado (€)</label><input id="onboarding-budget" name="totalBudget" type="number" min="0" step="any" value="${escapeAttribute(selected.totalBudget ?? "")}"></div><div class="academy-field academy-field--wide"><label for="onboarding-car">Coche buscado, si ya lo sabes</label><input id="onboarding-car" name="carWanted" maxlength="180" value="${escapeAttribute(selected.carWanted || "")}"></div></div>`;
   return `${content}<div class="academy-onboarding-actions">${step ? `<button class="academy-button academy-button--secondary" type="button" data-action="onboarding-back">Atrás</button>` : `<span></span>`}<div class="academy-page-actions">${step === 3 ? `<button class="academy-button academy-button--ghost" type="button" data-action="onboarding-explore">Explorar primero</button><button class="academy-button academy-button--primary" type="submit">Entrar en mi ruta</button>` : `<button class="academy-button academy-button--primary" type="submit">Continuar →</button>`}</div></div>`;
 }
 
@@ -1628,8 +1731,9 @@ function completeOnboarding({ createOperation }) {
   if (createOperation && !app.state.operation) {
     const draft = app.onboardingDraft;
     const startingStatus = draft.startingPoint === "zero" ? "learning" : draft.startingPoint || "learning";
-    app.state.operation = { id: uid("operation"), title: draft.operationTitle || "Mi primera importación", purpose: draft.purpose || "personal", status: startingStatus, country: draft.country || "", totalBudget: finite(draft.totalBudget), carWanted: draft.carWanted || "", transportMode: draft.transportMode || "unknown", createdAt: new Date().toISOString() };
-    app.state.tools.budget = { ...(app.state.tools.budget || {}), total: finite(draft.totalBudget) || app.state.tools.budget?.total || "" };
+    app.state.operation = { id: uid("operation"), title: draft.operationTitle || "Mi primera importación", purpose: draft.purpose || "personal", status: startingStatus, country: draft.country || "", totalBudget: normalizeNonNegativeNumber(draft.totalBudget), carWanted: draft.carWanted || "", transportMode: draft.transportMode || "unknown", createdAt: new Date().toISOString() };
+    const onboardingBudget = normalizeNonNegativeNumber(draft.totalBudget);
+    app.state.tools.budget = { ...(app.state.tools.budget || {}), total: onboardingBudget === "" ? (app.state.tools.budget?.total ?? "") : onboardingBudget };
     academyTrack("academy_operation_created", { programId: app.program.id });
   }
   const startingPoint = app.onboardingDraft.startingPoint || "zero";
@@ -1661,6 +1765,24 @@ function updateDynamicResults() {
   if (adScore) adScore.textContent = `${adAnalyzerScore()} de 8`;
   const adGauge = document.querySelector("[data-ad-gauge]");
   if (adGauge) adGauge.style.setProperty("--gauge", Math.round((adAnalyzerScore() / 8) * 100));
+  const travelWarningsContainer = document.querySelector('[data-tool-id="viaje"] .academy-result-card .academy-grid');
+  if (travelWarningsContainer) {
+    const warnings = travelWarnings();
+    travelWarningsContainer.innerHTML = warnings.length
+      ? warnings.map((warning) => `<div class="academy-status-message" data-tone="${warning.tone}">${escapeHtml(warning.text)}</div>`).join("")
+      : `<div class="academy-status-message" data-tone="success">No hay alertas básicas pendientes.</div>`;
+  }
+  const executionChecklist = document.querySelector(".academy-execution-checklist");
+  if (executionChecklist) {
+    const checkboxes = [...executionChecklist.querySelectorAll('input[type="checkbox"][data-tool-field]')];
+    const done = checkboxes.filter((checkbox) => checkbox.checked).length;
+    const percentage = checkboxes.length ? Math.round((done / checkboxes.length) * 100) : 0;
+    const count = executionChecklist.querySelector(".academy-section-head .academy-eyebrow");
+    const ring = executionChecklist.querySelector(".academy-stage-progress-ring");
+    if (count) count.textContent = `${done} de ${checkboxes.length} confirmados`;
+    if (ring) ring.style.setProperty("--progress", `${percentage}%`);
+    if (ring?.querySelector("strong")) ring.querySelector("strong").textContent = `${percentage}%`;
+  }
   const stats = marketStats();
   const range = document.querySelector("[data-market-range]");
   const median = document.querySelector("[data-market-median]");
@@ -1668,6 +1790,14 @@ function updateDynamicResults() {
   if (median) median.textContent = stats ? currency(stats.median) : "—";
   const totals = costTotals();
   document.querySelectorAll("[data-cost-total]").forEach((element) => { element.textContent = currency(totals[element.dataset.costTotal]); });
+  document.querySelectorAll(".academy-cost-block").forEach((element, index) => {
+    const keys = COST_GROUPS[index]?.[1] || [];
+    const values = element.querySelectorAll("strong");
+    if (values[0]) values[0].textContent = currency(keys.reduce((sum, key) => sum + finite(app.state.tools.costs?.rows?.[key]?.estimated), 0));
+    if (values[1]) values[1].textContent = currency(keys.reduce((sum, key) => sum + finite(app.state.tools.costs?.rows?.[key]?.actual), 0));
+  });
+  const deviation = document.querySelector(".academy-cost-lab > .academy-grid--4 > .academy-stat-card:nth-child(4) strong");
+  if (deviation) deviation.textContent = currency(totals.actual - totals.estimated);
   const margin = document.querySelector("[data-cost-margin]"); if (margin) margin.textContent = currency(totals.margin);
   const roi = document.querySelector("[data-cost-roi]"); if (roi) roi.textContent = `${totals.roi.toFixed(1)}%`;
   COST_ROWS.forEach(([key]) => { const element = document.querySelector(`[data-cost-diff="${key}"]`); const row = app.state.tools.costs?.rows?.[key] || {}; if (element) element.textContent = currency(finite(row.actual) - finite(row.estimated)); });
@@ -1676,8 +1806,27 @@ function updateDynamicResults() {
 
 function inputValue(target) {
   if (target.type === "checkbox") return target.checked;
-  if (target.type === "number") return target.value === "" ? "" : finite(target.value);
+  if (target.type === "number") return normalizeNumberFieldValue(target.value, { min: target.min, max: target.max });
   return target.value;
+}
+
+function updateNumberValidity(target) {
+  if (target.type !== "number") return;
+  const invalid = target.value !== "" && !target.validity.valid;
+  if (invalid) target.setAttribute("aria-invalid", "true");
+  else target.removeAttribute("aria-invalid");
+}
+
+function resetTool(slug) {
+  const canonical = canonicalToolSlug(slug);
+  const stateKey = TOOL_STATE_KEYS[canonical];
+  if (stateKey) delete app.state.tools[stateKey];
+  if (["plan-abc", "candidate-board"].includes(canonical)) app.state.candidates = [];
+  if (canonical === "operation-dashboard") app.state.operation = null;
+  if (app.state.tools?._completed) delete app.state.tools._completed[canonical];
+  scheduleSave({ immediate: true });
+  renderView();
+  toast("Herramienta vaciada. Puedes empezar una comprobación nueva.", "success");
 }
 
 function openCandidate(candidate = null) {
@@ -1789,7 +1938,11 @@ function handleClick(event) {
     scheduleSave({ immediate: true });
     renderView();
   }
-  if (action === "market-add") { app.state.tools.market ||= { comparables: [] }; app.state.tools.market.comparables ||= []; if (app.state.tools.market.comparables.length >= 50) toast("Has alcanzado el máximo de 50 comparables.", "error"); else { app.state.tools.market.comparables.push({ id: uid("comparable") }); scheduleSave(); renderView(); } }
+  if (action === "tool-reset") {
+    const slug = canonicalToolSlug(target.dataset.toolId);
+    if (window.confirm("¿Vaciar todos los datos guardados en esta herramienta? Esta acción no se puede deshacer.")) resetTool(slug);
+  }
+  if (action === "market-add") { app.state.tools.market ||= { comparables: [] }; app.state.tools.market.comparables ||= []; if (app.state.tools.market.comparables.length >= 50) toast("Has alcanzado el máximo de 50 comparables.", "error"); else { app.state.tools.market.comparables.push({ id: uid("comparable") }); scheduleSave(); renderView(); const editor = document.querySelector("[data-market-editor]"); if (editor) editor.open = true; window.requestAnimationFrame(() => editor?.querySelector("input")?.focus()); } }
   if (action === "market-remove") { app.state.tools.market?.comparables?.splice(finite(target.dataset.index), 1); scheduleSave(); renderView(); }
   if (action === "question-add") { app.state.tools.questions ||= []; if (app.state.tools.questions.length >= 40) toast("Has alcanzado el máximo de 40 preguntas.", "error"); else { app.state.tools.questions.push({ id: uid("question"), category: "Estado general", text: "" }); scheduleSave(); renderView(); } }
   if (action === "question-remove") { app.state.tools.questions?.splice(finite(target.dataset.index), 1); scheduleSave(); renderView(); }
@@ -1804,6 +1957,11 @@ function handleClick(event) {
 
 function handleInput(event) {
   const target = event.target;
+  if (target.type === "number" && target.value !== "") {
+    const normalized = inputValue(target);
+    if (normalized !== "" && Number(target.value) !== normalized) target.value = String(normalized);
+  }
+  updateNumberValidity(target);
   trackToolStart(target);
   if (target.matches("[data-search-input]")) { renderSearchResultList(target.value); return; }
   if (target.matches("[data-answer-filter]")) { document.querySelector("[data-answer-list]").innerHTML = renderAnswerSearch(target.value); return; }
@@ -1816,6 +1974,11 @@ function handleInput(event) {
 
 function handleChange(event) {
   const target = event.target;
+  if (target.type === "number") {
+    const normalized = inputValue(target);
+    if (target.value !== "" && normalized !== "") target.value = String(normalized);
+    updateNumberValidity(target);
+  }
   trackToolStart(target);
   if (target.matches("[data-market-field], [data-cost-field]")) window.requestAnimationFrame(renderView);
   if (target.matches("[data-lesson-check]")) { app.state.tools.lessonChecklists ||= {}; app.state.tools.lessonChecklists[target.dataset.lessonCheck] ||= {}; app.state.tools.lessonChecklists[target.dataset.lessonCheck][target.dataset.itemId] = target.checked; scheduleSave(); academyTrack("academy_checklist_updated", { lessonId: target.dataset.lessonCheck, contentType: "lesson" }); }

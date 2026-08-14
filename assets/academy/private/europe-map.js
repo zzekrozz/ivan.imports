@@ -101,8 +101,9 @@ function overlaySvg(stages, currentIndex, variant) {
   </svg>`;
 }
 
-function carMarker(point) {
-  return `<div class="academy-map-car-marker" style="--car-x:${point.x}%;--car-y:${point.y}%" aria-hidden="true"><svg viewBox="0 0 120 48" focusable="false"><defs><linearGradient id="academy-vehicle-paint" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fbfdff"/><stop offset=".5" stop-color="#b9d2e6"/><stop offset="1" stop-color="#5d89ad"/></linearGradient></defs><ellipse cx="61" cy="42" rx="49" ry="5" fill="#08243d" opacity=".28"/><path d="M10 31c4-8 12-12 25-14l13-11h28c8 0 15 4 22 12l12 3c5 1 8 5 8 10v5H5v-3c0-1 2-2 5-2Z" fill="url(#academy-vehicle-paint)" stroke="#315f81" stroke-width="1.5"/><path d="m48 9-9 9h50L76 9Z" fill="#7fb4d1" opacity=".8"/><path d="M64 9v9" stroke="#e8f5fb"/><path d="M20 28h84" stroke="#fff" opacity=".55"/><circle cx="29" cy="36" r="9" fill="#102c43"/><circle cx="29" cy="36" r="4" fill="#adc4d5"/><circle cx="94" cy="36" r="9" fill="#102c43"/><circle cx="94" cy="36" r="4" fill="#adc4d5"/><path d="M8 30h10m88-6 8 2" stroke="#fff3c4" stroke-width="3" stroke-linecap="round"/></svg></div>`;
+function carMarker(point, variant) {
+  const paintId = `academy-vehicle-paint-${variant}`;
+  return `<div class="academy-map-car-marker" style="--car-x:${point.x}%;--car-y:${point.y}%" aria-hidden="true"><svg viewBox="0 0 120 48" focusable="false"><defs><linearGradient id="${paintId}" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fbfdff"/><stop offset=".5" stop-color="#b9d2e6"/><stop offset="1" stop-color="#5d89ad"/></linearGradient></defs><ellipse cx="61" cy="42" rx="49" ry="5" fill="#08243d" opacity=".28"/><path d="M10 31c4-8 12-12 25-14l13-11h28c8 0 15 4 22 12l12 3c5 1 8 5 8 10v5H5v-3c0-1 2-2 5-2Z" fill="url(#${paintId})" stroke="#315f81" stroke-width="1.5"/><path d="m48 9-9 9h50L76 9Z" fill="#7fb4d1" opacity=".8"/><path d="M64 9v9" stroke="#e8f5fb"/><path d="M20 28h84" stroke="#fff" opacity=".55"/><circle cx="29" cy="36" r="9" fill="#102c43"/><circle cx="29" cy="36" r="4" fill="#adc4d5"/><circle cx="94" cy="36" r="9" fill="#102c43"/><circle cx="94" cy="36" r="4" fill="#adc4d5"/><path d="M8 30h10m88-6 8 2" stroke="#fff3c4" stroke-width="3" stroke-linecap="round"/></svg></div>`;
 }
 
 function stageMeta(stage) {
@@ -147,7 +148,7 @@ function renderMap({ stages = [], percentage = 0, currentStageId = "" }, variant
   const next = routeStages[currentIndex + 1];
   const carPoint = pointAt(currentIndex, variant);
   return `<section class="academy-europe-map academy-europe-map--${variant}" aria-label="Mapa europeo interactivo de las 12 etapas">
-    ${mapCanvas(variant)}${geographySvg(variant)}${overlaySvg(routeStages, currentIndex, variant)}${zoneLabels(variant)}${nodeMarkup(routeStages, currentIndex, variant)}${carMarker(carPoint)}
+    ${mapCanvas(variant)}${geographySvg(variant)}${overlaySvg(routeStages, currentIndex, variant)}${zoneLabels(variant)}${nodeMarkup(routeStages, currentIndex, variant)}${carMarker(carPoint, variant)}
     <div class="academy-map-status"><span>${Math.max(0, Math.min(100, Math.round(Number(percentage) || 0)))}%</span><small>Progreso de aprendizaje</small></div>
     <div class="academy-map-next${next ? "" : " academy-map-next--finish"}"><small>${next ? "Siguiente etapa" : "Cierre de ruta"}</small><strong>${esc(next?.shortTitle || next?.title || "Método 7 días")}</strong></div>
     ${current ? `<aside class="academy-map-current-card" aria-label="Etapa actual"><span class="academy-map-current-kicker">Estás aquí · ${esc(carPoint.zone)}</span><div><strong><span>${String(currentIndex + 1).padStart(2, "0")}</span><span>${esc(current.shortTitle || current.title)}</span></strong><p>${esc(current.description || "Continúa con el siguiente punto de control.")}</p><small>${esc(stageMeta(current))}</small></div><a href="${esc(current.href)}" data-nav>Continuar etapa →</a></aside>` : ""}

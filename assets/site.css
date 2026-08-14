@@ -82,6 +82,9 @@ a {
   background: var(--white);
   color: var(--ink);
   padding: 0.75rem 1rem;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
   border: 2px solid var(--ink);
 }
 
@@ -251,6 +254,10 @@ p {
 .nav-toggle[aria-expanded="true"] .menu-icon::after {
   top: 0;
   transform: rotate(-45deg);
+}
+
+.hub-mobile-nav {
+  display: none;
 }
 
 .btn {
@@ -1753,6 +1760,14 @@ p {
     grid-column: auto;
   }
 
+  .nav-inner > .logo,
+  .footer-brand .logo,
+  .footer-links a {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
   .footer-bottom {
     display: grid;
     gap: 0.6rem;
@@ -1760,5 +1775,39 @@ p {
 
   .footer-bottom span:last-child {
     text-align: left;
+  }
+}
+
+@media (max-width: 760px) {
+  body.has-hub-mobile-nav {
+    padding-bottom: calc(70px + env(safe-area-inset-bottom));
+  }
+
+  .hub-mobile-nav {
+    position: fixed;
+    z-index: 1000;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    min-height: 66px;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    padding-bottom: env(safe-area-inset-bottom);
+    border-top: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(14px);
+  }
+
+  .hub-mobile-nav a {
+    min-width: 44px;
+    min-height: 44px;
+    display: grid;
+    place-items: center;
+    padding: 8px 3px;
+    color: var(--muted);
+    font-size: 0.67rem;
+    font-weight: 750;
+    text-align: center;
+    text-decoration: none;
   }
 }

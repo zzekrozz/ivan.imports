@@ -8,7 +8,7 @@ const read = (path) => readFileSync(join(root, path), "utf8");
 const json = (path) => JSON.parse(read(path));
 
 const requiredRoutes = [
-  "index.html", "academia/index.html", "go/index.html", "placasverdes/index.html", "oportunidades/index.html", "directos/index.html", "servicios/index.html", "subastaspro/index.html", "recomendaciones/index.html", "actualizaciones/index.html", "academia/ayuda/index.html", "academia/edicion-pdf/index.html", "importa-en-7-dias/gracias/index.html"
+  "index.html", "404.html", "academia/index.html", "go/index.html", "placasverdes/index.html", "oportunidades/index.html", "directos/index.html", "servicios/index.html", "subastaspro/index.html", "recomendaciones/index.html", "actualizaciones/index.html", "academia/ayuda/index.html", "academia/edicion-pdf/index.html", "importa-en-7-dias/gracias/index.html"
 ];
 for (const route of requiredRoutes) if (!existsSync(join(root, route))) failures.push(`Falta la ruta pública: ${route}`);
 
@@ -86,12 +86,25 @@ if (!/19,99 € IVA incluido/.test(pdfPage) || !/Próximamente/.test(pdfPage) ||
 
 const home = read("index.html");
 const go = read("go/index.html");
+const notFound = read("404.html");
+if (!/noindex,follow/.test(notFound) || !/Volver al inicio/.test(notFound) || !/Abrir la Academia/.test(notFound) || !/Ver servicios/.test(notFound)) failures.push("La ruta 404 no ofrece recuperación útil o no está marcada noindex");
 if (!/Encuentra, analiza e importa vehículos desde Europa/.test(home) || !/Entrar en la Academia gratis/.test(home) || !/Ver oportunidades/.test(home)) failures.push("La home no funciona como Control Center");
 if (/AGOSTO50|3\/10|50\s*%|14 días WhatsApp|179\s*€/i.test(home + go + read("assets/site-config.js"))) failures.push("La experiencia conserva promoción o formación caducada");
 for (const label of ["Academia", "Oportunidades", "Directos", "Herramientas", "Servicios PRO", "Actualizaciones"]) if (!read("assets/site.js").includes(label)) failures.push(`Falta navegación global: ${label}`);
 
 const vercel = json("vercel.json");
 if (vercel.outputDirectory !== "dist") failures.push("El output público debe limitarse a dist/");
+const toolRedirects = new Map((vercel.redirects || []).map((entry) => [entry.source, entry.destination]));
+const legacyToolSlugs = new Map([
+  ["presupuesto", "budget-calculator"], ["filtros", "search-filter-builder"], ["analizador-anuncio", "ad-analyzer"],
+  ["preguntas", "question-builder"], ["mercado", "market-comparator"], ["coste-total", "cost-calculator"],
+  ["documentos", "document-passport"], ["viaje", "travel-planner"], ["inspeccion", "inspection-checklist"],
+  ["pintura", "paint-sheet"], ["compra-salida", "purchase-exit-checklist"], ["vuelta", "return-checklist"],
+  ["espana", "spain-folder"], ["metodo-7-dias", "method7-planner"],
+]);
+for (const [legacy, publicSlug] of legacyToolSlugs) {
+  for (const suffix of ["", "/"]) if (toolRedirects.get(`/academia/herramientas/${legacy}${suffix}`) !== `/academia/herramientas/${publicSlug}/`) failures.push(`Falta redirección de herramienta antigua: ${legacy}${suffix}`);
+}
 const rewriteSources = new Set((vercel.rewrites || []).map((entry) => entry.source));
 for (const endpoint of ["/api/stripe-importa-7-dias", "/api/importa-7-dias/order-status", "/api/importa-7-dias/download", "/api/importa-7-dias/reissue"]) if (!rewriteSources.has(endpoint)) failures.push(`Falta infraestructura histórica: ${endpoint}`);
 for (const staticPattern of ["/academia/etapa/:slug", "/academia/paso/:slug", "/academia/herramientas/:tool"]) if (rewriteSources.has(staticPattern)) failures.push(`Una ruta SEO estática sigue reescrita a la SPA: ${staticPattern}`);
@@ -112,7 +125,7 @@ if (relative(root, dist) !== "dist") throw new Error("Ruta de salida no segura")
 rmSync(dist, { recursive: true, force: true });
 mkdirSync(dist, { recursive: true });
 const publicDirectories = ["academia", "actualizaciones", "assets", "directos", "go", "importa-en-7-dias", "oportunidades", "placasverdes", "recomendaciones", "servicios", "subastaspro"];
-const publicFiles = ["index.html", "CNAME", "favicon.svg", "robots.txt", "sitemap.xml"];
+const publicFiles = ["index.html", "404.html", "CNAME", "favicon.svg", "robots.txt", "sitemap.xml"];
 for (const directory of publicDirectories) if (existsSync(join(root, directory))) cpSync(join(root, directory), join(dist, directory), { recursive: true });
 for (const file of publicFiles) if (existsSync(join(root, file))) cpSync(join(root, file), join(dist, file));
 

@@ -54,6 +54,15 @@ test("el coche vectorial es original, contenido y sin marca", () => {
   assert.match(css, /academy-map-car-marker[\s\S]*width:82px/);
 });
 
+test("las variantes desktop y móvil no repiten identificadores SVG", () => {
+  const desktop = renderEuropeRouteMap({ stages, percentage: 38, currentStageId: "stage-05" });
+  const mobile = renderMobileRoute({ stages, percentage: 38, currentStageId: "stage-05" });
+  const ids = [...`${desktop}${mobile}`.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]);
+  assert.equal(new Set(ids).size, ids.length);
+  assert.match(desktop, /academy-vehicle-paint-desktop/);
+  assert.match(mobile, /academy-vehicle-paint-mobile/);
+});
+
 test("el mapa conserva teclado, alternativa textual y movimiento reducido", () => {
   const html = renderEuropeRouteMap({ stages, percentage: 38, currentStageId: "stage-05" });
   assert.equal((html.match(/<button type="button"/g) || []).length, 12);

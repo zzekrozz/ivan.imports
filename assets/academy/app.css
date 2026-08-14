@@ -216,7 +216,7 @@
 
 .academy-version-chip {
   display: inline-flex;
-  min-height: 2.1rem;
+  min-height: 44px;
   align-items: center;
   padding: 0 .7rem;
   border: 1px solid var(--academy-border);
@@ -243,7 +243,7 @@
 .academy-feedback h2 { margin: .2rem 0; font-size: 1.15rem; }
 .academy-feedback p { color: var(--academy-muted); font-size: .78rem; }
 .academy-feedback-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .45rem; }
-.academy-feedback-actions a { padding: .55rem .7rem; border: 1px solid var(--academy-border); border-radius: .65rem; color: var(--academy-ink); background: #fff; font-size: .7rem; font-weight: 750; text-decoration: none; }
+.academy-feedback-actions a { min-height:44px; display:inline-flex; align-items:center; justify-content:center; padding:.55rem .7rem; border:1px solid var(--academy-border); border-radius:.65rem; color:var(--academy-ink); background:#fff; font-size:.7rem; font-weight:750; text-decoration:none; }
 .academy-feedback-actions a:hover { border-color: #7ab7ff; color: #075fca; }
 
 .academy-patch-list { display: grid; gap: 1rem; }
@@ -412,7 +412,7 @@
   .academy-map-current-card strong > span { display: grid; place-items: center; width: 27px; height: 27px; flex: 0 0 auto; border-radius: 50%; color: #fff; background: #0c68f2; font-size: .58rem; }
   .academy-map-current-card p { display: -webkit-box; margin-top: .25rem; overflow: hidden; color: #3e5b76; font-size: .62rem; line-height: 1.4; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
   .academy-map-current-card small { display: block; margin-top: .28rem; color: #617b93; font-size: .55rem; }
-  .academy-map-current-card > a { display: flex; align-items: center; justify-content: center; gap: .35rem; min-height: 36px; margin-top: .55rem; border-radius: 9px; color: #fff; background: linear-gradient(90deg,#0b74f4,#0751ce); font-size: .64rem; font-weight: 850; text-decoration: none; }
+  .academy-map-current-card > a { display: flex; align-items: center; justify-content: center; gap: .35rem; min-height: 44px; margin-top: .55rem; border-radius: 9px; color: #fff; background: linear-gradient(90deg,#0b74f4,#0751ce); font-size: .64rem; font-weight: 850; text-decoration: none; }
   .academy-map-current-card > a .academy-icon { width: 15px !important; height: 15px !important; }
   .academy-europe-node[data-selected="true"] { z-index: 8; }
   .academy-europe-node[data-selected="true"] .academy-europe-node-label { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
@@ -757,6 +757,11 @@
     border-color: var(--academy-primary);
     box-shadow: 0 0 0 4px rgba(17, 103, 232, 0.1);
     outline: 0;
+  }
+
+  .academy-app input[aria-invalid="true"] {
+    border-color: var(--academy-coral);
+    box-shadow: 0 0 0 4px rgba(217, 79, 98, 0.12);
   }
 
   .academy-field small {
@@ -1532,12 +1537,26 @@
     font-size: 1.2rem;
   }
 
+  .academy-state-copy h1 {
+    margin: 0;
+    font-size: clamp(1.45rem, 4vw, 2rem);
+    letter-spacing: -0.03em;
+  }
+
   .academy-state-copy p {
     margin-top: 0.45rem;
     color: var(--academy-muted);
   }
 
   .academy-state-copy .academy-button {
+    margin-top: 1rem;
+  }
+
+  .academy-error-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.65rem;
     margin-top: 1rem;
   }
 
@@ -3895,7 +3914,7 @@
   .academy-essential-card p { margin-top: .65rem; color: #4e6984; }
   .academy-lesson-aside { align-self: start; align-content: start; height: max-content; }
   .academy-lesson-aside > .academy-lesson-index { position: static; width: auto; height: auto; min-height: 0; padding: .9rem; display: grid; place-items: stretch; gap: .25rem; border-radius: 16px; background: #fff; color: var(--academy-ink); }
-  .academy-lesson-aside > .academy-lesson-index a { padding: .55rem .65rem; border-radius: 9px; color: #54708b; font-size: .72rem; font-weight: 750; text-decoration: none; }
+  .academy-lesson-aside > .academy-lesson-index a { min-height: 44px; display: flex; align-items: center; padding: .55rem .65rem; border-radius: 9px; color: #54708b; font-size: .72rem; font-weight: 750; text-decoration: none; }
   .academy-lesson-aside > .academy-lesson-index a:hover { background: #edf5ff; color: var(--academy-primary-deep); }
   .academy-lesson-aside > .academy-lesson-aside-card { position: static; width: auto; height: auto; }
   .academy-lesson-concepts { margin-top: 1.25rem; }
@@ -3908,6 +3927,7 @@
   .academy-concept-short { color: var(--academy-ink); font-weight: 800; }
   .academy-knowledge-check { margin-top: 1.25rem; padding: 1.2rem; border: 1px solid rgba(128,100,216,.22); border-radius: 20px; background: #f8f6ff; }
   .academy-knowledge-check details { margin-top: .6rem; padding: .65rem .8rem; border-radius: 12px; background: #fff; }
+  .academy-knowledge-check summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; }
 
   .academy-lesson-visual { margin: 1.25rem 0; overflow: hidden; border: 1px solid var(--academy-border); border-radius: 22px; background: #fff; box-shadow: var(--academy-shadow-sm); }
   .academy-lesson-visual figcaption { display: grid; grid-template-columns: 42px 1fr auto; align-items: center; gap: .8rem; padding: 1rem; border-bottom: 1px solid var(--academy-border); background: #f7fafe; }
@@ -4239,6 +4259,8 @@
   }
 
   @media (max-width: 768px) {
+    .academy-breadcrumbs { align-items: center; }
+    .academy-breadcrumbs a { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
     .academy-topbar { min-height: 64px; }
     .academy-topbar-title span { display: none; }
     .academy-app--presentation .academy-topbar-title { display: none; }
@@ -4460,8 +4482,8 @@
     .academy-europe-map--mobile { min-height:clamp(560px,76vh,690px); }
     .academy-map-geography { opacity:.1; }
     .academy-map-zone { display:none; }
-    .academy-europe-map--mobile .academy-europe-node > button { width:36px!important; height:36px!important; border-width:3px!important; }
-    .academy-europe-map--mobile .academy-europe-node[data-status="current"] > button { width:46px!important; height:46px!important; }
+    .academy-europe-map--mobile .academy-europe-node > button { width:44px!important; height:44px!important; border-width:3px!important; }
+    .academy-europe-map--mobile .academy-europe-node[data-status="current"] > button { width:50px!important; height:50px!important; }
     .academy-stage-scene { min-height:300px; }
     .academy-stage-scene-media img { object-position:67% center; }
     .academy-stage-scene-marker { top:.7rem; right:.7rem; }
