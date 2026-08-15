@@ -31,7 +31,7 @@ export const COST_EXPENSE_SECTIONS = Object.freeze([
       Object.freeze({ id: "coc", label: "CoC / ficha reducida" }),
       Object.freeze({ id: "dgt", label: "Tasa DGT / matriculación" }),
       Object.freeze({ id: "ivtm", label: "IVTM" }),
-      Object.freeze({ id: "iedmt", label: "Impuesto de matriculación (IEDMT)", help: "Déjalo en 0 € si no corresponde." }),
+      Object.freeze({ id: "iedmt", label: "Impuesto de matriculación (IEDMT / Modelo 576)", help: "Déjalo en 0 € si no corresponde." }),
       Object.freeze({ id: "registrationPlates", label: "Matrículas españolas" }),
       Object.freeze({ id: "agency", label: "Gestoría" }),
       Object.freeze({ id: "administrationOther", label: "Otros gastos administrativos" }),

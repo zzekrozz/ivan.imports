@@ -32,6 +32,7 @@ test("la definición canónica contiene cuatro categorías y 25 partidas únicas
   assert.deepEqual(COST_EXPENSE_SECTIONS.map((section) => section.id), ["vehicle", "travel", "administration", "upkeep"]);
   assert.equal(COST_EXPENSE_FIELDS.length, 25);
   assert.equal(new Set(COST_EXPENSE_FIELDS.map((field) => field.id)).size, 25);
+  assert.match(COST_EXPENSE_FIELDS.find((field) => field.id === "iedmt").label, /IEDMT \/ Modelo 576/);
 });
 
 test("una calculadora vacía produce coste total cero sin conclusiones inventadas", () => {
