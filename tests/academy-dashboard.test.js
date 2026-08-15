@@ -86,5 +86,6 @@ test("el frontend conecta dashboard, módulos, mapa, herramientas y buscador sin
   assert.match(source, /data-action="search-open"/);
   assert.match(source, /href="\/academia\/ruta"[^>]*data-nav>Abrir mapa/);
   assert.match(html, /<h1>Aprende a importar un coche desde Europa, paso a paso\.<\/h1>/);
+  assert.match(html, /<main class="academy-noscript" id="academy-static-intro" hidden>/);
   assert.match(html, /<link rel="canonical" href="https:\/\/ivanimports\.es\/academia\/">/);
 });
