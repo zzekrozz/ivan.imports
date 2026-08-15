@@ -637,7 +637,8 @@ function handleVideoEvent(event) {
 function navCurrent(name) {
   if (name === "route") return app.route.name === "route";
   if (name === "operation") return ["operation", "candidates"].includes(app.route.name);
-  if (name === "tools") return ["tools", "tool"].includes(app.route.name);
+  if (name === "calculator") return app.route.name === "tool" && canonicalToolSlug(app.route.slug) === "coste-total";
+  if (name === "tools") return app.route.name === "tools" || (app.route.name === "tool" && canonicalToolSlug(app.route.slug) !== "coste-total");
   return app.route.name === name;
 }
 
@@ -694,7 +695,7 @@ function renderShell() {
           <div class="academy-sidebar-section">
             <span class="academy-sidebar-section-label">Academia</span>
             ${navLink(PROGRAM_ROOT, "dashboard", "Inicio", "home")}
-            ${navLink("/academia/ruta", "route", "Ruta completa", "map")}
+            ${navLink(toolHref("coste-total"), "calculator", "Calculadora", "calculator")}
             ${navLink("/academia/herramientas", "tools", "Herramientas", "tools")}
             <button class="academy-nav-link" type="button" data-action="search-open"><span class="academy-nav-icon">${iconSvg("search", { className: "academy-icon" })}</span><span>Buscar</span></button>
           </div>
@@ -731,7 +732,7 @@ function renderShell() {
       </div>
     </div>
     <nav class="academy-mobile-nav" aria-label="Navegación móvil">
-      ${mobileNavLink(PROGRAM_ROOT, "dashboard", "Inicio", "home")}${mobileNavLink("/academia/ruta", "route", "Ruta", "map")}
+      ${mobileNavLink(PROGRAM_ROOT, "dashboard", "Inicio", "home")}${mobileNavLink(toolHref("coste-total"), "calculator", "Calculadora", "calculator")}
       ${mobileNavLink("/academia/herramientas", "tools", "Herramientas", "tools")}${mobileNavAction("Buscar", "search", "search-open")}
     </nav>
     ${renderSearchDialog()}

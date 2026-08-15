@@ -202,6 +202,15 @@ test("la integración elimina la tabla antigua y actualiza sin reconstruir el fo
   assert.doesNotMatch(source, /\[data-market-field\], \[data-cost-field\]/);
 });
 
+test("la navegación principal sustituye Ruta completa por la calculadora", async () => {
+  const source = await readFile(new URL("assets/academy/app.js", root), "utf8");
+  const shellSource = source.slice(source.indexOf("function navCurrent"), source.indexOf("function pageTitle"));
+  assert.match(shellSource, /navLink\(toolHref\("coste-total"\), "calculator", "Calculadora", "calculator"\)/);
+  assert.match(shellSource, /mobileNavLink\(toolHref\("coste-total"\), "calculator", "Calculadora", "calculator"\)/);
+  assert.doesNotMatch(shellSource, /navLink\("\/academia\/ruta", "route", "Ruta completa", "map"\)/);
+  assert.doesNotMatch(shellSource, /mobileNavLink\("\/academia\/ruta", "route", "Ruta", "map"\)/);
+});
+
 test("el CSS contiene layout responsive y evita tablas horizontales", async () => {
   const css = await readFile(new URL("assets/academy/app.css", root), "utf8");
   assert.match(css, /\.academy-cost-layout\s*\{[^}]*grid-template-columns:/);
