@@ -4,6 +4,17 @@ import { renderLessonVisuals, renderStageScene } from "./private/lesson-visuals.
 import { migrateAcademyStateV1ToV2, normalizeLegacyLessonMap, resolveLegacyDeepLink, resolveLegacyLessonTarget } from "./private/migration.js";
 import { ACADEMY_SEARCH_SUGGESTIONS, answerSemanticQuery } from "./private/semantic-search.js";
 import { normalizeNumberFieldValue } from "./private/form-values.js";
+import { academyDashboardModel, selectDashboardTools } from "./private/dashboard.js";
+import {
+  COST_EXPENSE_SECTIONS,
+  calculateCostOperation,
+  calculateFuel,
+  costCalculatorHasData,
+  createEmptyCostCalculatorState,
+  fuelCostInputValue,
+  normalizeCostCalculatorState,
+  sanitizeDecimalInput,
+} from "./private/cost-calculator.js";
 import { ACADEMY_PATCH_NOTES, ACADEMY_VERSION } from "./patch-notes.js";
 
 const PROGRAM_ROOT = "/academia/";
@@ -19,7 +30,7 @@ const TOOL_CATALOG = Object.freeze([
   { slug: "filtros", title: "Filtros y búsquedas", description: "Guarda criterios comparables y una rutina de búsqueda repetible.", group: "descubrir" },
   { slug: "analizador-anuncio", title: "Analizador de anuncio", description: "Convierte lo que muestra y omite un anuncio en comprobaciones concretas.", group: "descubrir" },
   { slug: "mercado", title: "Comparador con España", description: "Ordena comparables añadidos manualmente y elige un valor conservador.", group: "decidir" },
-  { slug: "coste-total", title: "Coste total", description: "Compara estimado, confirmado y real sin perder de vista la desviación.", group: "decidir" },
+  { slug: "coste-total", title: "Calculadora de coste total", description: "Suma todos los gastos y descubre el precio, beneficio y compra máxima que hacen cuadrar la operación.", group: "decidir" },
   { slug: "documentos", title: "Pasaporte documental", description: "Controla el estado de cada documento de tu operación.", group: "ejecutar" },
   { slug: "preguntas", title: "Preparador de preguntas", description: "Agrupa tus dudas y prepara una conversación clara con el vendedor.", group: "descubrir" },
   { slug: "plan-abc", title: "Plan A/B/C", description: "Prioriza candidatos y conserva alternativas antes de viajar.", group: "decidir" },
@@ -93,22 +104,6 @@ const OPERATION_FIELDS = Object.freeze([
   ["damage", "Daños", "text", ""], ["history", "Historial", "text", ""],
   ["nextAction", "Siguiente acción", "text", ""], ["decision", "Decisión", "select", [["study", "Seguir estudiando"], ["verify", "Verificar"], ["continue", "Continuar"], ["discard", "Descartar"]]],
   ["notes", "Notas", "textarea", ""],
-]);
-
-const COST_ROWS = Object.freeze([
-  ["purchase", "Compra"], ["flight", "Vuelo"], ["localTransport", "Transporte local"], ["plates", "Placas"],
-  ["insurance", "Seguro"], ["fuel", "Combustible"], ["tolls", "Peajes"], ["hotel", "Hotel"],
-  ["food", "Comida"], ["itv", "ITV"], ["coc", "CoC / ficha"], ["ivtm", "IVTM"],
-  ["dgt", "Tasa DGT"], ["registrationPlates", "Matrículas"], ["tax576", "Modelo 576"],
-  ["maintenance", "Mantenimiento"], ["repairs", "Reparaciones"], ["contingency", "Imprevistos"],
-  ["carrier", "Transportista"], ["other", "Otras partidas"],
-]);
-
-const COST_GROUPS = Object.freeze([
-  ["Compra", ["purchase"]], ["Viaje", ["flight", "localTransport", "hotel", "food"]],
-  ["Vuelta", ["plates", "insurance", "fuel", "tolls", "carrier"]],
-  ["España", ["itv", "coc", "ivtm", "dgt", "registrationPlates", "tax576"]],
-  ["Puesta a punto", ["maintenance", "repairs"]], ["Reserva", ["contingency", "other"]],
 ]);
 
 const DOCUMENTS = Object.freeze([
@@ -205,6 +200,14 @@ function finite(value, fallback = 0) {
 
 function currency(value) {
   return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 2 }).format(finite(value));
+}
+
+function costCurrency(value) {
+  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 2, useGrouping: "always" }).format(finite(value));
+}
+
+function decimal(value, maximumFractionDigits = 2) {
+  return new Intl.NumberFormat("es-ES", { minimumFractionDigits: 0, maximumFractionDigits }).format(finite(value));
 }
 
 function formatDate(value) {
@@ -351,8 +354,7 @@ function normalizeStoredNumbers(state) {
     normalizeKeys(comparable, ["price", "mileage", "power"]);
     normalizeKeys(comparable, ["year"], { min: "1900" });
   });
-  normalizeKeys(tools.costs, ["marketValue", "desiredProfit"]);
-  Object.values(tools.costs?.rows || {}).forEach((row) => normalizeKeys(row, ["estimated", "confirmed", "actual"]));
+  if (tools.costs !== undefined) tools.costs = normalizeCostCalculatorState(tools.costs);
   normalizeKeys(tools.paint?.panels, ["bonnet", "roof", "boot", "frontLeft", "frontRight", "doorLeft", "doorRight", "rearLeft", "rearRight"]);
   return state;
 }
@@ -633,9 +635,10 @@ function handleVideoEvent(event) {
 }
 
 function navCurrent(name) {
-  if (name === "route") return ["route", "stage", "lesson"].includes(app.route.name);
+  if (name === "route") return app.route.name === "route";
   if (name === "operation") return ["operation", "candidates"].includes(app.route.name);
-  if (name === "tools") return ["tools", "tool"].includes(app.route.name);
+  if (name === "calculator") return app.route.name === "tool" && canonicalToolSlug(app.route.slug) === "coste-total";
+  if (name === "tools") return app.route.name === "tools" || (app.route.name === "tool" && canonicalToolSlug(app.route.slug) !== "coste-total");
   return app.route.name === name;
 }
 
@@ -645,7 +648,29 @@ function navLink(href, name, label, icon) {
 }
 
 function mobileNavLink(href, name, label, icon) {
-  return `<a href="${href}" data-nav${navCurrent(name) ? ' aria-current="page"' : ""}><span>${iconSvg(icon, { className: "academy-icon" })}</span><span>${escapeHtml(label)}</span></a>`;
+  const current = name === "route" ? ["route", "stage", "lesson"].includes(app.route.name) : navCurrent(name);
+  return `<a href="${href}" data-nav${current ? ' aria-current="page"' : ""}><span>${iconSvg(icon, { className: "academy-icon" })}</span><span>${escapeHtml(label)}</span></a>`;
+}
+
+function mobileNavAction(label, icon, action) {
+  return `<button type="button" data-action="${action}"><span>${iconSvg(icon, { className: "academy-icon" })}</span><span>${escapeHtml(label)}</span></button>`;
+}
+
+function activeRouteStageId() {
+  if (app.route.name === "stage") return String(findStage(app.route.slug)?.id || "");
+  if (app.route.name === "lesson") return String(findLesson(app.route.slug)?.stageId || "");
+  return "";
+}
+
+function renderSidebarModules(model) {
+  const activeStageId = activeRouteStageId();
+  return model.stages.map((stage) => {
+    const active = activeStageId === String(stage.id);
+    const stateLabel = ({ complete: "Completado", current: "En curso", recommended: "Siguiente", pending: "Pendiente" })[stage.status];
+    return `<a class="academy-sidebar-module" href="${stageHref(stage)}" data-nav data-status="${stage.status}"${active ? ' aria-current="page"' : ""}>
+      <span class="academy-sidebar-module-number">${stage.number}</span><span class="academy-sidebar-module-copy"><strong>${escapeHtml(stage.shortTitle || stage.title)}</strong><small>${escapeHtml(stateLabel)}</small></span><span class="academy-sidebar-module-mark" aria-hidden="true">${stage.status === "complete" ? "✓" : stage.status === "pending" ? "" : "•"}</span>
+    </a>`;
+  }).join("");
 }
 
 function userInitials() {
@@ -656,6 +681,7 @@ function userInitials() {
 
 function renderShell() {
   const progress = progressInfo();
+  const dashboard = academyDashboardModel(app.program, app.state);
   const currentTitle = pageTitle();
   app.root.className = `academy-app${app.state.preferences.presentationMode ? " academy-app--presentation" : ""}`;
   app.root.innerHTML = `
@@ -666,15 +692,25 @@ function renderShell() {
           <span>Academia IvanImports</span><small>${escapeHtml(app.program.descriptor || "Desde cero, paso a paso")}</small>
         </a>
         <nav class="academy-sidebar-nav">
-          ${navLink(PROGRAM_ROOT, "dashboard", "Mi ruta", "route")}
-          ${navLink("/academia/ruta", "route", "Ruta completa", "map")}
-          ${navLink("/academia/mi-operacion", "operation", "Mi operación", "car")}
-          ${navLink("/academia/herramientas", "tools", "Herramientas", "tools")}
-          ${navLink("/academia/respuestas", "answers", "Respuestas", "search")}
-          ${navLink("/academia/recursos", "resources", "Recursos", "book")}
-          ${navLink("/academia/actualizaciones", "updates", "Actualizaciones", "checkpoint")}
-          <a class="academy-nav-link" href="/academia/ayuda/"><span class="academy-nav-icon">${iconSvg("support", { className: "academy-icon" })}</span><span>Ayuda y sugerencias</span></a>
-          <a class="academy-nav-link academy-nav-link--pro" href="/servicios/"><span class="academy-nav-icon">✦</span><span>Servicios PRO</span></a>
+          <div class="academy-sidebar-section">
+            <span class="academy-sidebar-section-label">Academia</span>
+            ${navLink(PROGRAM_ROOT, "dashboard", "Inicio", "home")}
+            ${navLink(toolHref("coste-total"), "calculator", "Calculadora", "calculator")}
+            ${navLink("/academia/herramientas", "tools", "Herramientas", "tools")}
+            <button class="academy-nav-link" type="button" data-action="search-open"><span class="academy-nav-icon">${iconSvg("search", { className: "academy-icon" })}</span><span>Buscar</span></button>
+          </div>
+          <div class="academy-sidebar-section academy-sidebar-section--modules">
+            <div class="academy-sidebar-section-heading"><span class="academy-sidebar-section-label">12 módulos</span><a href="/academia/ruta" data-nav>Ver ruta</a></div>
+            <a class="academy-sidebar-intro" href="${app.program.stages[0] ? stageHref(app.program.stages[0]) : "/academia/ruta"}" data-nav><span>00</span><strong>Empieza aquí</strong></a>
+            ${renderSidebarModules(dashboard)}
+          </div>
+          <div class="academy-sidebar-section academy-sidebar-section--utility">
+            <span class="academy-sidebar-section-label">Más</span>
+            ${navLink("/academia/mi-operacion", "operation", "Mi operación", "car")}
+            ${navLink("/academia/recursos", "resources", "Recursos", "book")}
+            <a class="academy-nav-link" href="/academia/ayuda/"><span class="academy-nav-icon">${iconSvg("support", { className: "academy-icon" })}</span><span>Ayuda</span></a>
+            <a class="academy-nav-link academy-nav-link--pro" href="/servicios/"><span class="academy-nav-icon">✦</span><span>Servicios PRO</span></a>
+          </div>
         </nav>
         <div class="academy-sidebar-progress">
           <span>Progreso global</span><strong>${progress.percentage}%</strong>
@@ -696,9 +732,8 @@ function renderShell() {
       </div>
     </div>
     <nav class="academy-mobile-nav" aria-label="Navegación móvil">
-      ${mobileNavLink(PROGRAM_ROOT, "dashboard", "Inicio", "home")}${mobileNavLink("/academia/ruta", "route", "Ruta", "map")}
-      ${mobileNavLink("/academia/mi-operacion", "operation", "Operación", "car")}${mobileNavLink("/academia/herramientas", "tools", "Herramientas", "tools")}
-      ${mobileNavLink("/academia/respuestas", "answers", "Resolver", "search")}
+      ${mobileNavLink(PROGRAM_ROOT, "dashboard", "Inicio", "home")}${mobileNavLink(toolHref("coste-total"), "calculator", "Calculadora", "calculator")}
+      ${mobileNavLink("/academia/herramientas", "tools", "Herramientas", "tools")}${mobileNavAction("Buscar", "search", "search-open")}
     </nav>
     ${renderSearchDialog()}
     ${renderCandidateDialog()}
@@ -710,7 +745,7 @@ function pageTitle() {
   if (app.route.name === "stage") return findStage(app.route.slug)?.title || "Etapa";
   if (app.route.name === "lesson") return findLesson(app.route.slug)?.title || "Lección";
   if (app.route.name === "tool") return toolDefinition(app.route.slug)?.title || "Herramienta";
-  return ({ dashboard: "Tu ruta de importación", route: "Ruta completa", operation: "Mi operación", candidates: "Vehículos candidatos", tools: "Herramientas", answers: "Centro de respuestas", resources: "Recursos", support: "Errores y sugerencias", updates: "Actualizaciones", account: "Preferencias" })[app.route.name] || app.program.title;
+  return ({ dashboard: "Academia", route: "Ruta completa", operation: "Mi operación", candidates: "Vehículos candidatos", tools: "Herramientas", answers: "Centro de respuestas", resources: "Recursos", support: "Errores y sugerencias", updates: "Actualizaciones", account: "Preferencias" })[app.route.name] || app.program.title;
 }
 
 function renderView() {
@@ -866,16 +901,58 @@ function renderDashboardOperation() {
   return `<div class="academy-operation-dashboard"><section class="academy-card academy-operation-command"><div><span class="academy-eyebrow">Expediente activo</span><h2>${escapeHtml(operation.title || operation.carWanted || "Mi primera importación")}</h2><p>${escapeHtml(operation.nextAction || "Define la siguiente acción para mantener el control.")}</p></div><div class="academy-operation-command-actions"><span class="academy-badge">${escapeHtml(operation.country || "País pendiente")}</span><a class="academy-button academy-button--primary" href="/mi-operacion" data-nav>Abrir expediente</a></div></section><section class="academy-card academy-operation-timeline"><h2>Del candidato a la matrícula</h2><ol>${checkpoints.map(([id, label, activeStatuses], index) => `<li data-complete="${activeStatuses.includes(status)}"><span>${activeStatuses.includes(status) ? "✓" : index + 1}</span><strong>${label}</strong></li>`).join("")}</ol></section><div class="academy-grid academy-grid--3"><article class="academy-card academy-stat-card"><span>Candidatos activos</span><strong>${candidates.length}</strong><a href="/candidatos" data-nav>Comparar planes →</a></article><article class="academy-card academy-stat-card"><span>Presupuesto</span><strong>${currency(operation.totalBudget)}</strong><a href="/herramientas/coste-total" data-nav>Revisar coste →</a></article><article class="academy-card academy-stat-card"><span>Cierre real</span><strong>${realOperationCompleted() ? "Confirmado" : "Pendiente"}</strong><a href="/herramientas/espana" data-nav>Ver carpeta →</a></article></div></div>`;
 }
 
+function dashboardContinue(model) {
+  if (model.isComplete) return { href: "/academia/ruta", label: "Repasar la ruta" };
+  if (model.currentLesson) return { href: lessonHref(model.currentLesson), label: model.isNew ? "Empezar Academia" : "Continuar" };
+  return { href: "/academia/ruta", label: "Explorar la ruta" };
+}
+
+function renderDashboardModule(stage) {
+  const statusLabel = ({ complete: "Completado", current: "En curso", recommended: "Siguiente", pending: "Pendiente" })[stage.status];
+  const actionLabel = stage.status === "complete" ? "Repasar módulo" : stage.status === "current" ? "Continuar módulo" : "Abrir módulo";
+  return `<a class="academy-control-module" href="${stageHref(stage)}" data-nav data-module-id="${escapeAttribute(stage.id)}" data-status="${stage.status}">
+    <span class="academy-control-module-number" aria-hidden="true">${stage.number}</span>
+    <div class="academy-control-module-top"><span class="academy-control-module-state"><span aria-hidden="true">${stage.status === "complete" ? "✓" : stage.status === "pending" ? "○" : "●"}</span>${escapeHtml(statusLabel)}</span><span>${stage.completedCount}/${stage.lessonCount}</span></div>
+    <h3>${escapeHtml(stage.title)}</h3><p>${escapeHtml(stage.description || stage.subtitle || "")}</p>
+    <div class="academy-control-module-progress" aria-label="${stage.completedCount} de ${stage.lessonCount} lecciones completadas"><span style="--progress:${stage.percentage}%"></span></div>
+    <div class="academy-control-module-footer"><span>${stage.lessonCount} lecciones</span><strong>${escapeHtml(actionLabel)} ${iconSvg("chevron")}</strong></div>
+  </a>`;
+}
+
+function renderDashboardTool(tool) {
+  const slug = tool.slug || tool.id;
+  return `<a class="academy-control-tool" href="${toolHref(slug)}" data-nav data-tool-id="${escapeAttribute(tool.id || slug)}"><span class="academy-control-tool-icon">${iconSvg(toolIconName(slug))}</span><span><strong>${escapeHtml(tool.title)}</strong><small>${escapeHtml(tool.description || "")}</small></span>${iconSvg("chevron")}</a>`;
+}
+
 function renderDashboard() {
-  const progress = progressInfo();
-  const next = continueTarget();
-  const mode = dashboardMode();
-  const currentStage = progress.currentStage;
-  const lessonUnit = app.program.schemaVersion >= 2 ? "lecciones" : "pasos";
-  const heading = "h2";
-  const modeSwitch = `<div class="academy-mode-switch" role="group" aria-label="Cambiar vista del panel"><button type="button" data-action="mode-change" data-mode="learning" aria-pressed="${mode === "learning"}">${iconSvg("book")} Aprender</button><button type="button" data-action="mode-change" data-mode="operation" aria-pressed="${mode === "operation"}">${iconSvg("car")} Operación real</button></div>`;
-  const learning = `<div class="academy-dashboard-v2-grid"><section class="academy-card academy-route-card academy-route-card--europe"><div class="academy-route-card-head"><div><span class="academy-eyebrow">Tu viaje por Europa</span><h2 id="dashboard-route-title">Mapa de la ruta</h2><p>España → Francia → Benelux → Alemania → España.</p></div><span class="academy-badge">${progress.stages.length || 12} etapas${app.program.stages.length > progress.stages.length ? " + prólogo" : ""}</span></div>${renderRouteMap(app.program.stages, progress)}</section><aside class="academy-dashboard-rail">${renderCurrentStageCard(currentStage, currentStage?.lessons || [], progress)}${renderNextStageCard(currentStage, progress)}<section class="academy-card academy-quick-actions"><h3>Accesos rápidos</h3><a href="/academia/respuestas" data-nav>${iconSvg("search")} Resolver una duda</a><a href="/academia/herramientas" data-nav>${iconSvg("tools")} Abrir herramientas</a><a href="/academia/ruta" data-nav>${iconSvg("map")} Ver ruta completa</a><a href="/academia/mi-operacion" data-nav>${iconSvg("car")} Mi operación</a></section></aside></div>${renderDashboardStats(progress)}`;
-  return `${renderAcademyEntryChoices()}<section class="academy-dashboard-hero academy-dashboard-hero--v2"><div class="academy-dashboard-copy"><span class="academy-eyebrow">Academia IvanImports · gratis y sin registro</span><${heading}>Tu ruta de importación</${heading}><p>Aprende con una ruta visual y abre tu expediente real solo cuando lo necesites.</p>${modeSwitch}<div class="academy-dashboard-actions"><a class="academy-button academy-button--primary" href="${next.href}" data-nav>${escapeHtml(next.label)} ${iconSvg("chevron")}</a><a class="academy-button academy-button--secondary" href="/academia/ruta" data-nav>Ver ruta completa</a></div></div><div class="academy-progress-summary"><div class="academy-progress-number"><strong>${progress.percentage}</strong><span>%</span></div><p>${progress.completedCount} de ${progress.totalLessons} ${lessonUnit} · ${progress.completedStageIds.length} de ${progress.stages.length || 12} etapas.</p><div class="academy-progress-track"><div class="academy-progress-bar" style="--progress:${progress.percentage}%"></div></div></div></section>${mode === "operation" ? renderDashboardOperation() : learning}<a class="academy-button academy-button--primary academy-sticky-continue" href="${next.href}" data-nav>${escapeHtml(next.label)} ${iconSvg("chevron")}</a>`;
+  const model = academyDashboardModel(app.program, app.state);
+  const next = dashboardContinue(model);
+  const contextStage = model.currentLesson ? findStage(model.currentLesson.stageId) : model.recommendedStage;
+  const contextLabel = contextStage?.kind === "prologue" || contextStage?.countsTowardProgress === false
+    ? "Empieza aquí"
+    : `Módulo ${String(contextStage?.order || model.recommendedStage?.number || "01").padStart(2, "0")}`;
+  const heading = model.isComplete || realOperationCompleted() ? "h2" : "h1";
+  const featuredTools = selectDashboardTools(app.program, model.recommendedStage?.id, 6);
+  const completedModules = model.stages.filter((stage) => stage.complete).length;
+  return `<div class="academy-control" data-dashboard-state="${model.isComplete ? "complete" : model.isNew ? "new" : "active"}">
+    <section class="academy-control-hero" aria-labelledby="academy-control-title">
+      <div class="academy-control-hero-copy"><span class="academy-eyebrow">Academia IvanImports</span><${heading} id="academy-control-title">Aprende a importar un coche desde Europa, paso a paso.</${heading}><p>12 módulos para pasar de buscar el vehículo a tenerlo matriculado en España. Gratis y a tu ritmo.</p><div class="academy-control-facts" aria-label="Contenido de la Academia"><span>12 módulos</span><span>${app.program.lessons.length} lecciones</span><span>${app.program.tools.length} herramientas</span></div></div>
+      <div class="academy-control-next" aria-label="Tu siguiente paso">
+        <div class="academy-control-next-head"><span>${model.isComplete ? "Ruta completada" : model.isNew ? "Tu punto de partida" : "Continúa donde lo dejaste"}</span><strong>${model.percentage}%</strong></div>
+        <div class="academy-control-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${model.percentage}" aria-label="Progreso de la Academia"><span style="--progress:${model.percentage}%"></span></div>
+        <p>${model.completedCount} de ${model.totalLessons} lecciones completadas · ${completedModules} de ${model.stages.length} módulos.</p>
+        <div class="academy-control-next-step"><span>${escapeHtml(contextLabel)}</span><strong>${escapeHtml(contextStage?.title || "Tu ruta de importación")}</strong>${model.currentLesson ? `<small>${escapeHtml(model.currentLesson.title)}</small>` : ""}</div>
+        <a class="academy-button academy-button--primary academy-button--wide" href="${next.href}" data-nav>${escapeHtml(next.label)} ${iconSvg("chevron")}</a><small>El progreso se guarda en este dispositivo.</small>
+      </div>
+    </section>
+    <section class="academy-control-search" aria-label="Buscar en la Academia"><span class="academy-control-search-icon">${iconSvg("search")}</span><div><strong>¿Qué necesitas encontrar?</strong><span>Busca “COC”, “placas”, “IVA”, “ITV” o “Alemania”.</span></div><button class="academy-button academy-button--secondary" type="button" data-action="search-open">Buscar en la Academia</button></section>
+    <section class="academy-control-section" aria-labelledby="academy-modules-title"><header class="academy-control-section-head"><div><span class="academy-eyebrow">Todo el proceso, en orden</span><h2 id="academy-modules-title">Tu ruta de importación</h2><p>Abre cualquier módulo o sigue el siguiente paso recomendado.</p></div><a href="/academia/ruta" data-nav>Ver ruta completa ${iconSvg("chevron")}</a></header><div class="academy-control-modules">${model.stages.map(renderDashboardModule).join("")}</div></section>
+    <section class="academy-control-section" aria-labelledby="academy-tools-title"><header class="academy-control-section-head"><div><span class="academy-eyebrow">Trabaja con tus propios datos</span><h2 id="academy-tools-title">Herramientas</h2><p>Calcula, compara y controla la operación sin salir de la Academia.</p></div><a href="/academia/herramientas" data-nav>Ver las ${app.program.tools.length} herramientas ${iconSvg("chevron")}</a></header><div class="academy-control-tools">${featuredTools.map(renderDashboardTool).join("")}</div></section>
+    <div class="academy-control-secondary">
+      <section class="academy-control-europe"><span class="academy-control-secondary-icon">${iconSvg("map")}</span><div><span class="academy-eyebrow">Explorar Europa</span><h2>Consulta la ruta sobre el mapa.</h2><p>Accede al mapa de Europa y abre cada etapa del recorrido.</p><a class="academy-button academy-button--secondary" href="/academia/ruta" data-nav>Abrir mapa ${iconSvg("chevron")}</a></div></section>
+      <section class="academy-control-about"><span class="academy-control-secondary-icon">${iconSvg("route")}</span><div><span class="academy-eyebrow">Academia gratuita IvanImports</span><h2>Una ruta práctica, completa y actualizable.</h2><p>Aprende el proceso por tu cuenta, paso a paso y a partir de la experiencia real de importar vehículos.</p><div class="academy-control-about-links"><a href="${app.program.stages[0] ? stageHref(app.program.stages[0]) : "/academia/ruta"}" data-nav>Leer el prólogo</a><a href="/academia/recursos" data-nav>Abrir recursos</a><a href="/academia/mi-operacion" data-nav>Mi operación</a></div></div></section>
+    </div>
+  </div>`;
 }
 
 function renderAcademyEntryChoices() {
@@ -1334,7 +1411,7 @@ function renderTool() {
   const renderer = ({ presupuesto: renderBudgetTool, filtros: renderSearchFilterTool, "analizador-anuncio": renderAdAnalyzerTool, mercado: renderMarketTool, "coste-total": renderCostTool, documentos: renderDocumentsTool, preguntas: renderQuestionsTool, "plan-abc": renderPlanTool, viaje: renderTravelTool, inspeccion: renderInspectionTool, pintura: renderPaintTool, "compra-salida": renderPurchaseExitTool, vuelta: renderReturnTool, espana: renderSpainTool, "metodo-7-dias": renderMethodTool })[tool.slug];
   const completed = Boolean(app.state.tools?._completed?.[tool.slug]);
   const content = renderer ? renderer() : tool.slug === "operation-dashboard" ? renderDashboardOperation() : tool.slug === "candidate-board" ? renderCandidates() : `<div class="academy-empty"><div class="academy-state-copy"><strong>Definición interactiva no recibida</strong><p>El catálogo identifica esta herramienta, pero todavía no existe un componente operativo asociado.</p><a class="academy-button academy-button--secondary" href="/academia/herramientas" data-nav>Volver al centro</a></div></div>`;
-  const headActions = `<button class="academy-button academy-button--ghost academy-button--small" type="button" data-action="tool-reset" data-tool-id="${escapeAttribute(tool.slug)}">Vaciar herramienta</button><span class="academy-tool-head-icon">${iconSvg(toolIconName(tool.sourceSlug || tool.slug))}</span>`;
+  const headActions = `<button class="academy-button academy-button--ghost academy-button--small" type="button" data-action="tool-reset" data-tool-id="${escapeAttribute(tool.slug)}">${tool.slug === "coste-total" ? "Vaciar calculadora" : "Vaciar herramienta"}</button><span class="academy-tool-head-icon">${iconSvg(toolIconName(tool.sourceSlug || tool.slug))}</span>`;
   return `<nav aria-label="Migas de pan"><ol class="academy-breadcrumbs"><li><a href="${PROGRAM_ROOT}" data-nav>Inicio</a></li><li><a href="/academia/herramientas" data-nav>Herramientas</a></li><li aria-current="page">${escapeHtml(tool.title || tool.slug)}</li></ol></nav>${renderPageHead("Herramienta", tool.title || tool.slug, tool.description || "Tus cambios se guardan automáticamente.", headActions)}<div class="academy-tool-workbench" data-tool-id="${escapeAttribute(tool.slug)}">${content}${!["operation-dashboard", "candidate-board"].includes(tool.slug) ? `<section class="academy-tool-complete-card"><div><strong>${completed ? "Herramienta revisada" : "¿Has terminado esta comprobación?"}</strong><p>Marcarla no certifica el vehículo; registra que has terminado tu revisión actual.</p></div><button class="academy-button ${completed ? "academy-button--secondary" : "academy-button--primary"}" type="button" data-action="tool-complete" data-tool-id="${escapeAttribute(tool.slug)}">${completed ? "Volver a abrir" : "Marcar como revisada"}</button></section>` : ""}</div>`;
 }
 
@@ -1419,33 +1496,136 @@ function renderMarketTool() {
 }
 
 function ensureCosts() {
-  app.state.tools.costs ||= { rows: {}, marketValue: "", desiredProfit: "" };
-  app.state.tools.costs.rows ||= {};
+  app.state.tools.costs = normalizeCostCalculatorState(app.state.tools.costs || createEmptyCostCalculatorState());
   return app.state.tools.costs;
 }
 
-function renderCostToolLegacy() {
+function renderCostInput(field) {
   const data = ensureCosts();
-  return `<section class="academy-card academy-form-card"><div class="academy-table-wrap"><table class="academy-table"><thead><tr><th>Partida</th><th>Estimado</th><th>Confirmado</th><th>Real</th><th>Desviación</th></tr></thead><tbody>${COST_ROWS.map(([key, label]) => { const row = data.rows[key] || {}; return `<tr><td><strong>${label}</strong></td>${["estimated", "confirmed", "actual"].map((column) => `<td><input type="number" min="0" step="any" value="${escapeAttribute(row[column] || "")}" data-cost-field="${key}.${column}" aria-label="${label}, ${column}"></td>`).join("")}<td data-cost-diff="${key}">${currency(finite(row.actual) - finite(row.estimated))}</td></tr>`; }).join("")}</tbody></table></div>
-    <div class="academy-form-grid" style="margin-top:1rem"><div class="academy-field"><label for="cost-market">Mercado español conservador (€)</label><input id="cost-market" type="number" min="0" step="any" value="${escapeAttribute(data.marketValue || "")}" data-tool-field="costs.marketValue"></div><div class="academy-field"><label for="cost-profit">Beneficio mínimo deseado (€)</label><input id="cost-profit" type="number" min="0" step="any" value="${escapeAttribute(data.desiredProfit || "")}" data-tool-field="costs.desiredProfit"></div></div>
-    <div class="academy-grid academy-grid--4" style="margin-top:1rem"><article class="academy-card academy-stat-card"><span>Coste estimado</span><strong data-cost-total="estimated">${currency(costTotals().estimated)}</strong></article><article class="academy-card academy-stat-card"><span>Coste real</span><strong data-cost-total="actual">${currency(costTotals().actual)}</strong></article><article class="academy-card academy-stat-card"><span>Margen bruto</span><strong data-cost-margin>${currency(costTotals().margin)}</strong></article><article class="academy-card academy-stat-card"><span>ROI orientativo</span><strong data-cost-roi>${costTotals().roi.toFixed(1)}%</strong></article></div></section>`;
+  const inputId = `cost-${field.id}`;
+  const helpId = field.help ? `${inputId}-help` : "";
+  return `<div class="academy-cost-line${field.featured ? " academy-cost-line--featured" : ""}${field.fuelCalculator ? " academy-cost-line--fuel" : ""}">
+    <div class="academy-cost-line-copy"><label for="${inputId}">${escapeHtml(field.label)}</label>${field.help ? `<small id="${helpId}">${escapeHtml(field.help)}</small>` : ""}</div>
+    <div class="academy-cost-input"><input id="${inputId}" type="text" inputmode="decimal" autocomplete="off" maxlength="20" placeholder="0 €" value="${escapeAttribute(data.expenses[field.id] || "")}" data-cost-field="${escapeAttribute(field.id)}"${helpId ? ` aria-describedby="${helpId}"` : ""}><span aria-hidden="true">€</span></div>
+    ${field.fuelCalculator ? renderFuelCalculator(data) : ""}
+  </div>`;
 }
 
-function costTotals() {
-  const data = ensureCosts();
-  const sums = { estimated: 0, confirmed: 0, actual: 0 };
-  Object.values(data.rows).forEach((row) => Object.keys(sums).forEach((key) => { sums[key] += finite(row[key]); }));
-  const investment = sums.actual || sums.confirmed || sums.estimated;
-  const margin = finite(data.marketValue) - investment;
-  return { ...sums, margin, roi: investment > 0 ? (margin / investment) * 100 : 0 };
+function renderFuelCalculator(data) {
+  const fuel = calculateFuel(data.fuel);
+  return `<details class="academy-fuel-calculator">
+    <summary>Calcular combustible</summary>
+    <div class="academy-fuel-calculator-body">
+      <div class="academy-fuel-fields">
+        <div class="academy-field"><label for="fuel-kilometres">Kilómetros del trayecto</label><div class="academy-cost-input"><input id="fuel-kilometres" type="text" inputmode="decimal" autocomplete="off" maxlength="20" placeholder="2.300" value="${escapeAttribute(data.fuel.kilometres)}" data-fuel-field="kilometres"><span aria-hidden="true">km</span></div></div>
+        <div class="academy-field"><label for="fuel-consumption">Consumo del vehículo</label><div class="academy-cost-input"><input id="fuel-consumption" type="text" inputmode="decimal" autocomplete="off" maxlength="20" placeholder="7,5" value="${escapeAttribute(data.fuel.consumption)}" data-fuel-field="consumption"><span aria-hidden="true">L/100</span></div></div>
+        <div class="academy-field"><label for="fuel-litre-price">Precio del combustible</label><div class="academy-cost-input"><input id="fuel-litre-price" type="text" inputmode="decimal" autocomplete="off" maxlength="20" placeholder="1,65" value="${escapeAttribute(data.fuel.pricePerLitre)}" data-fuel-field="pricePerLitre"><span aria-hidden="true">€/L</span></div></div>
+      </div>
+      <div class="academy-fuel-result" aria-live="polite"><span>Combustible necesario<strong data-fuel-litres>${fuel.valid ? `${decimal(fuel.litres)} L` : "—"}</strong></span><span>Coste estimado<strong data-fuel-cost>${fuel.valid ? costCurrency(fuel.cost) : "—"}</strong></span></div>
+      <button class="academy-button academy-button--secondary academy-button--wide" type="button" data-action="fuel-use"${fuel.valid ? "" : " disabled"}>${fuel.valid ? `Usar ${costCurrency(fuel.cost)} como gasto de combustible` : "Completa los tres datos para usar el coste"}</button>
+    </div>
+  </details>`;
+}
+
+function renderCostSection(section, index) {
+  return `<section class="academy-card academy-cost-section" data-cost-section="${escapeAttribute(section.id)}">
+    <header><span>${String(index + 1).padStart(2, "0")}</span><div><h2>${escapeHtml(section.title)}</h2><p>${section.id === "vehicle" ? "Empieza por el importe principal de la operación." : "Añade únicamente las partidas que correspondan."}</p></div></header>
+    <div class="academy-cost-lines">${section.fields.map(renderCostInput).join("")}</div>
+  </section>`;
+}
+
+function renderCostSummary(model) {
+  const labels = { vehicle: "Coste del vehículo", travel: "Gastos de viaje", administration: "Gastos administrativos", upkeep: "Puesta a punto y otros" };
+  return `<span class="academy-eyebrow">05 · Total de la operación</span><h2>Resumen de costes</h2><dl>${Object.entries(labels).map(([key, label]) => `<div><dt>${label}</dt><dd>${costCurrency(model.categoryTotals[key])}</dd></div>`).join("")}</dl>
+    <div class="academy-cost-total"><span>Coste total</span><strong>${costCurrency(model.totalCost)}</strong><small>Coche puesto en España según los datos introducidos.</small></div>
+    <div class="academy-cost-summary-metrics">
+      ${model.hasMarket ? `<div><span>Mercado España</span><strong>${costCurrency(model.marketValue)}</strong></div><div><span>Beneficio a mercado</span><strong>${costCurrency(model.marketProfit)}</strong></div>` : ""}
+      ${model.hasDesiredProfit ? `<div><span>Precio para tu objetivo</span><strong>${costCurrency(model.targetSalePrice)}</strong></div>` : ""}
+      ${model.maximumPurchasePrice !== null ? `<div><span>Compra máxima</span><strong>${costCurrency(Math.max(0, model.maximumPurchasePrice))}</strong></div>` : ""}
+    </div><small class="academy-cost-save-note">Los cambios se guardan automáticamente en este dispositivo.</small>`;
+}
+
+function renderCostMarket(data) {
+  return `<section class="academy-card academy-cost-market">
+    <header><span>06</span><div><h2>¿Tiene sentido esta operación?</h2><p>Añade tu referencia de mercado y el beneficio que buscas.</p></div></header>
+    <div class="academy-cost-market-grid">
+      <div class="academy-field"><label for="cost-market">Precio de mercado en España</label><p>Introduce un precio de venta realista para un vehículo equivalente.</p><div class="academy-cost-input"><input id="cost-market" type="text" inputmode="decimal" autocomplete="off" maxlength="20" placeholder="0 €" value="${escapeAttribute(data.marketValue)}" data-cost-meta-field="marketValue"><span aria-hidden="true">€</span></div></div>
+      <div class="academy-field"><label for="cost-profit">Beneficio que quieres conseguir</label><p>Cuánto quieres ganar después de recuperar todos los gastos.</p><div class="academy-cost-input"><input id="cost-profit" type="text" inputmode="decimal" autocomplete="off" maxlength="20" placeholder="0 €" value="${escapeAttribute(data.desiredProfit)}" data-cost-meta-field="desiredProfit"><span aria-hidden="true">€</span></div></div>
+    </div>
+    <div class="academy-cost-negotiation"><div><span class="academy-eyebrow">Tu referencia para negociar</span><label for="cost-asking">Precio anunciado <small>(opcional)</small></label><p>Compáralo con el máximo que permite tu objetivo.</p></div><div class="academy-cost-input"><input id="cost-asking" type="text" inputmode="decimal" autocomplete="off" maxlength="20" placeholder="0 €" value="${escapeAttribute(data.askingPrice)}" data-cost-meta-field="askingPrice"><span aria-hidden="true">€</span></div></div>
+  </section>`;
+}
+
+function renderCostAnalysis(model) {
+  const status = {
+    incomplete: ["neutral", "Completa los datos que necesites", "Puedes calcular el coste total sin introducir mercado ni beneficio."],
+    good: ["success", "Buen margen", "Tu objetivo de beneficio permite vender por debajo del precio de mercado introducido."],
+    aligned: ["neutral", "Operación ajustada", "Tu precio objetivo está muy cerca del precio de mercado introducido."],
+    attention: ["attention", "Revisa la operación", "Para conseguir el beneficio que buscas necesitas vender por encima del precio de mercado introducido."],
+  }[model.status];
+  const paragraphs = [`El coche te costaría aproximadamente <strong>${costCurrency(model.totalCost)} puesto en España</strong> según los gastos introducidos.`];
+  if (model.hasMarket) paragraphs.push(`Si consiguieras venderlo por <strong>${costCurrency(model.marketValue)}</strong>, tu beneficio aproximado sería de <strong>${costCurrency(model.marketProfit)}</strong>.`);
+  if (model.hasDesiredProfit) paragraphs.push(`Para conseguir un beneficio de <strong>${costCurrency(model.desiredProfit)}</strong>, necesitarías venderlo por al menos <strong>${costCurrency(model.targetSalePrice)}</strong>.`);
+  if (model.marketDifference !== null) {
+    if (model.status === "aligned") paragraphs.push("Tu precio objetivo está prácticamente en línea con el mercado español introducido.");
+    else if (model.marketDifference > 0) paragraphs.push(`Ese precio está aproximadamente <strong>${costCurrency(Math.abs(model.marketDifference))} por encima del mercado</strong>.`);
+    else paragraphs.push(`Podrías vender aproximadamente <strong>${costCurrency(Math.abs(model.marketDifference))} por debajo del mercado</strong> y aun así conseguir el beneficio que buscas.`);
+  }
+  if (model.maximumPurchasePrice !== null) {
+    if (model.maximumPurchasePrice >= 0) paragraphs.push(`Con estos gastos, intenta pagar como máximo <strong>${costCurrency(model.maximumPurchasePrice)}</strong> por el vehículo para mantener el objetivo vendiendo a mercado.`);
+    else paragraphs.push("Con estos gastos y objetivo, ni un precio de compra de 0 € permitiría cuadrar la operación a mercado. Revisa las partidas o el beneficio deseado.");
+  }
+  if (model.purchaseDifference !== null && model.maximumPurchasePrice >= 0) {
+    paragraphs.push(model.purchaseDifference > 0
+      ? `Estás pagando aproximadamente <strong>${costCurrency(model.purchaseDifference)} más de lo que permitiría tu objetivo de beneficio</strong>.`
+      : `Estás comprando aproximadamente <strong>${costCurrency(Math.abs(model.purchaseDifference))} por debajo de tu límite objetivo</strong>.`);
+  }
+  if (model.negotiationAmount !== null && model.maximumPurchasePrice >= 0) {
+    paragraphs.push(model.negotiationAmount > 0
+      ? `Para llegar a tu objetivo deberías negociar aproximadamente <strong>${costCurrency(model.negotiationAmount)}</strong> sobre el precio anunciado.`
+      : "El precio anunciado ya entra dentro de tu objetivo de compra.");
+  }
+  const marketLesson = findLesson("lesson-04-05");
+  return `<div class="academy-cost-analysis-head" data-tone="${status[0]}"><span class="academy-eyebrow">07 · Análisis de la operación</span><h2>${status[1]}</h2><p>${status[2]}</p></div>
+    <div class="academy-cost-answer-grid">
+      <article><span>Coste puesto en España</span><strong>${costCurrency(model.totalCost)}</strong><p>La suma de todas las partidas.</p></article>
+      ${model.hasDesiredProfit ? `<article><span>Venta para tu objetivo</span><strong>${costCurrency(model.targetSalePrice)}</strong><p>Coste total + beneficio deseado.</p></article>` : ""}
+      ${model.hasMarket ? `<article><span>Beneficio vendiendo a mercado</span><strong>${costCurrency(model.marketProfit)}</strong><p>Mercado introducido − coste total.</p></article>` : ""}
+      ${model.maximumPurchasePrice !== null ? `<article class="academy-cost-answer--primary"><span>Precio máximo de compra recomendado</span><strong>${costCurrency(Math.max(0, model.maximumPurchasePrice))}</strong><p>Mercado − beneficio − gastos sin compra.</p></article>` : ""}
+    </div>
+    <div class="academy-cost-narrative">${paragraphs.map((paragraph) => `<p>${paragraph}</p>`).join("")}</div>
+    ${model.hasMarket && model.totalCost > 0 ? `<details class="academy-cost-detail"><summary>Ver análisis detallado</summary><div><span>Margen sobre precio de mercado<strong>${decimal(model.marginPercent)} %</strong></span><span>Rentabilidad sobre coste<strong>${decimal(model.returnOnCost)} %</strong></span></div></details>` : ""}
+    ${model.status === "attention" && marketLesson ? `<a class="academy-cost-learning-link" href="${lessonHref(marketLesson)}" data-nav><span>¿No te salen los números?</span><strong>Aprende a comparar el mercado español ${iconSvg("chevron")}</strong></a>` : ""}`;
 }
 
 function renderCostTool() {
   const data = ensureCosts();
-  const totals = costTotals();
-  const groups = COST_GROUPS;
-  const groupTotal = (keys, column) => keys.reduce((sum, key) => sum + finite(data.rows[key]?.[column]), 0);
-  return `<section class="academy-cost-lab"><div class="academy-grid academy-grid--4"><article class="academy-card academy-stat-card"><span>Estimado</span><strong data-cost-total="estimated">${currency(totals.estimated)}</strong></article><article class="academy-card academy-stat-card"><span>Confirmado</span><strong data-cost-total="confirmed">${currency(totals.confirmed)}</strong></article><article class="academy-card academy-stat-card"><span>Real</span><strong data-cost-total="actual">${currency(totals.actual)}</strong></article><article class="academy-card academy-stat-card"><span>Desviación</span><strong>${currency(totals.actual - totals.estimated)}</strong></article></div><div class="academy-cost-blocks">${groups.map(([label, keys], index) => `<article class="academy-card academy-cost-block" data-block="${index + 1}"><span>${String(index + 1).padStart(2, "0")}</span><h2>${label}</h2><div><small>Estimado</small><strong>${currency(groupTotal(keys, "estimated"))}</strong></div><div><small>Real</small><strong>${currency(groupTotal(keys, "actual"))}</strong></div></article>`).join("")}</div><section class="academy-card academy-cost-decision"><div class="academy-form-grid"><div class="academy-field"><label for="cost-market">Mercado español conservador (€)</label><input id="cost-market" type="number" min="0" step="any" value="${escapeAttribute(data.marketValue ?? "")}" data-tool-field="costs.marketValue"></div><div class="academy-field"><label for="cost-profit">Beneficio mínimo deseado (€)</label><input id="cost-profit" type="number" min="0" step="any" value="${escapeAttribute(data.desiredProfit ?? "")}" data-tool-field="costs.desiredProfit"></div></div><div class="academy-grid academy-grid--2"><article><span>Margen bruto orientativo</span><strong data-cost-margin>${currency(totals.margin)}</strong></article><article><span>ROI orientativo</span><strong data-cost-roi>${totals.roi.toFixed(1)}%</strong></article></div></section><details class="academy-card academy-tool-advanced"><summary>Editar las ${COST_ROWS.length} partidas</summary><div class="academy-table-wrap"><table class="academy-table"><thead><tr><th>Partida</th><th>Estimado</th><th>Confirmado</th><th>Real</th><th>Desviación</th></tr></thead><tbody>${COST_ROWS.map(([key, label]) => { const row = data.rows[key] || {}; return `<tr><td><strong>${label}</strong></td>${["estimated", "confirmed", "actual"].map((column) => `<td><input type="number" min="0" step="any" value="${escapeAttribute(row[column] ?? "")}" data-cost-field="${key}.${column}" aria-label="${label}, ${column}"></td>`).join("")}<td data-cost-diff="${key}">${currency(finite(row.actual) - finite(row.estimated))}</td></tr>`; }).join("")}</tbody></table></div></details></section>`;
+  const model = calculateCostOperation(data);
+  return `<section class="academy-cost-calculator" data-calculator-version="2">
+    <div class="academy-cost-layout"><div class="academy-cost-form">${COST_EXPENSE_SECTIONS.map(renderCostSection).join("")}${renderCostMarket(data)}</div><aside class="academy-card academy-cost-summary academy-sticky-card" data-cost-summary>${renderCostSummary(model)}</aside></div>
+    <section class="academy-card academy-cost-analysis" data-cost-analysis aria-live="polite">${renderCostAnalysis(model)}</section>
+  </section>`;
+}
+
+function updateCostCalculatorResults() {
+  const calculator = document.querySelector(".academy-cost-calculator");
+  if (!calculator) return;
+  const data = ensureCosts();
+  const model = calculateCostOperation(data);
+  const summary = calculator.querySelector("[data-cost-summary]");
+  const analysis = calculator.querySelector("[data-cost-analysis]");
+  if (summary) summary.innerHTML = renderCostSummary(model);
+  if (analysis) analysis.innerHTML = renderCostAnalysis(model);
+  const fuel = calculateFuel(data.fuel);
+  const litres = calculator.querySelector("[data-fuel-litres]");
+  const cost = calculator.querySelector("[data-fuel-cost]");
+  const useButton = calculator.querySelector('[data-action="fuel-use"]');
+  if (litres) litres.textContent = fuel.valid ? `${decimal(fuel.litres)} L` : "—";
+  if (cost) cost.textContent = fuel.valid ? currency(fuel.cost) : "—";
+  if (useButton) {
+    useButton.disabled = !fuel.valid;
+    useButton.textContent = fuel.valid ? `Usar ${currency(fuel.cost)} como gasto de combustible` : "Completa los tres datos para usar el coste";
+  }
 }
 
 function renderDocumentsTool() {
@@ -1788,19 +1968,7 @@ function updateDynamicResults() {
   const median = document.querySelector("[data-market-median]");
   if (range) range.textContent = stats ? `${currency(stats.min)} – ${currency(stats.max)}` : "—";
   if (median) median.textContent = stats ? currency(stats.median) : "—";
-  const totals = costTotals();
-  document.querySelectorAll("[data-cost-total]").forEach((element) => { element.textContent = currency(totals[element.dataset.costTotal]); });
-  document.querySelectorAll(".academy-cost-block").forEach((element, index) => {
-    const keys = COST_GROUPS[index]?.[1] || [];
-    const values = element.querySelectorAll("strong");
-    if (values[0]) values[0].textContent = currency(keys.reduce((sum, key) => sum + finite(app.state.tools.costs?.rows?.[key]?.estimated), 0));
-    if (values[1]) values[1].textContent = currency(keys.reduce((sum, key) => sum + finite(app.state.tools.costs?.rows?.[key]?.actual), 0));
-  });
-  const deviation = document.querySelector(".academy-cost-lab > .academy-grid--4 > .academy-stat-card:nth-child(4) strong");
-  if (deviation) deviation.textContent = currency(totals.actual - totals.estimated);
-  const margin = document.querySelector("[data-cost-margin]"); if (margin) margin.textContent = currency(totals.margin);
-  const roi = document.querySelector("[data-cost-roi]"); if (roi) roi.textContent = `${totals.roi.toFixed(1)}%`;
-  COST_ROWS.forEach(([key]) => { const element = document.querySelector(`[data-cost-diff="${key}"]`); const row = app.state.tools.costs?.rows?.[key] || {}; if (element) element.textContent = currency(finite(row.actual) - finite(row.estimated)); });
+  updateCostCalculatorResults();
   const output = document.querySelector("[data-question-output]"); if (output) output.textContent = questionOutput();
 }
 
@@ -1940,7 +2108,20 @@ function handleClick(event) {
   }
   if (action === "tool-reset") {
     const slug = canonicalToolSlug(target.dataset.toolId);
-    if (window.confirm("¿Vaciar todos los datos guardados en esta herramienta? Esta acción no se puede deshacer.")) resetTool(slug);
+    const hasData = slug === "coste-total" ? costCalculatorHasData(app.state.tools.costs) : true;
+    if (!hasData || window.confirm(slug === "coste-total" ? "¿Vaciar todos los datos de la calculadora? Esta acción no se puede deshacer." : "¿Vaciar todos los datos guardados en esta herramienta? Esta acción no se puede deshacer.")) resetTool(slug);
+  }
+  if (action === "fuel-use") {
+    const data = ensureCosts();
+    const value = fuelCostInputValue(data.fuel);
+    if (value !== "") {
+      data.expenses.fuel = value;
+      const input = document.querySelector('[data-cost-field="fuel"]');
+      if (input) input.value = value;
+      scheduleSave({ immediate: true });
+      updateCostCalculatorResults();
+      toast("El coste de combustible se ha añadido y puedes editarlo manualmente.", "success");
+    }
   }
   if (action === "market-add") { app.state.tools.market ||= { comparables: [] }; app.state.tools.market.comparables ||= []; if (app.state.tools.market.comparables.length >= 50) toast("Has alcanzado el máximo de 50 comparables.", "error"); else { app.state.tools.market.comparables.push({ id: uid("comparable") }); scheduleSave(); renderView(); const editor = document.querySelector("[data-market-editor]"); if (editor) editor.open = true; window.requestAnimationFrame(() => editor?.querySelector("input")?.focus()); } }
   if (action === "market-remove") { app.state.tools.market?.comparables?.splice(finite(target.dataset.index), 1); scheduleSave(); renderView(); }
@@ -1966,9 +2147,19 @@ function handleInput(event) {
   if (target.matches("[data-search-input]")) { renderSearchResultList(target.value); return; }
   if (target.matches("[data-answer-filter]")) { document.querySelector("[data-answer-list]").innerHTML = renderAnswerSearch(target.value); return; }
   if (target.matches("[data-operation-field]")) { const created = !app.state.operation; app.state.operation ||= { id: uid("operation"), createdAt: new Date().toISOString() }; app.state.operation[target.dataset.operationField] = inputValue(target); app.state.operation.updatedAt = new Date().toISOString(); if (created) academyTrack("academy_operation_created", { programId: app.program.id }); scheduleSave(); return; }
+  if (target.matches("[data-cost-field], [data-cost-meta-field], [data-fuel-field]")) {
+    const sanitized = sanitizeDecimalInput(target.value);
+    if (target.value !== sanitized) target.value = sanitized;
+    const data = ensureCosts();
+    if (target.matches("[data-cost-field]")) data.expenses[target.dataset.costField] = sanitized;
+    if (target.matches("[data-cost-meta-field]")) data[target.dataset.costMetaField] = sanitized;
+    if (target.matches("[data-fuel-field]")) data.fuel[target.dataset.fuelField] = sanitized;
+    scheduleSave();
+    updateCostCalculatorResults();
+    return;
+  }
   if (target.matches("[data-tool-field]")) { setPath(app.state.tools, target.dataset.toolField, inputValue(target)); if (target.dataset.toolField.startsWith("method7.") && !app.method7StartedTracked) { academyTrack("academy_method7_started", { programId: app.program.id, toolId: "metodo-7-dias" }); app.method7StartedTracked = true; } scheduleSave(); updateDynamicResults(); return; }
   if (target.matches("[data-market-field]")) { const [index, key] = target.dataset.marketField.split("."); app.state.tools.market.comparables[finite(index)][key] = inputValue(target); scheduleSave(); updateDynamicResults(); return; }
-  if (target.matches("[data-cost-field]")) { const [row, column] = target.dataset.costField.split("."); ensureCosts().rows[row] ||= {}; ensureCosts().rows[row][column] = inputValue(target); scheduleSave(); updateDynamicResults(); return; }
   if (target.matches("[data-question-field]")) { const [index, key] = target.dataset.questionField.split("."); app.state.tools.questions[finite(index)][key] = inputValue(target); scheduleSave(); updateDynamicResults(); }
 }
 
@@ -1980,7 +2171,7 @@ function handleChange(event) {
     updateNumberValidity(target);
   }
   trackToolStart(target);
-  if (target.matches("[data-market-field], [data-cost-field]")) window.requestAnimationFrame(renderView);
+  if (target.matches("[data-market-field]")) window.requestAnimationFrame(renderView);
   if (target.matches("[data-lesson-check]")) { app.state.tools.lessonChecklists ||= {}; app.state.tools.lessonChecklists[target.dataset.lessonCheck] ||= {}; app.state.tools.lessonChecklists[target.dataset.lessonCheck][target.dataset.itemId] = target.checked; scheduleSave(); academyTrack("academy_checklist_updated", { lessonId: target.dataset.lessonCheck, contentType: "lesson" }); }
   if (target.matches("[data-document-field]")) { app.state.tools.documents ||= {}; app.state.tools.documents[target.dataset.documentField] = target.value; scheduleSave(); academyTrack("academy_checklist_updated", { toolId: "documentos" }); }
   if (target.matches("[data-inspection-field]")) { app.state.tools.inspection ||= {}; app.state.tools.inspection[target.dataset.inspectionField] = target.checked; scheduleSave(); }
