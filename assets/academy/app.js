@@ -4,6 +4,7 @@ import { renderLessonVisuals, renderStageScene } from "./private/lesson-visuals.
 import { migrateAcademyStateV1ToV2, normalizeLegacyLessonMap, resolveLegacyDeepLink, resolveLegacyLessonTarget } from "./private/migration.js";
 import { ACADEMY_SEARCH_SUGGESTIONS, answerSemanticQuery } from "./private/semantic-search.js";
 import { normalizeNumberFieldValue } from "./private/form-values.js";
+import { academyDashboardModel, selectDashboardTools } from "./private/dashboard.js";
 import { ACADEMY_PATCH_NOTES, ACADEMY_VERSION } from "./patch-notes.js";
 
 const PROGRAM_ROOT = "/academia/";
@@ -633,7 +634,7 @@ function handleVideoEvent(event) {
 }
 
 function navCurrent(name) {
-  if (name === "route") return ["route", "stage", "lesson"].includes(app.route.name);
+  if (name === "route") return app.route.name === "route";
   if (name === "operation") return ["operation", "candidates"].includes(app.route.name);
   if (name === "tools") return ["tools", "tool"].includes(app.route.name);
   return app.route.name === name;
@@ -645,7 +646,29 @@ function navLink(href, name, label, icon) {
 }
 
 function mobileNavLink(href, name, label, icon) {
-  return `<a href="${href}" data-nav${navCurrent(name) ? ' aria-current="page"' : ""}><span>${iconSvg(icon, { className: "academy-icon" })}</span><span>${escapeHtml(label)}</span></a>`;
+  const current = name === "route" ? ["route", "stage", "lesson"].includes(app.route.name) : navCurrent(name);
+  return `<a href="${href}" data-nav${current ? ' aria-current="page"' : ""}><span>${iconSvg(icon, { className: "academy-icon" })}</span><span>${escapeHtml(label)}</span></a>`;
+}
+
+function mobileNavAction(label, icon, action) {
+  return `<button type="button" data-action="${action}"><span>${iconSvg(icon, { className: "academy-icon" })}</span><span>${escapeHtml(label)}</span></button>`;
+}
+
+function activeRouteStageId() {
+  if (app.route.name === "stage") return String(findStage(app.route.slug)?.id || "");
+  if (app.route.name === "lesson") return String(findLesson(app.route.slug)?.stageId || "");
+  return "";
+}
+
+function renderSidebarModules(model) {
+  const activeStageId = activeRouteStageId();
+  return model.stages.map((stage) => {
+    const active = activeStageId === String(stage.id);
+    const stateLabel = ({ complete: "Completado", current: "En curso", recommended: "Siguiente", pending: "Pendiente" })[stage.status];
+    return `<a class="academy-sidebar-module" href="${stageHref(stage)}" data-nav data-status="${stage.status}"${active ? ' aria-current="page"' : ""}>
+      <span class="academy-sidebar-module-number">${stage.number}</span><span class="academy-sidebar-module-copy"><strong>${escapeHtml(stage.shortTitle || stage.title)}</strong><small>${escapeHtml(stateLabel)}</small></span><span class="academy-sidebar-module-mark" aria-hidden="true">${stage.status === "complete" ? "✓" : stage.status === "pending" ? "" : "•"}</span>
+    </a>`;
+  }).join("");
 }
 
 function userInitials() {
@@ -656,6 +679,7 @@ function userInitials() {
 
 function renderShell() {
   const progress = progressInfo();
+  const dashboard = academyDashboardModel(app.program, app.state);
   const currentTitle = pageTitle();
   app.root.className = `academy-app${app.state.preferences.presentationMode ? " academy-app--presentation" : ""}`;
   app.root.innerHTML = `
@@ -666,15 +690,25 @@ function renderShell() {
           <span>Academia IvanImports</span><small>${escapeHtml(app.program.descriptor || "Desde cero, paso a paso")}</small>
         </a>
         <nav class="academy-sidebar-nav">
-          ${navLink(PROGRAM_ROOT, "dashboard", "Mi ruta", "route")}
-          ${navLink("/academia/ruta", "route", "Ruta completa", "map")}
-          ${navLink("/academia/mi-operacion", "operation", "Mi operación", "car")}
-          ${navLink("/academia/herramientas", "tools", "Herramientas", "tools")}
-          ${navLink("/academia/respuestas", "answers", "Respuestas", "search")}
-          ${navLink("/academia/recursos", "resources", "Recursos", "book")}
-          ${navLink("/academia/actualizaciones", "updates", "Actualizaciones", "checkpoint")}
-          <a class="academy-nav-link" href="/academia/ayuda/"><span class="academy-nav-icon">${iconSvg("support", { className: "academy-icon" })}</span><span>Ayuda y sugerencias</span></a>
-          <a class="academy-nav-link academy-nav-link--pro" href="/servicios/"><span class="academy-nav-icon">✦</span><span>Servicios PRO</span></a>
+          <div class="academy-sidebar-section">
+            <span class="academy-sidebar-section-label">Academia</span>
+            ${navLink(PROGRAM_ROOT, "dashboard", "Inicio", "home")}
+            ${navLink("/academia/ruta", "route", "Ruta completa", "map")}
+            ${navLink("/academia/herramientas", "tools", "Herramientas", "tools")}
+            <button class="academy-nav-link" type="button" data-action="search-open"><span class="academy-nav-icon">${iconSvg("search", { className: "academy-icon" })}</span><span>Buscar</span></button>
+          </div>
+          <div class="academy-sidebar-section academy-sidebar-section--modules">
+            <div class="academy-sidebar-section-heading"><span class="academy-sidebar-section-label">12 módulos</span><a href="/academia/ruta" data-nav>Ver ruta</a></div>
+            <a class="academy-sidebar-intro" href="${app.program.stages[0] ? stageHref(app.program.stages[0]) : "/academia/ruta"}" data-nav><span>00</span><strong>Empieza aquí</strong></a>
+            ${renderSidebarModules(dashboard)}
+          </div>
+          <div class="academy-sidebar-section academy-sidebar-section--utility">
+            <span class="academy-sidebar-section-label">Más</span>
+            ${navLink("/academia/mi-operacion", "operation", "Mi operación", "car")}
+            ${navLink("/academia/recursos", "resources", "Recursos", "book")}
+            <a class="academy-nav-link" href="/academia/ayuda/"><span class="academy-nav-icon">${iconSvg("support", { className: "academy-icon" })}</span><span>Ayuda</span></a>
+            <a class="academy-nav-link academy-nav-link--pro" href="/servicios/"><span class="academy-nav-icon">✦</span><span>Servicios PRO</span></a>
+          </div>
         </nav>
         <div class="academy-sidebar-progress">
           <span>Progreso global</span><strong>${progress.percentage}%</strong>
@@ -697,8 +731,7 @@ function renderShell() {
     </div>
     <nav class="academy-mobile-nav" aria-label="Navegación móvil">
       ${mobileNavLink(PROGRAM_ROOT, "dashboard", "Inicio", "home")}${mobileNavLink("/academia/ruta", "route", "Ruta", "map")}
-      ${mobileNavLink("/academia/mi-operacion", "operation", "Operación", "car")}${mobileNavLink("/academia/herramientas", "tools", "Herramientas", "tools")}
-      ${mobileNavLink("/academia/respuestas", "answers", "Resolver", "search")}
+      ${mobileNavLink("/academia/herramientas", "tools", "Herramientas", "tools")}${mobileNavAction("Buscar", "search", "search-open")}
     </nav>
     ${renderSearchDialog()}
     ${renderCandidateDialog()}
@@ -710,7 +743,7 @@ function pageTitle() {
   if (app.route.name === "stage") return findStage(app.route.slug)?.title || "Etapa";
   if (app.route.name === "lesson") return findLesson(app.route.slug)?.title || "Lección";
   if (app.route.name === "tool") return toolDefinition(app.route.slug)?.title || "Herramienta";
-  return ({ dashboard: "Tu ruta de importación", route: "Ruta completa", operation: "Mi operación", candidates: "Vehículos candidatos", tools: "Herramientas", answers: "Centro de respuestas", resources: "Recursos", support: "Errores y sugerencias", updates: "Actualizaciones", account: "Preferencias" })[app.route.name] || app.program.title;
+  return ({ dashboard: "Academia", route: "Ruta completa", operation: "Mi operación", candidates: "Vehículos candidatos", tools: "Herramientas", answers: "Centro de respuestas", resources: "Recursos", support: "Errores y sugerencias", updates: "Actualizaciones", account: "Preferencias" })[app.route.name] || app.program.title;
 }
 
 function renderView() {
@@ -866,16 +899,58 @@ function renderDashboardOperation() {
   return `<div class="academy-operation-dashboard"><section class="academy-card academy-operation-command"><div><span class="academy-eyebrow">Expediente activo</span><h2>${escapeHtml(operation.title || operation.carWanted || "Mi primera importación")}</h2><p>${escapeHtml(operation.nextAction || "Define la siguiente acción para mantener el control.")}</p></div><div class="academy-operation-command-actions"><span class="academy-badge">${escapeHtml(operation.country || "País pendiente")}</span><a class="academy-button academy-button--primary" href="/mi-operacion" data-nav>Abrir expediente</a></div></section><section class="academy-card academy-operation-timeline"><h2>Del candidato a la matrícula</h2><ol>${checkpoints.map(([id, label, activeStatuses], index) => `<li data-complete="${activeStatuses.includes(status)}"><span>${activeStatuses.includes(status) ? "✓" : index + 1}</span><strong>${label}</strong></li>`).join("")}</ol></section><div class="academy-grid academy-grid--3"><article class="academy-card academy-stat-card"><span>Candidatos activos</span><strong>${candidates.length}</strong><a href="/candidatos" data-nav>Comparar planes →</a></article><article class="academy-card academy-stat-card"><span>Presupuesto</span><strong>${currency(operation.totalBudget)}</strong><a href="/herramientas/coste-total" data-nav>Revisar coste →</a></article><article class="academy-card academy-stat-card"><span>Cierre real</span><strong>${realOperationCompleted() ? "Confirmado" : "Pendiente"}</strong><a href="/herramientas/espana" data-nav>Ver carpeta →</a></article></div></div>`;
 }
 
+function dashboardContinue(model) {
+  if (model.isComplete) return { href: "/academia/ruta", label: "Repasar la ruta" };
+  if (model.currentLesson) return { href: lessonHref(model.currentLesson), label: model.isNew ? "Empezar Academia" : "Continuar" };
+  return { href: "/academia/ruta", label: "Explorar la ruta" };
+}
+
+function renderDashboardModule(stage) {
+  const statusLabel = ({ complete: "Completado", current: "En curso", recommended: "Siguiente", pending: "Pendiente" })[stage.status];
+  const actionLabel = stage.status === "complete" ? "Repasar módulo" : stage.status === "current" ? "Continuar módulo" : "Abrir módulo";
+  return `<a class="academy-control-module" href="${stageHref(stage)}" data-nav data-module-id="${escapeAttribute(stage.id)}" data-status="${stage.status}">
+    <span class="academy-control-module-number" aria-hidden="true">${stage.number}</span>
+    <div class="academy-control-module-top"><span class="academy-control-module-state"><span aria-hidden="true">${stage.status === "complete" ? "✓" : stage.status === "pending" ? "○" : "●"}</span>${escapeHtml(statusLabel)}</span><span>${stage.completedCount}/${stage.lessonCount}</span></div>
+    <h3>${escapeHtml(stage.title)}</h3><p>${escapeHtml(stage.description || stage.subtitle || "")}</p>
+    <div class="academy-control-module-progress" aria-label="${stage.completedCount} de ${stage.lessonCount} lecciones completadas"><span style="--progress:${stage.percentage}%"></span></div>
+    <div class="academy-control-module-footer"><span>${stage.lessonCount} lecciones</span><strong>${escapeHtml(actionLabel)} ${iconSvg("chevron")}</strong></div>
+  </a>`;
+}
+
+function renderDashboardTool(tool) {
+  const slug = tool.slug || tool.id;
+  return `<a class="academy-control-tool" href="${toolHref(slug)}" data-nav data-tool-id="${escapeAttribute(tool.id || slug)}"><span class="academy-control-tool-icon">${iconSvg(toolIconName(slug))}</span><span><strong>${escapeHtml(tool.title)}</strong><small>${escapeHtml(tool.description || "")}</small></span>${iconSvg("chevron")}</a>`;
+}
+
 function renderDashboard() {
-  const progress = progressInfo();
-  const next = continueTarget();
-  const mode = dashboardMode();
-  const currentStage = progress.currentStage;
-  const lessonUnit = app.program.schemaVersion >= 2 ? "lecciones" : "pasos";
-  const heading = "h2";
-  const modeSwitch = `<div class="academy-mode-switch" role="group" aria-label="Cambiar vista del panel"><button type="button" data-action="mode-change" data-mode="learning" aria-pressed="${mode === "learning"}">${iconSvg("book")} Aprender</button><button type="button" data-action="mode-change" data-mode="operation" aria-pressed="${mode === "operation"}">${iconSvg("car")} Operación real</button></div>`;
-  const learning = `<div class="academy-dashboard-v2-grid"><section class="academy-card academy-route-card academy-route-card--europe"><div class="academy-route-card-head"><div><span class="academy-eyebrow">Tu viaje por Europa</span><h2 id="dashboard-route-title">Mapa de la ruta</h2><p>España → Francia → Benelux → Alemania → España.</p></div><span class="academy-badge">${progress.stages.length || 12} etapas${app.program.stages.length > progress.stages.length ? " + prólogo" : ""}</span></div>${renderRouteMap(app.program.stages, progress)}</section><aside class="academy-dashboard-rail">${renderCurrentStageCard(currentStage, currentStage?.lessons || [], progress)}${renderNextStageCard(currentStage, progress)}<section class="academy-card academy-quick-actions"><h3>Accesos rápidos</h3><a href="/academia/respuestas" data-nav>${iconSvg("search")} Resolver una duda</a><a href="/academia/herramientas" data-nav>${iconSvg("tools")} Abrir herramientas</a><a href="/academia/ruta" data-nav>${iconSvg("map")} Ver ruta completa</a><a href="/academia/mi-operacion" data-nav>${iconSvg("car")} Mi operación</a></section></aside></div>${renderDashboardStats(progress)}`;
-  return `${renderAcademyEntryChoices()}<section class="academy-dashboard-hero academy-dashboard-hero--v2"><div class="academy-dashboard-copy"><span class="academy-eyebrow">Academia IvanImports · gratis y sin registro</span><${heading}>Tu ruta de importación</${heading}><p>Aprende con una ruta visual y abre tu expediente real solo cuando lo necesites.</p>${modeSwitch}<div class="academy-dashboard-actions"><a class="academy-button academy-button--primary" href="${next.href}" data-nav>${escapeHtml(next.label)} ${iconSvg("chevron")}</a><a class="academy-button academy-button--secondary" href="/academia/ruta" data-nav>Ver ruta completa</a></div></div><div class="academy-progress-summary"><div class="academy-progress-number"><strong>${progress.percentage}</strong><span>%</span></div><p>${progress.completedCount} de ${progress.totalLessons} ${lessonUnit} · ${progress.completedStageIds.length} de ${progress.stages.length || 12} etapas.</p><div class="academy-progress-track"><div class="academy-progress-bar" style="--progress:${progress.percentage}%"></div></div></div></section>${mode === "operation" ? renderDashboardOperation() : learning}<a class="academy-button academy-button--primary academy-sticky-continue" href="${next.href}" data-nav>${escapeHtml(next.label)} ${iconSvg("chevron")}</a>`;
+  const model = academyDashboardModel(app.program, app.state);
+  const next = dashboardContinue(model);
+  const contextStage = model.currentLesson ? findStage(model.currentLesson.stageId) : model.recommendedStage;
+  const contextLabel = contextStage?.kind === "prologue" || contextStage?.countsTowardProgress === false
+    ? "Empieza aquí"
+    : `Módulo ${String(contextStage?.order || model.recommendedStage?.number || "01").padStart(2, "0")}`;
+  const heading = model.isComplete || realOperationCompleted() ? "h2" : "h1";
+  const featuredTools = selectDashboardTools(app.program, model.recommendedStage?.id, 6);
+  const completedModules = model.stages.filter((stage) => stage.complete).length;
+  return `<div class="academy-control" data-dashboard-state="${model.isComplete ? "complete" : model.isNew ? "new" : "active"}">
+    <section class="academy-control-hero" aria-labelledby="academy-control-title">
+      <div class="academy-control-hero-copy"><span class="academy-eyebrow">Academia IvanImports</span><${heading} id="academy-control-title">Aprende a importar un coche desde Europa, paso a paso.</${heading}><p>12 módulos para pasar de buscar el vehículo a tenerlo matriculado en España. Gratis y a tu ritmo.</p><div class="academy-control-facts" aria-label="Contenido de la Academia"><span>12 módulos</span><span>${app.program.lessons.length} lecciones</span><span>${app.program.tools.length} herramientas</span></div></div>
+      <div class="academy-control-next" aria-label="Tu siguiente paso">
+        <div class="academy-control-next-head"><span>${model.isComplete ? "Ruta completada" : model.isNew ? "Tu punto de partida" : "Continúa donde lo dejaste"}</span><strong>${model.percentage}%</strong></div>
+        <div class="academy-control-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${model.percentage}" aria-label="Progreso de la Academia"><span style="--progress:${model.percentage}%"></span></div>
+        <p>${model.completedCount} de ${model.totalLessons} lecciones completadas · ${completedModules} de ${model.stages.length} módulos.</p>
+        <div class="academy-control-next-step"><span>${escapeHtml(contextLabel)}</span><strong>${escapeHtml(contextStage?.title || "Tu ruta de importación")}</strong>${model.currentLesson ? `<small>${escapeHtml(model.currentLesson.title)}</small>` : ""}</div>
+        <a class="academy-button academy-button--primary academy-button--wide" href="${next.href}" data-nav>${escapeHtml(next.label)} ${iconSvg("chevron")}</a><small>El progreso se guarda en este dispositivo.</small>
+      </div>
+    </section>
+    <section class="academy-control-search" aria-label="Buscar en la Academia"><span class="academy-control-search-icon">${iconSvg("search")}</span><div><strong>¿Qué necesitas encontrar?</strong><span>Busca “COC”, “placas”, “IVA”, “ITV” o “Alemania”.</span></div><button class="academy-button academy-button--secondary" type="button" data-action="search-open">Buscar en la Academia</button></section>
+    <section class="academy-control-section" aria-labelledby="academy-modules-title"><header class="academy-control-section-head"><div><span class="academy-eyebrow">Todo el proceso, en orden</span><h2 id="academy-modules-title">Tu ruta de importación</h2><p>Abre cualquier módulo o sigue el siguiente paso recomendado.</p></div><a href="/academia/ruta" data-nav>Ver ruta completa ${iconSvg("chevron")}</a></header><div class="academy-control-modules">${model.stages.map(renderDashboardModule).join("")}</div></section>
+    <section class="academy-control-section" aria-labelledby="academy-tools-title"><header class="academy-control-section-head"><div><span class="academy-eyebrow">Trabaja con tus propios datos</span><h2 id="academy-tools-title">Herramientas</h2><p>Calcula, compara y controla la operación sin salir de la Academia.</p></div><a href="/academia/herramientas" data-nav>Ver las ${app.program.tools.length} herramientas ${iconSvg("chevron")}</a></header><div class="academy-control-tools">${featuredTools.map(renderDashboardTool).join("")}</div></section>
+    <div class="academy-control-secondary">
+      <section class="academy-control-europe"><span class="academy-control-secondary-icon">${iconSvg("map")}</span><div><span class="academy-eyebrow">Explorar Europa</span><h2>Consulta la ruta sobre el mapa.</h2><p>Accede al mapa de Europa y abre cada etapa del recorrido.</p><a class="academy-button academy-button--secondary" href="/academia/ruta" data-nav>Abrir mapa ${iconSvg("chevron")}</a></div></section>
+      <section class="academy-control-about"><span class="academy-control-secondary-icon">${iconSvg("route")}</span><div><span class="academy-eyebrow">Academia gratuita IvanImports</span><h2>Una ruta práctica, completa y actualizable.</h2><p>Aprende el proceso por tu cuenta, paso a paso y a partir de la experiencia real de importar vehículos.</p><div class="academy-control-about-links"><a href="${app.program.stages[0] ? stageHref(app.program.stages[0]) : "/academia/ruta"}" data-nav>Leer el prólogo</a><a href="/academia/recursos" data-nav>Abrir recursos</a><a href="/academia/mi-operacion" data-nav>Mi operación</a></div></div></section>
+    </div>
+  </div>`;
 }
 
 function renderAcademyEntryChoices() {
