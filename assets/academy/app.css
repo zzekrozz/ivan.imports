@@ -596,6 +596,11 @@
   }
 
   .academy-sidebar-section-heading > a {
+    min-width: 44px;
+    min-height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
     margin: 0 .4rem .3rem 0;
     color: #a8dbe5;
     font-size: .6rem;
@@ -605,7 +610,7 @@
 
   .academy-sidebar .academy-nav-link {
     width: 100%;
-    min-height: 38px;
+    min-height: 44px;
     grid-template-columns: 26px minmax(0,1fr);
     gap: .55rem;
     padding: .35rem .5rem;
@@ -633,7 +638,7 @@
   }
 
   .academy-sidebar-intro {
-    min-height: 34px;
+    min-height: 44px;
     grid-template-columns: 27px minmax(0,1fr);
     gap: .45rem;
     margin-bottom: .22rem;
@@ -650,7 +655,7 @@
   }
 
   .academy-sidebar-module {
-    min-height: 40px;
+    min-height: 44px;
     grid-template-columns: 28px minmax(0,1fr) 12px;
     gap: .42rem;
     padding: .3rem .45rem;

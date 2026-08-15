@@ -23,6 +23,14 @@ test("la portada de la Academia mantiene un único H1 en la experiencia renderiz
   assert.match(app, /<h1 id="academy-entry-title">Aprende a importar tu primer coche\.<\/h1>/);
 });
 
+test("Candidatos usa H2 cuando se integra dentro de una herramienta", () => {
+  const app = read("assets/academy/app.js");
+  assert.match(app, /function renderPageHead\(eyebrow, title, copy = "", actions = "", headingLevel = 1\)/);
+  assert.match(app, /const headingTag = headingLevel === 2 \? "h2" : "h1"/);
+  assert.match(app, /function renderCandidates\(embedded = false\)/);
+  assert.match(app, /renderCandidates\(true\)/);
+});
+
 test("la Academia gratuita conserva exactamente 13, 72, 317 y 17", () => {
   const program = json("assets/academy/program-v2.json");
   assert.equal(program.access, "public-free");
@@ -92,4 +100,27 @@ test("las rutas antiguas conservan equivalencia mediante redirecciones permanent
     assert.equal(redirect?.destination, destination);
     assert.equal(redirect?.permanent, true);
   }
+});
+
+test("los enlaces de ayuda y contacto conservan un destino navegable sin JavaScript", () => {
+  const home = read("index.html");
+  const help = read("academia/ayuda/index.html");
+  const greenPlates = read("placasverdes/index.html");
+  assert.match(home, /id="contacto"/);
+  assert.doesNotMatch(help, /class="btn btn-secondary js-whatsapp-link" href="#"/);
+  assert.match(help, /class="btn btn-secondary js-whatsapp-link" href="\/servicios\/"/);
+  assert.doesNotMatch(greenPlates, /data-config-link="importCourse"/);
+  assert.match(greenPlates, /href="\/academia\/"[^>]*>Ver la formación<\/a>/);
+});
+
+test("la navegación común mantiene objetivos táctiles mínimos", () => {
+  const hub = read("assets/hub.css");
+  const site = read("assets/site.css");
+  const academy = read("assets/academy/app.css");
+  assert.match(hub, /\.hub-nav \.nav-links a \{ min-height:44px/);
+  assert.match(hub, /\.hub-action-pro \{ min-height:44px/);
+  assert.match(site, /\.btn-nav \{\s*min-height: 44px/);
+  assert.match(academy, /\.academy-sidebar \.academy-nav-link \{[\s\S]*?min-height: 44px/);
+  assert.match(academy, /\.academy-sidebar-module \{\s*min-height: 44px/);
+  assert.match(read("assets/academia.css"), /\.breadcrumbs li \{\s*display: inline-flex;\s*align-items: center;/);
 });
