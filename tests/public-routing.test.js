@@ -30,6 +30,28 @@ test("los aliases públicos resuelven las variantes con y sin barra", () => {
   assert.match(read("primera-importacion-contigo/index.html"), /https:\/\/ivanimports\.es\/servicios\/primera-importacion-contigo\//);
 });
 
+test("los servicios históricos resuelven también su variante con barra final", () => {
+  const aliases = new Map([
+    ["consultas", "/servicios/consultoria/"],
+    ["revision-anuncio", "/servicios/consultoria/"],
+    ["calculo-coste-real", "/servicios/consultoria/"],
+    ["vendedor-documentacion", "/servicios/consultoria/"],
+    ["compra-preparada", "/servicios/primera-importacion-contigo/"],
+    ["compra-preparada-online", "/servicios/primera-importacion-contigo/"],
+    ["pack-personalizado", "/servicios/primera-importacion-contigo/"],
+    ["busco-filtro-compruebo", "/servicios/primera-importacion-contigo/"],
+    ["busco-y-filtro", "/servicios/primera-importacion-contigo/"],
+    ["mini-filtro-gratuito", "/academia/"],
+    ["acompanamiento-matriculacion", "/servicios/primera-importacion-contigo/"],
+  ]);
+  for (const [slug, destination] of aliases) {
+    assert.equal(redirects.get(`/servicios/${slug}`), destination);
+    assert.equal(redirects.get(`/servicios/${slug}/`), destination);
+  }
+  assert.equal(redirects.get("/copart/"), "/servicios/primera-compra-subasta/");
+  assert.equal(redirects.get("/empieza/"), "/go/");
+});
+
 test("los slugs históricos de herramientas redirigen a páginas públicas reales", () => {
   const aliases = new Map([
     ["presupuesto", "budget-calculator"], ["filtros", "search-filter-builder"], ["analizador-anuncio", "ad-analyzer"],

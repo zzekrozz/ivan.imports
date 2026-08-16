@@ -55,8 +55,7 @@ function head({ title, description, path, type = "website", schema = [], academy
   <meta property="og:site_name" content="IvanImports"><meta property="og:locale" content="es_ES"><meta property="og:type" content="${type}"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(description)}"><meta property="og:url" content="${canonical}"><meta property="og:image" content="${siteUrl}/assets/og-ivanimports.jpg">
   <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(description)}"><meta name="twitter:image" content="${siteUrl}/assets/og-ivanimports.jpg">
   <link rel="stylesheet" href="/assets/site.css"><link rel="stylesheet" href="/assets/hub.css">${academy ? '<link rel="stylesheet" href="/assets/academy/app.css">' : ""}
-  ${schema.map(jsonLd).join("\n")}
-</head>`;
+${schema.length ? `  ${schema.map(jsonLd).join("\n")}\n` : "\n"}</head>`;
 }
 
 function breadcrumbs(items) {
@@ -64,7 +63,10 @@ function breadcrumbs(items) {
 }
 
 function basePage({ title, description, path, schema = [], body, pageEvent = "", pageType = "page", className = "", robots }) {
-  return `<!doctype html><html lang="es">${head({ title, description, path, schema, robots })}<body class="hub-page ${className}" data-page-event="${pageEvent}" data-page-type="${pageType}"><a class="skip-link" href="#contenido">Saltar al contenido</a>${analyticsBody()}<site-header></site-header><main id="contenido">${body}</main><site-footer></site-footer><script src="/assets/site-config.js"></script><script src="/assets/site.js"></script></body></html>`;
+  const renderedBody = pageType === "home"
+    ? body.replace('<section class="hub-section hub-section--alt"><div class="hub-shell"><div class="hub-heading"><span class="hub-kicker">Servicios PRO</span>', '<section class="hub-section hub-section--alt" id="contacto"><div class="hub-shell"><div class="hub-heading"><span class="hub-kicker">Servicios PRO</span>')
+    : body;
+  return `<!doctype html><html lang="es">${head({ title, description, path, schema, robots })}<body class="hub-page ${className}" data-page-event="${pageEvent}" data-page-type="${pageType}"><a class="skip-link" href="#contenido">Saltar al contenido</a>${analyticsBody()}<site-header></site-header><main id="contenido">${renderedBody}</main><site-footer></site-footer><script src="/assets/site-config.js"></script><script src="/assets/site.js"></script></body></html>`;
 }
 
 function academyPage({ title, description, path, route, schema = [], content, enhance = true }) {
@@ -78,7 +80,8 @@ function canonicalizeAcademyHubLinks(source) {
     .replaceAll('href="/academia/herramientas/"', 'href="/academia/herramientas"')
     .replaceAll('href="/academia/respuestas/"', 'href="/academia/respuestas"')
     .replaceAll('href="/academia/recursos/"', 'href="/academia/recursos"')
-    .replaceAll('href="/academia/actualizaciones/"', 'href="/academia/actualizaciones"');
+    .replaceAll('href="/academia/actualizaciones/"', 'href="/academia/actualizaciones"')
+    .replaceAll('class="btn btn-secondary js-whatsapp-link" href="#"', 'class="btn btn-secondary js-whatsapp-link" href="/servicios/"');
 }
 
 async function writeRoute(relative, source) {
@@ -243,14 +246,14 @@ await writeFile(join(root, "go/index.html"), basePage({ title: "Enlaces IvanImpo
 
 await writeRoute("subastaspro", servicePage(servicesData.services.find((item) => item.id === "subastaspro")));
 
-await writeFile(join(root, "404.html"), basePage({
+await writeFile(join(root, "404.html"), `${basePage({
   title: "Página no encontrada | IvanImports",
   description: "La dirección solicitada no existe. Vuelve al centro de IvanImports o continúa en la Academia.",
   path: "/404.html",
   robots: "noindex,follow",
   pageType: "not-found",
   body: `<section class="hub-page-hero hub-go-hero"><div class="hub-shell"><span class="hub-kicker">Error 404</span><h1>Esta ruta no lleva a ningún coche.</h1><p>Puede que el enlace haya cambiado o que la dirección esté incompleta.</p><div class="hub-actions"><a class="btn btn-primary" href="/">Volver al inicio</a><a class="btn btn-secondary" href="/academia/">Abrir la Academia</a><a class="btn btn-secondary" href="/servicios/">Ver servicios</a></div></div></section>`,
-}), "utf8");
+})}\n`, "utf8");
 
 const sitemapRoutes = ["/", "/academia/", "/academia/ruta/", "/academia/respuestas/", "/academia/recursos/", "/academia/actualizaciones/", "/academia/ayuda/", "/academia/edicion-pdf/", "/oportunidades/", "/directos/", "/servicios/", "/recomendaciones/", "/go/", "/actualizaciones/", "/placasverdes/", ...program.stages.map((stage) => `/academia/etapa/${stage.slug}/`), ...program.lessons.map((lesson) => `/academia/paso/${lesson.slug}/`), ...program.concepts.filter((concept) => standaloneConceptIds.has(concept.id)).map((concept) => `/academia/conceptos/${slugify(concept.title)}/`), placasPath, ...program.tools.map((tool) => `/academia/herramientas/${tool.slug}/`), ...opportunitiesData.opportunities.filter((item) => item.published).map((item) => `/oportunidades/${item.slug}/`), ...servicesData.services.filter((item) => item.active).map(servicePath)];
 const academyHubCanonicals = new Map([
