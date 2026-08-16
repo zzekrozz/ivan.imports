@@ -3,6 +3,7 @@
   "outputDirectory": "dist",
   "cleanUrls": true,
   "functions": {
+    "api/acompanamiento.js": { "maxDuration": 30 },
     "api/importa-7-dias.js": { "maxDuration": 60 },
     "api/academy.js": { "maxDuration": 60 }
   },
@@ -91,6 +92,7 @@
     { "source": "/servicios/acompanamiento-matriculacion/", "destination": "/servicios/primera-importacion-contigo/", "permanent": true }
   ],
   "rewrites": [
+    { "source": "/api/acompanamiento/status", "destination": "/api/acompanamiento?action=status" },
     { "source": "/api/stripe-importa-7-dias", "destination": "/api/importa-7-dias?action=webhook" },
     { "source": "/api/importa-7-dias/order-status", "destination": "/api/importa-7-dias?action=order-status" },
     { "source": "/api/importa-7-dias/download", "destination": "/api/importa-7-dias?action=download" },
@@ -113,6 +115,24 @@
     { "source": "/academia/actualizaciones", "destination": "/academia/" }
   ],
   "headers": [
+    {
+      "source": "/gracias-acompanamiento",
+      "headers": [
+        { "key": "Referrer-Policy", "value": "no-referrer" },
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Cache-Control", "value": "private, no-store" }
+      ]
+    },
+    {
+      "source": "/gracias-acompanamiento/(.*)",
+      "headers": [
+        { "key": "Referrer-Policy", "value": "no-referrer" },
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Cache-Control", "value": "private, no-store" }
+      ]
+    },
     {
       "source": "/importa-en-7-dias/gracias/(.*)",
       "headers": [

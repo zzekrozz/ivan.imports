@@ -8,7 +8,7 @@ const read = (path) => readFileSync(join(root, path), "utf8");
 const json = (path) => JSON.parse(read(path));
 
 const requiredRoutes = [
-  "index.html", "404.html", "academia/index.html", "go/index.html", "placasverdes/index.html", "oportunidades/index.html", "directos/index.html", "servicios/index.html", "subastaspro/index.html", "recomendaciones/index.html", "actualizaciones/index.html", "academia/ayuda/index.html", "academia/edicion-pdf/index.html", "importa-en-7-dias/gracias/index.html"
+  "index.html", "404.html", "academia/index.html", "go/index.html", "placasverdes/index.html", "oportunidades/index.html", "directos/index.html", "servicios/index.html", "subastaspro/index.html", "recomendaciones/index.html", "actualizaciones/index.html", "academia/ayuda/index.html", "academia/edicion-pdf/index.html", "importa-en-7-dias/gracias/index.html", "gracias-acompanamiento/index.html"
 ];
 for (const route of requiredRoutes) if (!existsSync(join(root, route))) failures.push(`Falta la ruta pública: ${route}`);
 
@@ -57,6 +57,10 @@ const activeServices = services.services.filter((service) => service.active);
 if (activeServices.length !== 5) failures.push("Deben publicarse exactamente cinco servicios activos");
 const expectedServices = new Map([["consultoria", "60 € / 90 € IVA incluido"], ["subastaspro", "99 € + IVA"], ["puesta-en-marcha-subastas", "149 € + IVA"], ["primera-compra-subasta", "397 € IVA incluido"], ["primera-importacion-contigo", "997 € IVA incluido"]]);
 for (const [id, price] of expectedServices) if (activeServices.find((service) => service.id === id)?.priceLabel !== price) failures.push(`Precio o servicio incorrecto: ${id}`);
+const accompanimentService = activeServices.find((service) => service.id === "primera-importacion-contigo");
+const accompanimentPage = read("servicios/primera-importacion-contigo/index.html");
+if (!/pagar en 3 plazos con Klarna\. Sujeto a aprobación\./.test(accompanimentService?.installmentNote || "") || !/pagar en 3 plazos con Klarna\. Sujeto a aprobación\./.test(accompanimentPage)) failures.push("Primera Importación Contigo no muestra correctamente el pago en tres plazos con Klarna");
+if (/financiación garantizada|financiación para todos|sin requisitos|aprobación garantizada/i.test(accompanimentPage)) failures.push("El mensaje de Klarna contiene una promesa no permitida");
 if (features.supervisedSearch || features.radarCopart || features.affiliateLinks || features.newsletter || features.academyPdf) failures.push("Una feature no configurada está activa");
 if (!existsSync(join(root, "docs/products/BUSQUEDA_SUPERVISADA_PILOT.md")) || !existsSync(join(root, "docs/PRODUCTION_LEGAL_BLOCKERS.md")) || !existsSync(join(root, "docs/sales/CHAT_ROUTING.md"))) failures.push("Falta documentación de pilotos, legal o clasificación de dudas");
 
@@ -107,6 +111,7 @@ for (const [legacy, publicSlug] of legacyToolSlugs) {
 }
 const rewriteSources = new Set((vercel.rewrites || []).map((entry) => entry.source));
 for (const endpoint of ["/api/stripe-importa-7-dias", "/api/importa-7-dias/order-status", "/api/importa-7-dias/download", "/api/importa-7-dias/reissue"]) if (!rewriteSources.has(endpoint)) failures.push(`Falta infraestructura histórica: ${endpoint}`);
+if (!rewriteSources.has("/api/acompanamiento/status")) failures.push("Falta el endpoint de verificación de Acompañamiento Completo");
 for (const staticPattern of ["/academia/etapa/:slug", "/academia/paso/:slug", "/academia/herramientas/:tool"]) if (rewriteSources.has(staticPattern)) failures.push(`Una ruta SEO estática sigue reescrita a la SPA: ${staticPattern}`);
 const importRedirect = (vercel.redirects || []).find((entry) => entry.source === "/importa-en-7-dias");
 if (!importRedirect?.permanent || importRedirect.destination !== "/academia/") failures.push("Falta el 301 de /importa-en-7-dias a /academia/");
@@ -124,7 +129,7 @@ const dist = join(root, "dist");
 if (relative(root, dist) !== "dist") throw new Error("Ruta de salida no segura");
 rmSync(dist, { recursive: true, force: true });
 mkdirSync(dist, { recursive: true });
-const publicDirectories = ["academia", "actualizaciones", "assets", "directos", "go", "importa-en-7-dias", "oportunidades", "placasverdes", "recomendaciones", "servicios", "subastaspro"];
+const publicDirectories = ["academia", "actualizaciones", "assets", "directos", "go", "gracias-acompanamiento", "importa-en-7-dias", "oportunidades", "placasverdes", "recomendaciones", "servicios", "subastaspro"];
 const publicFiles = ["index.html", "404.html", "CNAME", "favicon.svg", "robots.txt", "sitemap.xml"];
 for (const directory of publicDirectories) if (existsSync(join(root, directory))) cpSync(join(root, directory), join(dist, directory), { recursive: true });
 for (const file of publicFiles) if (existsSync(join(root, file))) cpSync(join(root, file), join(dist, file));

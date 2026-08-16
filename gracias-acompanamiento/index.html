@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Confirmación de Acompañamiento Completo | IvanImports</title>
+  <meta name="description" content="Confirmación segura de Acompañamiento Completo de IvanImports.">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#071827">
+  <link rel="icon" href="/favicon.svg">
+  <script>
+    (() => {
+      const pageUrl = new URL(window.location.href);
+      window.__IVAN_ACCOMPANIMENT_SESSION__ = pageUrl.searchParams.get("session_id") || "";
+      window.__IVAN_ACCOMPANIMENT_QA_STATE__ = new Set(["localhost", "127.0.0.1"]).has(pageUrl.hostname) ? pageUrl.searchParams.get("qa_state") || "" : "";
+      if (pageUrl.search && window.history?.replaceState) window.history.replaceState(null, "", `${pageUrl.pathname}${pageUrl.hash}`);
+    })();
+  </script>
+  <link rel="stylesheet" href="/assets/site.css">
+  <link rel="stylesheet" href="/assets/hub.css">
+  <link rel="stylesheet" href="/assets/accompaniment-thanks.css">
+</head>
+<body class="hub-page accompaniment-thanks-page" data-page-event="accompaniment_thankyou_opened" data-page-type="checkout-confirmation" data-payment-status="checking">
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+  <site-header></site-header>
+  <main id="contenido" class="accompaniment-thanks" aria-labelledby="payment-title">
+    <div class="accompaniment-thanks__glow" aria-hidden="true"></div>
+    <div class="hub-shell accompaniment-thanks__layout">
+      <section class="accompaniment-card" aria-live="polite" aria-atomic="true">
+        <div class="accompaniment-card__status">
+          <span class="accompaniment-card__dot" aria-hidden="true"></span>
+          <span data-payment-label>Verificación segura</span>
+        </div>
+        <p class="hub-kicker" data-payment-eyebrow>Un momento</p>
+        <h1 id="payment-title" data-payment-title>Estamos verificando tu pago</h1>
+        <p class="accompaniment-card__lead" data-payment-lead hidden></p>
+        <p class="accompaniment-card__copy" data-payment-copy>Estamos consultando el estado directamente con Stripe.</p>
+
+        <div class="accompaniment-checking" data-checking-content>
+          <span class="accompaniment-spinner" aria-hidden="true"></span>
+          <span>Esto suele tardar solo unos segundos.</span>
+        </div>
+
+        <section class="accompaniment-next" aria-labelledby="next-title" data-confirmed-content hidden>
+          <h2 id="next-title">¿Qué hacemos ahora?</h2>
+          <ol>
+            <li><span>1</span><p>Escríbeme por WhatsApp.</p></li>
+            <li><span>2</span><p>Me cuentas exactamente qué coche buscas, presupuesto y objetivo.</p></li>
+            <li><span>3</span><p>Organizamos el primer paso y empezamos con la búsqueda.</p></li>
+          </ol>
+          <a class="btn btn-primary js-whatsapp-link accompaniment-whatsapp" href="/servicios/primera-importacion-contigo/#solicitud" data-event="accompaniment_whatsapp_clicked" data-wa-message="Hola Iván, acabo de contratar el Acompañamiento Completo de 997 €. Te escribo para empezar con mi importación.">Escribirme por WhatsApp</a>
+          <p class="accompaniment-card__hint">Si quieres, puedes adjuntar una captura de esta pantalla para que pueda localizar tu compra más rápido.</p>
+        </section>
+
+        <div class="accompaniment-contact" data-unverified-content hidden>
+          <a class="btn btn-primary js-whatsapp-link accompaniment-whatsapp" href="/servicios/primera-importacion-contigo/#solicitud" data-event="accompaniment_support_clicked" data-wa-message="Hola Iván, estoy intentando confirmar mi compra de Acompañamiento Completo y necesito ayuda.">Contactar por WhatsApp</a>
+        </div>
+
+        <p class="accompaniment-card__secure"><span aria-hidden="true">✓</span> Pago procesado de forma segura por Stripe.</p>
+      </section>
+
+      <aside class="accompaniment-aside" aria-label="Tu primer paso con IvanImports">
+        <span class="accompaniment-aside__route" aria-hidden="true"><i></i><i></i><i></i></span>
+        <p class="hub-kicker">Acompañamiento completo</p>
+        <h2>Ya está. Has dado el paso.</h2>
+        <p>Ahora empezamos juntos, con un proceso claro desde la búsqueda hasta la matrícula española.</p>
+        <div class="accompaniment-aside__price">
+          <strong>997 €</strong>
+          <span>IVA incluido</span>
+        </div>
+      </aside>
+    </div>
+  </main>
+  <site-footer></site-footer>
+  <script src="/assets/site-config.js"></script>
+  <script src="/assets/site.js"></script>
+  <script src="/assets/accompaniment-thanks.js"></script>
+</body>
+</html>

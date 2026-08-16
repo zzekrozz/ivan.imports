@@ -91,6 +91,9 @@ body.hub-page { background: var(--hub-bg); color: var(--hub-ink); font-family: I
 .hub-service-row { display:grid; grid-template-columns:180px 1fr auto; align-items:center; gap:26px; padding:26px 0; border-bottom:1px solid var(--hub-border); text-decoration:none; color:inherit; }
 .hub-service-row:hover h3 { color:var(--hub-blue); }
 .hub-service-row .hub-price { color:var(--hub-gold); font-weight:850; white-space:nowrap; }
+.hub-service-row .hub-price { display:flex; max-width:240px; flex-direction:column; align-items:flex-end; gap:5px; white-space:normal; text-align:right; }
+.hub-service-row .hub-price strong { font:inherit; white-space:nowrap; }
+.hub-service-row .hub-price small { color:var(--hub-muted); font-size:.72rem; font-weight:700; line-height:1.4; }
 .hub-service-row p { margin:4px 0 0; }
 .hub-service-index { color:var(--hub-blue); font:800 .8rem Manrope,sans-serif; }
 
@@ -98,6 +101,9 @@ body.hub-page { background: var(--hub-bg); color: var(--hub-ink); font-family: I
 .hub-page-hero h1 { max-width:900px; margin:16px 0 18px; font-size:clamp(2.7rem,6vw,5.8rem); line-height:.97; }
 .hub-page-hero p { max-width:74ch; font-size:1.14rem; line-height:1.7; }
 .hub-price-hero { display:inline-flex; margin:20px 0 0; color:var(--hub-gold); font:850 clamp(1.4rem,3vw,2.2rem) Manrope,sans-serif; }
+.hub-payment-note { display:block; font-size:.82rem; font-weight:750; line-height:1.5; }
+.hub-payment-note--hero { max-width:440px; margin:9px 0 0; color:rgba(255,255,255,.82); }
+.hub-payment-note--card { max-width:340px; margin:-18px 0 22px; color:rgba(255,255,255,.78); }
 .hub-breadcrumbs { display:flex; flex-wrap:wrap; gap:8px; list-style:none; padding:0; margin:0 0 26px; color:var(--hub-muted); font-size:.88rem; }
 .hub-breadcrumbs li:not(:last-child)::after { content:"/"; margin-left:8px; color:#9aaabd; }
 .hub-breadcrumbs a { color:var(--hub-blue); }
@@ -152,6 +158,7 @@ body.hub-page { background: var(--hub-bg); color: var(--hub-ink); font-family: I
   .hub-editorial-main,.hub-editorial-side { grid-column:1/-1; }
   .hub-service-row { grid-template-columns:90px 1fr; }
   .hub-service-row .hub-price { grid-column:2; }
+  .hub-service-row .hub-price { align-items:flex-start; text-align:left; }
   .hub-related { grid-template-columns:1fr; }
 }
 
