@@ -69,9 +69,10 @@ test("el caso Subaru es educativo y no se presenta como vehículo a la venta", (
 });
 
 test("los PDF premium no son públicos y el producto descargable sigue desactivado", () => {
+  const privatePdfRoot = resolve(root, "private-products/academy/pdf");
   for (const name of ["importa-tu-coche-en-7-dias-guia-2026.pdf", "importa-tu-coche-en-7-dias-cuaderno-2026.pdf"]) {
     assert.equal(existsSync(resolve(root, "assets/academy", name)), false);
-    assert.equal(existsSync(resolve(root, "private-products/academy/pdf", name)), true);
+    if (existsSync(privatePdfRoot)) assert.equal(existsSync(resolve(privatePdfRoot, name)), true);
   }
   const page = read("academia/edicion-pdf/index.html");
   assert.match(page, /19,99 € IVA incluido/);

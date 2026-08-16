@@ -6,8 +6,11 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (relative) => JSON.parse(fs.readFileSync(path.join(root, relative), "utf8"));
-const program = read("private-products/academy/v2/dist/program-v2.json");
-const sourceConcepts = read("private-products/academy/v2/concepts/concepts.json").concepts;
+const privateProgramPath = path.join(root, "private-products/academy/v2/dist/program-v2.json");
+const privateConceptsPath = path.join(root, "private-products/academy/v2/concepts/concepts.json");
+const privateReady = fs.existsSync(privateProgramPath) && fs.existsSync(privateConceptsPath);
+const program = privateReady ? read("private-products/academy/v2/dist/program-v2.json") : null;
+const sourceConcepts = privateReady ? read("private-products/academy/v2/concepts/concepts.json").concepts : [];
 
 const normalize = (value) => String(value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("es");
 const GLOSSARY_SIGNALS = Object.freeze({
@@ -27,7 +30,8 @@ const GLOSSARY_SIGNALS = Object.freeze({
   roi: /\broi\b|retorno sobre la inversion/,
 });
 
-test("todas las asociaciones estructurales apuntan a entidades existentes", () => {
+test("todas las asociaciones estructurales apuntan a entidades existentes", (context) => {
+  if (!privateReady) return context.skip("La fuente editorial privada no forma parte del checkout público");
   const lessons = new Map(program.lessons.map((lesson) => [lesson.id, lesson]));
   const concepts = new Map(sourceConcepts.map((concept) => [concept.id, concept]));
   const sources = new Set(program.officialSources.map((source) => source.id));
@@ -43,7 +47,8 @@ test("todas las asociaciones estructurales apuntan a entidades existentes", () =
   });
 });
 
-test("cada vínculo de glosario tiene una señal semántica visible", () => {
+test("cada vínculo de glosario tiene una señal semántica visible", (context) => {
+  if (!privateReady) return context.skip("La fuente editorial privada no forma parte del checkout público");
   const glossaryIds = new Set(program.glossary.map((entry) => entry.id));
   sourceConcepts.forEach((concept) => {
     const haystack = normalize([concept.title, concept.shortAnswer, concept.explanation, ...(concept.aliases || [])].join(" "));
@@ -54,7 +59,8 @@ test("cada vínculo de glosario tiene una señal semántica visible", () => {
   });
 });
 
-test("las FAQ conservan lección y páginas trazables", () => {
+test("las FAQ conservan lección y páginas trazables", (context) => {
+  if (!privateReady) return context.skip("La fuente editorial privada no forma parte del checkout público");
   const lessonIds = new Set(program.lessons.map((lesson) => lesson.id));
   program.faqs.forEach((faq) => {
     if (faq.lessonId) assert.ok(lessonIds.has(faq.lessonId), `${faq.id}: lección FAQ inexistente`);

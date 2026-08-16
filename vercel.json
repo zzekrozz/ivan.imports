@@ -5,7 +5,8 @@
   "functions": {
     "api/acompanamiento.js": { "maxDuration": 30 },
     "api/importa-7-dias.js": { "maxDuration": 60 },
-    "api/academy.js": { "maxDuration": 60 }
+    "api/academy.js": { "maxDuration": 60 },
+    "api/vehicle.js": { "maxDuration": 15 }
   },
   "redirects": [
     { "source": "/importa-en-7-dias", "destination": "/academia/", "permanent": true },
@@ -92,6 +93,7 @@
     { "source": "/servicios/acompanamiento-matriculacion/", "destination": "/servicios/primera-importacion-contigo/", "permanent": true }
   ],
   "rewrites": [
+    { "source": "/api/vehicle/import", "destination": "/api/vehicle?action=import" },
     { "source": "/api/acompanamiento/status", "destination": "/api/acompanamiento?action=status" },
     { "source": "/api/stripe-importa-7-dias", "destination": "/api/importa-7-dias?action=webhook" },
     { "source": "/api/importa-7-dias/order-status", "destination": "/api/importa-7-dias?action=order-status" },
