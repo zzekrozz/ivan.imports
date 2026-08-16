@@ -1,8 +1,11 @@
 # Analizador de anuncios y fichas de vehículos — informe V1
 
-Fecha de validación: 16 de agosto de 2026  
-Rama: `agent/vehicle-analyzer-mobilede`  
-Commit de implementación: `93503a9` (`feat: add mobile.de vehicle analyzer`)  
+Fecha de validación: 16 de agosto de 2026
+
+Rama: `agent/vehicle-analyzer-mobilede`
+
+Commit de implementación: `93503a9` (`feat: add mobile.de vehicle analyzer`)
+
 Preview: <https://ivan-imports-i74x47ux2-zzekrozzs-projects.vercel.app>
 
 ## Resultado
@@ -150,4 +153,3 @@ La alternativa legítima para producción es acordar acceso autorizado/API/partn
 - Producción: sin deploy manual.
 - PR: no abierto.
 - Limitación conocida: Vercel Authentication impide Browser QA directo del Preview sin una sesión autorizada; mobile.de rechaza las solicitudes live con 403.
-
