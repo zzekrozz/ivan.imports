@@ -84,7 +84,7 @@ test("las 17 herramientas tienen icono y el Centro de respuestas recibe contenid
 });
 
 test("la portada y las rutas internas abren una única Academia pública", () => {
-  checks(["landing.public-entry", "routes.rewrites", "assets.internal-references", "assets.module-imports"]);
+  checks(["landing.public-entry", "routes.public-areas", "assets.internal-references", "assets.module-imports"]);
 });
 
 test("la accesibilidad estática cubre landmarks, teclado, movimiento e imágenes", () => {

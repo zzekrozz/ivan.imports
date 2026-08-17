@@ -2,10 +2,11 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://ivanimports.es/</loc><lastmod>2026-08-13</lastmod></url>
   <url><loc>https://ivanimports.es/academia/</loc><lastmod>2026-08-13</lastmod></url>
-  <url><loc>https://ivanimports.es/academia/ruta</loc><lastmod>2026-08-13</lastmod></url>
-  <url><loc>https://ivanimports.es/academia/respuestas</loc><lastmod>2026-08-13</lastmod></url>
-  <url><loc>https://ivanimports.es/academia/recursos</loc><lastmod>2026-08-13</lastmod></url>
-  <url><loc>https://ivanimports.es/academia/actualizaciones</loc><lastmod>2026-08-13</lastmod></url>
+  <url><loc>https://ivanimports.es/herramientas/</loc><lastmod>2026-08-13</lastmod></url>
+  <url><loc>https://ivanimports.es/mi-operacion/</loc><lastmod>2026-08-13</lastmod></url>
+  <url><loc>https://ivanimports.es/mi-operacion/candidatos/</loc><lastmod>2026-08-13</lastmod></url>
+  <url><loc>https://ivanimports.es/recursos/</loc><lastmod>2026-08-13</lastmod></url>
+  <url><loc>https://ivanimports.es/recursos/respuestas/</loc><lastmod>2026-08-13</lastmod></url>
   <url><loc>https://ivanimports.es/academia/ayuda/</loc><lastmod>2026-08-13</lastmod></url>
   <url><loc>https://ivanimports.es/academia/edicion-pdf/</loc><lastmod>2026-08-13</lastmod></url>
   <url><loc>https://ivanimports.es/oportunidades/</loc><lastmod>2026-08-13</lastmod></url>
@@ -119,28 +120,25 @@
   <url><loc>https://ivanimports.es/academia/conceptos/ivtm/</loc><lastmod>2026-08-13</lastmod></url>
   <url><loc>https://ivanimports.es/academia/conceptos/tasa-1-1/</loc><lastmod>2026-08-13</lastmod></url>
   <url><loc>https://ivanimports.es/academia/conceptos/placas-verdes/</loc><lastmod>2026-08-13</lastmod></url>
-  <url><loc>https://ivanimports.es/academia/herramientas/operation-dashboard/</loc><lastmod>2026-08-13</lastmod></url>
-  <url><loc>https://ivanimports.es/academia/herramientas/budget-calculator/</loc><lastmod>2026-08-13</lastmod></url>
-  <url><loc>https://ivanimports.es/academia/herramientas/candidate-board/</loc><lastmod>2026-08-13</lastmod></url>
-  <url><loc>https://ivanimports.es/academia/herramientas/search-filter-builder/</loc><lastmod>2026-08-13</lastmod></url>
-  <url><loc>https://ivanimports.es/academia/herramientas/ad-analyzer/</loc><lastmod>2026-08-13</lastmod></url>
-  <url><loc>https://ivanimports.es/academia/herramientas/question-builder/</loc><lastmod>2026-08-13</lastmod></url>
-  <url><loc>https://ivanimports.es/academia/herramientas/market-comparator/</loc><lastmod>2026-08-13</lastmod></url>
-  <url><loc>https://ivanimports.es/academia/herramientas/cost-calculator/</loc><lastmod>2026-08-13</lastmod></url>
-  <url><loc>https://ivanimports.es/academia/herramientas/document-passport/</loc><lastmod>2026-08-13</lastmod></url>
-  <url><loc>https://ivanimports.es/academia/herramientas/plan-abc/</loc><lastmod>2026-08-13</lastmod></url>
-  <url><loc>https://ivanimports.es/academia/herramientas/travel-planner/</loc><lastmod>2026-08-13</lastmod></url>
-  <url><loc>https://ivanimports.es/academia/herramientas/inspection-checklist/</loc><lastmod>2026-08-13</lastmod></url>
-  <url><loc>https://ivanimports.es/academia/herramientas/paint-sheet/</loc><lastmod>2026-08-13</lastmod></url>
-  <url><loc>https://ivanimports.es/academia/herramientas/purchase-exit-checklist/</loc><lastmod>2026-08-13</lastmod></url>
-  <url><loc>https://ivanimports.es/academia/herramientas/return-checklist/</loc><lastmod>2026-08-13</lastmod></url>
-  <url><loc>https://ivanimports.es/academia/herramientas/spain-folder/</loc><lastmod>2026-08-13</lastmod></url>
-  <url><loc>https://ivanimports.es/academia/herramientas/method7-planner/</loc><lastmod>2026-08-13</lastmod></url>
+  <url><loc>https://ivanimports.es/herramientas/calculadora-coste-importacion/</loc><lastmod>2026-08-13</lastmod></url>
+  <url><loc>https://ivanimports.es/herramientas/analizador-anuncios/</loc><lastmod>2026-08-13</lastmod></url>
+  <url><loc>https://ivanimports.es/herramientas/comparador-espana/</loc><lastmod>2026-08-13</lastmod></url>
+  <url><loc>https://ivanimports.es/herramientas/inspeccion-presencial/</loc><lastmod>2026-08-13</lastmod></url>
+  <url><loc>https://ivanimports.es/herramientas/presupuesto-inicial/</loc><lastmod>2026-08-13</lastmod></url>
+  <url><loc>https://ivanimports.es/herramientas/filtros-busqueda/</loc><lastmod>2026-08-13</lastmod></url>
+  <url><loc>https://ivanimports.es/herramientas/preparador-preguntas/</loc><lastmod>2026-08-13</lastmod></url>
+  <url><loc>https://ivanimports.es/herramientas/plan-abc/</loc><lastmod>2026-08-13</lastmod></url>
+  <url><loc>https://ivanimports.es/herramientas/pasaporte-documental/</loc><lastmod>2026-08-13</lastmod></url>
+  <url><loc>https://ivanimports.es/herramientas/planificador-viaje/</loc><lastmod>2026-08-13</lastmod></url>
+  <url><loc>https://ivanimports.es/herramientas/mediciones-pintura/</loc><lastmod>2026-08-13</lastmod></url>
+  <url><loc>https://ivanimports.es/herramientas/compra-salida/</loc><lastmod>2026-08-13</lastmod></url>
+  <url><loc>https://ivanimports.es/herramientas/checklist-vuelta/</loc><lastmod>2026-08-13</lastmod></url>
+  <url><loc>https://ivanimports.es/herramientas/carpeta-espana/</loc><lastmod>2026-08-13</lastmod></url>
+  <url><loc>https://ivanimports.es/herramientas/metodo-7-dias/</loc><lastmod>2026-08-13</lastmod></url>
   <url><loc>https://ivanimports.es/oportunidades/subaru-forester-diferencia-precio/</loc><lastmod>2026-08-13</lastmod></url>
   <url><loc>https://ivanimports.es/servicios/consultoria/</loc><lastmod>2026-08-13</lastmod></url>
   <url><loc>https://ivanimports.es/subastaspro/</loc><lastmod>2026-08-13</lastmod></url>
   <url><loc>https://ivanimports.es/servicios/puesta-en-marcha-subastas/</loc><lastmod>2026-08-13</lastmod></url>
   <url><loc>https://ivanimports.es/servicios/primera-compra-subasta/</loc><lastmod>2026-08-13</lastmod></url>
   <url><loc>https://ivanimports.es/servicios/primera-importacion-contigo/</loc><lastmod>2026-08-13</lastmod></url>
-  <url><loc>https://ivanimports.es/academia/herramientas</loc><lastmod>2026-08-13</lastmod></url>
 </urlset>

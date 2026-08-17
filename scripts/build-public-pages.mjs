@@ -2,6 +2,7 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ACADEMY_PATCH_NOTES, ACADEMY_VERSION } from "../assets/academy/patch-notes.js";
+import { TOOL_CATALOG, validateToolCatalog } from "../assets/academy/private/tool-catalog.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const siteUrl = "https://ivanimports.es";
@@ -12,9 +13,10 @@ const opportunitiesData = JSON.parse(await readFile(join(root, "assets/data/oppo
 const features = JSON.parse(await readFile(join(root, "assets/data/features.json"), "utf8"));
 
 if (program.stages?.length !== 13 || program.lessons?.length !== 72 || program.concepts?.length !== 317 || program.tools?.length !== 17) throw new Error("El catálogo público no conserva 13/72/317/17");
+validateToolCatalog(program.tools);
 if (!features.academy || !features.opportunities || !features.directos || !features.services) throw new Error("Faltan superficies públicas obligatorias");
 
-const generatedRoots = ["academia/etapa", "academia/paso", "academia/conceptos", "academia/herramientas"];
+const generatedRoots = ["academia/etapa", "academia/paso", "academia/conceptos", "academia/herramientas", "herramientas", "mi-operacion", "recursos"];
 for (const relative of generatedRoots) {
   const target = resolve(root, relative);
   if (!target.startsWith(`${root}${sep}`)) throw new Error(`Ruta generada fuera del proyecto: ${target}`);
@@ -54,7 +56,7 @@ function head({ title, description, path, type = "website", schema = [], academy
   <link rel="canonical" href="${canonical}"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><meta name="theme-color" content="#f4f8fc">
   <meta property="og:site_name" content="IvanImports"><meta property="og:locale" content="es_ES"><meta property="og:type" content="${type}"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(description)}"><meta property="og:url" content="${canonical}"><meta property="og:image" content="${siteUrl}/assets/og-ivanimports.jpg">
   <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(description)}"><meta name="twitter:image" content="${siteUrl}/assets/og-ivanimports.jpg">
-  <link rel="stylesheet" href="/assets/site.css"><link rel="stylesheet" href="/assets/hub.css">${academy ? '<link rel="stylesheet" href="/assets/academy/app.css?v=1.1.0-vehicle3">' : ""}
+  <link rel="stylesheet" href="/assets/site.css"><link rel="stylesheet" href="/assets/hub.css">${academy ? '<link rel="stylesheet" href="/assets/academy/app.css?v=1.2.0-navigation4">' : ""}
 ${schema.length ? `  ${schema.map(jsonLd).join("\n")}\n` : "\n"}</head>`;
 }
 
@@ -71,16 +73,21 @@ function basePage({ title, description, path, schema = [], body, pageEvent = "",
 
 function academyPage({ title, description, path, route, schema = [], content, enhance = true }) {
   if (!enhance) return `<!doctype html><html lang="es">${head({ title, description, path, schema, academy: true })}<body class="hub-page"><a class="skip-link" href="#academy-static-main">Saltar al contenido</a>${analyticsBody()}<site-header></site-header><main id="academy-static-main"><div class="hub-shell hub-section">${content}</div></main><site-footer></site-footer><script src="/assets/site-config.js"></script><script src="/assets/site.js"></script></body></html>`;
-  return `<!doctype html><html lang="es">${head({ title, description, path, schema, academy: true })}<body data-academy-route="${esc(route)}"><a class="skip-link" href="#academy-static-main">Saltar al contenido</a>${analyticsBody()}<div id="academy-app" data-academy-app><main id="academy-static-main" class="hub-page academy-static-fallback"><div class="hub-shell hub-section">${content}</div></main></div><script type="module" src="/assets/academy/app.js?v=1.1.0-vehicle3"></script></body></html>`;
+  return `<!doctype html><html lang="es">${head({ title, description, path, schema, academy: true })}<body data-academy-route="${esc(route)}"><a class="skip-link" href="#academy-static-main">Saltar al contenido</a>${analyticsBody()}<div id="academy-app" data-academy-app><main id="academy-static-main" class="hub-page academy-static-fallback"><div class="hub-shell hub-section">${content}</div></main></div><script type="module" src="/assets/academy/app.js?v=1.2.0-navigation4"></script></body></html>`;
 }
 
 function canonicalizeAcademyHubLinks(source) {
   return source
-    .replaceAll('href="/academia/ruta/"', 'href="/academia/ruta"')
-    .replaceAll('href="/academia/herramientas/"', 'href="/academia/herramientas"')
-    .replaceAll('href="/academia/respuestas/"', 'href="/academia/respuestas"')
-    .replaceAll('href="/academia/recursos/"', 'href="/academia/recursos"')
-    .replaceAll('href="/academia/actualizaciones/"', 'href="/academia/actualizaciones"')
+    .replaceAll('href="/academia/ruta/"', 'href="/academia/"')
+    .replaceAll('href="/academia/ruta"', 'href="/academia/"')
+    .replaceAll('href="/academia/herramientas/"', 'href="/herramientas/"')
+    .replaceAll('href="/academia/herramientas"', 'href="/herramientas/"')
+    .replaceAll('href="/academia/respuestas/"', 'href="/recursos/respuestas/"')
+    .replaceAll('href="/academia/respuestas"', 'href="/recursos/respuestas/"')
+    .replaceAll('href="/academia/recursos/"', 'href="/recursos/"')
+    .replaceAll('href="/academia/recursos"', 'href="/recursos/"')
+    .replaceAll('href="/academia/actualizaciones/"', 'href="/actualizaciones/"')
+    .replaceAll('href="/academia/actualizaciones"', 'href="/actualizaciones/"')
     .replaceAll('class="btn btn-secondary js-whatsapp-link" href="#"', 'class="btn btn-secondary js-whatsapp-link" href="/servicios/"');
 }
 
@@ -115,7 +122,7 @@ for (const stage of program.stages) {
   const path = `/academia/etapa/${stage.slug}/`;
   const title = `${stage.title} · Ruta de importación | IvanImports Academy`;
   const description = stage.description || stage.subtitle;
-  const crumbs = [{ label: "Academia", href: "/academia/" }, { label: "Ruta", href: "/academia/ruta/" }, { label: stage.title, href: path }];
+  const crumbs = [{ label: "Academia", href: "/academia/" }, { label: stage.title, href: path }];
   const content = `${breadcrumbs(crumbs)}<article class="hub-prose"><span class="hub-kicker">${stage.kind === "prologue" ? "Prólogo" : `Etapa ${stage.order} de 12`}</span><h1>${esc(stage.title)}</h1><p class="hub-page-lead">${esc(description)}</p><div class="hub-content-meta"><span>${stageLessons.length} lecciones</span><span>${stage.estimatedMinutes || 0} min estimados</span><span>Revisado · agosto de 2026</span></div><h2>Qué vas a trabajar</h2>${stageLessons.map((lesson, index) => `<section class="hub-content-block"><small>Lección ${index + 1}</small><h3><a href="/academia/paso/${lesson.slug}/">${esc(lesson.title)}</a></h3><p>${esc(lesson.oneSentence || lesson.objective)}</p></section>`).join("")} ${stage.checkpoint ? `<h2>Punto de control</h2><p><strong>${esc(stage.checkpoint.title)}</strong></p><p>${esc(stage.checkpoint.description)}</p>` : ""}<div class="hub-actions"><a class="btn btn-primary" href="/academia/paso/${stageLessons[0]?.slug || ""}/">Empezar esta etapa</a><a class="btn btn-secondary" href="/academia/ruta/">Ver ruta completa</a></div></article>`;
   await writeRoute(`academia/etapa/${stage.slug}`, academyPage({ title, description, path, route: "stage", schema: pageSchemas({ path, title, description, kind: "LearningResource", breadcrumbs: crumbs }), content }));
 }
@@ -142,7 +149,7 @@ for (const concept of program.concepts.filter((item) => standaloneConceptIds.has
   const path = `/academia/conceptos/${slug}/`;
   const title = `${concept.title}: qué es y cómo comprobarlo | IvanImports`;
   const description = concept.shortAnswer;
-  const crumbs = [{ label: "Academia", href: "/academia/" }, { label: "Conceptos", href: "/academia/respuestas/" }, { label: concept.title, href: path }];
+  const crumbs = [{ label: "Academia", href: "/academia/" }, { label: "Recursos", href: "/recursos/respuestas/" }, { label: concept.title, href: path }];
   const content = `${breadcrumbs(crumbs)}<article class="hub-prose"><span class="hub-kicker">Concepto verificado</span><h1>${esc(concept.title)}</h1><p class="hub-page-lead">${esc(concept.shortAnswer)}</p><div class="hub-content-meta"><span>Autor · Iván</span><span>Revisado · ${esc(concept.lastReviewed || "2026-08-11")}</span><span>Páginas ${(concept.sourcePages || []).join(", ")}</span></div><h2>Qué significa</h2>${paragraphs(concept.explanation)}<h2>Qué hacer en una operación real</h2><p>${esc(concept.action)}</p><div class="hub-disclaimer">Comprueba los requisitos y cifras mutables en la fuente oficial vigente antes de tomar una decisión.</div><div class="hub-actions"><a class="btn btn-primary" href="/academia/paso/${lesson?.slug || ""}/#${esc(concept.anchor || concept.id)}">Leer la lección completa</a><a class="btn btn-secondary" href="/academia/respuestas/">Buscar otra respuesta</a></div></article>`;
   await writeRoute(`academia/conceptos/${slug}`, academyPage({ title, description, path, route: "concept", schema: pageSchemas({ path, title, description, kind: "Article", breadcrumbs: crumbs }), content, enhance: false }));
 }
@@ -152,18 +159,38 @@ const placasTitle = "Placas verdes: permiso temporal para circular | IvanImports
 const placasDescription = "Qué son las placas verdes, cuándo pueden utilizarse y qué debes comprobar antes de solicitar un permiso temporal.";
 await writeRoute("academia/conceptos/placas-verdes", academyPage({ title: placasTitle, description: placasDescription, path: placasPath, route: "concept", schema: pageSchemas({ path: placasPath, title: placasTitle, description: placasDescription, kind: "Article", breadcrumbs: [{ label: "Academia", href: "/academia/" }, { label: "Placas verdes", href: placasPath }] }), content: `${breadcrumbs([{ label: "Academia", href: "/academia/" }, { label: "Placas verdes", href: placasPath }])}<article class="hub-prose"><span class="hub-kicker">Permiso temporal</span><h1>Placas verdes</h1><p class="hub-page-lead">Las placas verdes identifican determinados permisos temporales de circulación. El supuesto, la documentación y la vigencia deben comprobarse ante la DGT para cada expediente.</p><h2>Antes de solicitarlas</h2><ul><li>Identifica el supuesto exacto del permiso temporal.</li><li>Comprueba la documentación del titular y del vehículo.</li><li>Verifica tasas, vigencia y limitaciones en la fuente oficial actual.</li><li>No confundas este permiso con placas de exportación extranjeras.</li></ul><p>La guía histórica de IvanImports conserva el desarrollo completo y enlaza las fuentes oficiales correspondientes.</p><div class="hub-actions"><a class="btn btn-primary" href="/placasverdes/">Abrir guía completa de placas verdes</a><a class="btn btn-secondary" href="/academia/respuestas/">Buscar otra respuesta</a></div></article>`, enhance: false }));
 
-for (const tool of program.tools) {
-  const path = `/academia/herramientas/${tool.slug}/`;
-  const isVehicleAnalyzer = tool.id === "ad-analyzer";
-  const publicTitle = isVehicleAnalyzer ? "Analizador de anuncios de coches" : tool.title;
-  const title = isVehicleAnalyzer ? "Analizador de anuncios de coches de Alemania | IvanImports" : `${tool.title} | Herramientas IvanImports Academy`;
-  const description = isVehicleAnalyzer ? "Crea una ficha editable desde un anuncio de mobile.de y revisa precio, kilómetros, potencia, vendedor, estado y documentación antes de viajar." : tool.description;
-  const crumbs = [{ label: "Academia", href: "/academia/" }, { label: "Herramientas", href: "/academia/herramientas/" }, { label: publicTitle, href: path }];
+for (const metadata of TOOL_CATALOG.filter((item) => item.publicPath.startsWith("/herramientas/"))) {
+  const tool = toolsById.get(metadata.id);
+  const path = metadata.publicPath;
+  const isVehicleAnalyzer = metadata.id === "ad-analyzer";
+  const publicTitle = metadata.h1;
+  const title = metadata.seoTitle;
+  const description = isVehicleAnalyzer ? "Crea una ficha editable desde un anuncio de mobile.de y revisa precio, kilómetros, potencia, vendedor, estado y documentación antes de viajar." : metadata.seoDescription;
+  const crumbs = [{ label: "Herramientas", href: "/herramientas/" }, { label: publicTitle, href: path }];
   const content = isVehicleAnalyzer
     ? `${breadcrumbs(crumbs)}<article class="hub-prose"><span class="hub-kicker">Herramienta gratuita · mobile.de</span><h1>Analiza un anuncio de coche antes de comprarlo</h1><p class="hub-page-lead">Pega una URL de mobile.de y conviértela en una ficha normalizada, editable y guardada únicamente en tu dispositivo.</p><div class="hub-actions"><a class="btn btn-primary" href="${path}" data-nav>Abrir analizador</a><a class="btn btn-secondary" href="/academia/herramientas/">Ver las 17 herramientas</a></div><h2>Qué datos organiza</h2><p>La ficha reúne los datos públicos disponibles sobre precio, primera matriculación, kilómetros, potencia, combustible, cambio, vendedor, ubicación, estado, historial, documentación, equipamiento y descripción. Si algo no aparece, se muestra como «No indicado».</p><h2>Por qué revisar antes de viajar</h2><p>Un anuncio ayuda a detectar ausencias y preparar comprobaciones, pero no sustituye contrastar el vehículo, los documentos, los daños ni la fiscalidad. Actualmente la importación automática es compatible con mobile.de; también puedes crear una ficha manual.</p><p>Los datos introducidos se guardan únicamente en este dispositivo.</p></article>`
-    : `${breadcrumbs(crumbs)}<article class="hub-prose"><span class="hub-kicker">Herramienta gratuita</span><h1>${esc(tool.title)}</h1><p class="hub-page-lead">${esc(tool.description)}</p><p>Los datos que introduzcas se guardan únicamente en este dispositivo. La herramienta organiza tu análisis, pero no sustituye la comprobación documental, mecánica o fiscal de la operación.</p><div class="hub-actions"><a class="btn btn-primary" href="${path}" data-nav>Abrir herramienta</a><a class="btn btn-secondary" href="/academia/herramientas/">Ver las 17 herramientas</a></div></article>`;
-  await writeRoute(`academia/herramientas/${tool.slug}`, academyPage({ title, description, path, route: "tool", schema: pageSchemas({ path, title, description, kind: "SoftwareApplication", breadcrumbs: crumbs }), content }));
+    : `${breadcrumbs(crumbs)}<article class="hub-prose"><span class="hub-kicker">Herramienta gratuita</span><h1>${esc(metadata.h1)}</h1><p class="hub-page-lead">${esc(metadata.description)}</p><p>Los datos que introduzcas se guardan únicamente en este dispositivo. La herramienta organiza tu análisis, pero no sustituye la comprobación documental, mecánica o fiscal de la operación.</p><div class="hub-actions"><a class="btn btn-primary" href="${path}" data-nav>Abrir herramienta</a><a class="btn btn-secondary" href="/herramientas/">Ver herramientas</a></div></article>`;
+  await writeRoute(path.slice(1, -1), academyPage({ title, description, path, route: "tool", schema: pageSchemas({ path, title, description, kind: "SoftwareApplication", breadcrumbs: crumbs }), content }));
 }
+
+const publicTools = TOOL_CATALOG.filter((item) => item.publicPath.startsWith("/herramientas/")).sort((a, b) => a.order - b.order);
+const toolsIndexPath = "/herramientas/";
+const toolsIndexTitle = "Herramientas para importar coches | IvanImports";
+const toolsIndexDescription = "Calculadoras, analizador de anuncios, comparador de mercado, documentación y checklists para importar un coche desde Europa.";
+const toolsIndexContent = `<article class="hub-prose"><span class="hub-kicker">Herramientas IvanImports</span><h1>Herramientas para importar coches</h1><p class="hub-page-lead">Calcula costes, analiza anuncios, compara el mercado y prepara cada paso sin mezclar tu operación con las lecciones de la Academia.</p><div class="hub-related">${publicTools.map((tool) => `<a href="${tool.publicPath}" data-nav><strong>${esc(tool.title)}</strong><span>${esc(tool.description)}</span></a>`).join("")}</div></article>`;
+await writeRoute("herramientas", academyPage({ title: toolsIndexTitle, description: toolsIndexDescription, path: toolsIndexPath, route: "tools", schema: pageSchemas({ path: toolsIndexPath, title: toolsIndexTitle, description: toolsIndexDescription, kind: "CollectionPage" }), content: toolsIndexContent }));
+
+const operationPath = "/mi-operacion/";
+const operationTitle = "Mi operación de importación | IvanImports";
+const operationDescription = "Expediente local para organizar el vehículo, los candidatos, la documentación y la siguiente decisión de tu importación.";
+await writeRoute("mi-operacion", academyPage({ title: operationTitle, description: operationDescription, path: operationPath, route: "operation", schema: pageSchemas({ path: operationPath, title: operationTitle, description: operationDescription, kind: "WebApplication" }), content: `<article class="hub-prose"><span class="hub-kicker">Tu espacio de trabajo</span><h1>Mi operación</h1><p class="hub-page-lead">Organiza tu expediente, candidatos y vehículos guardados. Tus datos permanecen en este dispositivo.</p><div class="hub-actions"><a class="btn btn-primary" href="${operationPath}" data-nav>Abrir mi operación</a><a class="btn btn-secondary" href="/mi-operacion/candidatos/" data-nav>Ver candidatos</a></div></article>` }));
+await writeRoute("mi-operacion/candidatos", academyPage({ title: "Vehículos candidatos | Mi operación IvanImports", description: "Organiza alternativas y decisiones antes de comprar un coche en Europa.", path: "/mi-operacion/candidatos/", route: "candidates", schema: pageSchemas({ path: "/mi-operacion/candidatos/", title: "Vehículos candidatos | IvanImports", description: "Organiza alternativas y decisiones antes de comprar." }), content: `<article class="hub-prose"><span class="hub-kicker">Mi operación</span><h1>Vehículos candidatos</h1><p class="hub-page-lead">Conserva planes A, B y C sin perder el historial de descartes.</p><a class="btn btn-primary" href="/mi-operacion/candidatos/" data-nav>Abrir candidatos</a></article>` }));
+
+const resourcesPath = "/recursos/";
+const resourcesTitle = "Recursos para importar coches | IvanImports";
+const resourcesDescription = "Guías, respuestas, fuentes y materiales de consulta sobre importación de vehículos desde Europa.";
+await writeRoute("recursos", academyPage({ title: resourcesTitle, description: resourcesDescription, path: resourcesPath, route: "resources", schema: pageSchemas({ path: resourcesPath, title: resourcesTitle, description: resourcesDescription, kind: "CollectionPage" }), content: `<article class="hub-prose"><span class="hub-kicker">Biblioteca abierta</span><h1>Recursos</h1><p class="hub-page-lead">Guías, fuentes oficiales y materiales de consulta separados del recorrido educativo y de tu expediente.</p><div class="hub-actions"><a class="btn btn-primary" href="/recursos/" data-nav>Abrir recursos</a><a class="btn btn-secondary" href="/recursos/respuestas/" data-nav>Buscar una respuesta</a></div></article>` }));
+await writeRoute("recursos/respuestas", academyPage({ title: "Centro de respuestas | Recursos IvanImports", description: "Busca conceptos y respuestas respaldadas por las lecciones y fuentes de IvanImports.", path: "/recursos/respuestas/", route: "answers", schema: pageSchemas({ path: "/recursos/respuestas/", title: "Centro de respuestas | IvanImports", description: "Conceptos y respuestas sobre importación de coches.", kind: "CollectionPage" }), content: `<article class="hub-prose"><span class="hub-kicker">Recursos IvanImports</span><h1>Centro de respuestas</h1><p class="hub-page-lead">Consulta conceptos, glosario y respuestas conectadas con el contenido educativo.</p><a class="btn btn-primary" href="/recursos/respuestas/" data-nav>Abrir buscador</a></article>` }));
 
 function serviceForm(service) {
   if (service.id === "subastaspro") return `<div class="hub-actions"><a class="btn btn-primary" href="${esc(service.ctaUrl)}" target="_blank" rel="noopener noreferrer" data-event="service_opened" data-item="subastaspro">${esc(service.cta)}</a><a class="btn btn-secondary" href="/academia/">Aprender gratis primero</a></div>`;
@@ -217,7 +244,7 @@ const servicesBodyWithInstallment = firstImportService?.installmentNote ? servic
 await writeRoute("servicios", basePage({ title: "Servicios PRO | IvanImports", description: "Consultoría, SubastasPRO, puesta en marcha, primera compra en subasta y Primera Importación Contigo.", path: "/servicios/", schema: pageSchemas({ path: "/servicios/", title: "Servicios PRO | IvanImports", description: "Servicios aplicados para revisar y ejecutar operaciones reales.", kind: "ItemList" }), body: servicesBodyWithInstallment, pageEvent: "service_opened", pageType: "services" }));
 
 const opportunity = opportunitiesData.opportunities.find((item) => item.published && item.featured);
-const opportunityCard = opportunity ? `<article class="hub-panel hub-opportunity-card"><div><span class="hub-status hub-status--green">${esc(opportunity.listingStatus)}</span><h2>${esc(opportunity.title)}</h2><p>${esc(opportunity.whyInteresting)}</p></div><div class="hub-actions"><a class="btn btn-primary" href="/oportunidades/${opportunity.slug}/" data-event="opportunity_opened">Abrir análisis completo</a><a class="btn btn-secondary" href="/academia/herramientas/ad-analyzer/">Analizar otro anuncio</a></div></article>` : `<div class="hub-empty"><h2>El próximo análisis se está preparando</h2><p>No publicamos una ficha hasta disponer de datos suficientes y revisables.</p></div>`;
+const opportunityCard = opportunity ? `<article class="hub-panel hub-opportunity-card"><div><span class="hub-status hub-status--green">${esc(opportunity.listingStatus)}</span><h2>${esc(opportunity.title)}</h2><p>${esc(opportunity.whyInteresting)}</p></div><div class="hub-actions"><a class="btn btn-primary" href="/oportunidades/${opportunity.slug}/" data-event="opportunity_opened">Abrir análisis completo</a><a class="btn btn-secondary" href="/herramientas/analizador-anuncios/">Analizar otro anuncio</a></div></article>` : `<div class="hub-empty"><h2>El próximo análisis se está preparando</h2><p>No publicamos una ficha hasta disponer de datos suficientes y revisables.</p></div>`;
 await writeRoute("oportunidades", basePage({ title: "Oportunidades y casos de importación | IvanImports", description: "Coche del día, casos educativos y análisis originales para aprender a detectar y descartar oportunidades.", path: "/oportunidades/", schema: pageSchemas({ path: "/oportunidades/", title: "Oportunidades | IvanImports", description: "Análisis educativos y oportunidades revisadas.", kind: "CollectionPage" }), pageEvent: "opportunity_opened", pageType: "opportunities", body: `<section class="hub-page-hero hub-page-hero--visual hub-page-hero--opportunities"><picture class="hub-page-hero-media"><img src="/assets/visuals/final/opportunity-subaru.webp" alt="" width="1672" height="941" fetchpriority="high" decoding="async"></picture><div class="hub-shell"><span class="hub-kicker">Oportunidades</span><h1>La diferencia de precio llama la atención. El análisis decide.</h1><p>Coche del día, casos educativos y selecciones con costes, documentos, riesgos y criterio original de IvanImports.</p></div></section><section class="hub-section"><div class="hub-shell"><div class="hub-heading"><span class="hub-kicker">Coche del día</span><h2>Una oportunidad visible, sin convertirnos en un espejo del anuncio.</h2></div>${opportunityCard}<p class="hub-disclaimer">Análisis educativo basado en la información disponible. El vehículo no ha sido inspeccionado y su disponibilidad, estado y precio pueden cambiar.</p></div></section>` }));
 
 if (opportunity) {
@@ -254,7 +281,7 @@ const homeBodyWithInstallment = firstImportService?.installmentNote ? homeBody
     `<span class="hub-price">${esc(firstImportService.priceLabel)}</span>`,
     `<span class="hub-price"><strong>${esc(firstImportService.priceLabel)}</strong><small>${esc(firstImportService.installmentNote)}</small></span>`,
   ) : homeBody;
-await writeFile(join(root, "index.html"), basePage({ title: "IvanImports | Importar vehículos desde Europa con criterio", description: "Academia gratuita, oportunidades, herramientas, directos y servicios para encontrar, analizar, comprar, traer y matricular vehículos europeos.", path: "/", schema: [{ "@context": "https://schema.org", "@type": "Organization", name: "IvanImports", url: siteUrl, logo: `${siteUrl}/favicon.svg`, sameAs: ["https://www.tiktok.com/@ivan.imports", "https://www.youtube.com/@IvanPogg"] }, { "@context": "https://schema.org", "@type": "WebSite", name: "IvanImports", url: siteUrl, description: "Centro europeo de información, análisis y ejecución para importar vehículos." }], body: homeBodyWithInstallment, pageEvent: "hub_viewed", pageType: "home" }), "utf8");
+await writeFile(join(root, "index.html"), canonicalizeAcademyHubLinks(basePage({ title: "IvanImports | Importar vehículos desde Europa con criterio", description: "Academia gratuita, oportunidades, herramientas, directos y servicios para encontrar, analizar, comprar, traer y matricular vehículos europeos.", path: "/", schema: [{ "@context": "https://schema.org", "@type": "Organization", name: "IvanImports", url: siteUrl, logo: `${siteUrl}/favicon.svg`, sameAs: ["https://www.tiktok.com/@ivan.imports", "https://www.youtube.com/@IvanPogg"] }, { "@context": "https://schema.org", "@type": "WebSite", name: "IvanImports", url: siteUrl, description: "Centro europeo de información, análisis y ejecución para importar vehículos." }], body: homeBodyWithInstallment, pageEvent: "hub_viewed", pageType: "home" })), "utf8");
 
 const goItems = [
   ["IvanImports Academy · Gratis", "72 lecciones, 317 conceptos y 17 herramientas", "/academia/"],
@@ -281,15 +308,8 @@ await writeFile(join(root, "404.html"), `${basePage({
   body: `<section class="hub-page-hero hub-go-hero"><div class="hub-shell"><span class="hub-kicker">Error 404</span><h1>Esta ruta no lleva a ningún coche.</h1><p>Puede que el enlace haya cambiado o que la dirección esté incompleta.</p><div class="hub-actions"><a class="btn btn-primary" href="/">Volver al inicio</a><a class="btn btn-secondary" href="/academia/">Abrir la Academia</a><a class="btn btn-secondary" href="/servicios/">Ver servicios</a></div></div></section>`,
 })}\n`, "utf8");
 
-const sitemapRoutes = ["/", "/academia/", "/academia/ruta/", "/academia/respuestas/", "/academia/recursos/", "/academia/actualizaciones/", "/academia/ayuda/", "/academia/edicion-pdf/", "/oportunidades/", "/directos/", "/servicios/", "/recomendaciones/", "/go/", "/actualizaciones/", "/placasverdes/", ...program.stages.map((stage) => `/academia/etapa/${stage.slug}/`), ...program.lessons.map((lesson) => `/academia/paso/${lesson.slug}/`), ...program.concepts.filter((concept) => standaloneConceptIds.has(concept.id)).map((concept) => `/academia/conceptos/${slugify(concept.title)}/`), placasPath, ...program.tools.map((tool) => `/academia/herramientas/${tool.slug}/`), ...opportunitiesData.opportunities.filter((item) => item.published).map((item) => `/oportunidades/${item.slug}/`), ...servicesData.services.filter((item) => item.active).map(servicePath)];
-const academyHubCanonicals = new Map([
-  ["/academia/ruta/", "/academia/ruta"],
-  ["/academia/respuestas/", "/academia/respuestas"],
-  ["/academia/recursos/", "/academia/recursos"],
-  ["/academia/actualizaciones/", "/academia/actualizaciones"]
-]);
-sitemapRoutes.push("/academia/herramientas");
-const uniqueRoutes = [...new Set(sitemapRoutes.map((route) => academyHubCanonicals.get(route) || route))];
+const sitemapRoutes = ["/", "/academia/", "/herramientas/", "/mi-operacion/", "/mi-operacion/candidatos/", "/recursos/", "/recursos/respuestas/", "/academia/ayuda/", "/academia/edicion-pdf/", "/oportunidades/", "/directos/", "/servicios/", "/recomendaciones/", "/go/", "/actualizaciones/", "/placasverdes/", ...program.stages.map((stage) => `/academia/etapa/${stage.slug}/`), ...program.lessons.map((lesson) => `/academia/paso/${lesson.slug}/`), ...program.concepts.filter((concept) => standaloneConceptIds.has(concept.id)).map((concept) => `/academia/conceptos/${slugify(concept.title)}/`), placasPath, ...publicTools.map((tool) => tool.publicPath), ...opportunitiesData.opportunities.filter((item) => item.published).map((item) => `/oportunidades/${item.slug}/`), ...servicesData.services.filter((item) => item.active).map(servicePath)];
+const uniqueRoutes = [...new Set(sitemapRoutes)];
 await writeFile(join(root, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${uniqueRoutes.map((route) => `  <url><loc>${siteUrl}${route}</loc><lastmod>2026-08-13</lastmod></url>`).join("\n")}\n</urlset>\n`, "utf8");
 
 console.log(`Páginas públicas generadas: ${program.stages.length} etapas, ${program.lessons.length} lecciones, ${standaloneConceptIds.size + 1} conceptos SEO, ${program.tools.length} herramientas, ${servicesData.services.filter((item) => item.active).length} servicios.`);

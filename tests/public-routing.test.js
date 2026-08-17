@@ -9,19 +9,17 @@ const vercel = JSON.parse(read("vercel.json"));
 const redirects = new Map(vercel.redirects.map(({ source, destination }) => [source, destination]));
 const rewrites = new Map(vercel.rewrites.map(({ source, destination }) => [source, destination]));
 
-test("las rutas SPA de Academia tienen una forma canónica sin barra final", () => {
-  for (const route of ["ruta", "herramientas", "respuestas", "recursos", "actualizaciones"]) {
-    const canonical = `/academia/${route}`;
-    assert.equal(rewrites.get(canonical), "/academia/");
-    assert.equal(redirects.get(`${canonical}/`), canonical);
-  }
+test("las cuatro áreas canónicas tienen páginas públicas reales y no dependen de rewrites", () => {
+  for (const route of ["academia", "herramientas", "mi-operacion", "recursos"]) assert.match(read(`${route}/index.html`), new RegExp(`https://ivanimports\\.es/${route}/`));
+  for (const legacy of ["/academia/ruta", "/academia/herramientas", "/academia/respuestas", "/academia/recursos"]) assert.equal(rewrites.has(legacy), false);
 });
 
 test("los aliases públicos resuelven las variantes con y sin barra", () => {
-  assert.equal(redirects.get("/ruta"), "/academia/ruta");
-  assert.equal(redirects.get("/ruta/"), "/academia/ruta");
-  assert.equal(redirects.get("/herramientas"), "/academia/herramientas");
-  assert.equal(redirects.get("/herramientas/"), "/academia/herramientas");
+  assert.equal(redirects.get("/ruta"), "/academia/");
+  assert.equal(redirects.get("/ruta/"), "/academia/");
+  assert.equal(redirects.has("/herramientas"), false);
+  assert.equal(redirects.has("/mi-operacion"), false);
+  assert.equal(redirects.has("/recursos"), false);
   assert.equal(redirects.get("/consultoria"), "/servicios/consultoria/");
   assert.equal(redirects.get("/consultoria/"), "/servicios/consultoria/");
   assert.equal(redirects.get("/primera-importacion-contigo"), "/servicios/primera-importacion-contigo/");
@@ -54,17 +52,15 @@ test("los servicios históricos resuelven también su variante con barra final",
 
 test("los slugs históricos de herramientas redirigen a páginas públicas reales", () => {
   const aliases = new Map([
-    ["presupuesto", "budget-calculator"], ["filtros", "search-filter-builder"], ["analizador-anuncio", "ad-analyzer"],
-    ["preguntas", "question-builder"], ["mercado", "market-comparator"], ["coste-total", "cost-calculator"],
-    ["documentos", "document-passport"], ["viaje", "travel-planner"], ["inspeccion", "inspection-checklist"],
-    ["pintura", "paint-sheet"], ["compra-salida", "purchase-exit-checklist"], ["vuelta", "return-checklist"],
-    ["espana", "spain-folder"], ["metodo-7-dias", "method7-planner"],
+    ["presupuesto", "/herramientas/presupuesto-inicial/"], ["filtros", "/herramientas/filtros-busqueda/"], ["analizador-anuncio", "/herramientas/analizador-anuncios/"],
+    ["preguntas", "/herramientas/preparador-preguntas/"], ["mercado", "/herramientas/comparador-espana/"], ["coste-total", "/herramientas/calculadora-coste-importacion/"],
+    ["documentos", "/herramientas/pasaporte-documental/"], ["viaje", "/herramientas/planificador-viaje/"], ["inspeccion", "/herramientas/inspeccion-presencial/"],
+    ["pintura", "/herramientas/mediciones-pintura/"], ["compra-salida", "/herramientas/compra-salida/"], ["vuelta", "/herramientas/checklist-vuelta/"],
+    ["espana", "/herramientas/carpeta-espana/"], ["metodo-7-dias", "/herramientas/metodo-7-dias/"], ["plan-abc", "/herramientas/plan-abc/"],
   ]);
-  for (const [legacy, publicSlug] of aliases) {
-    const destination = `/academia/herramientas/${publicSlug}/`;
+  for (const [legacy, destination] of aliases) {
     assert.equal(redirects.get(`/academia/herramientas/${legacy}`), destination);
-    assert.equal(redirects.get(`/academia/herramientas/${legacy}/`), destination);
-    assert.match(read(`academia/herramientas/${publicSlug}/index.html`), new RegExp(`https://ivanimports\\.es${destination}`));
+    assert.match(read(`${destination.slice(1)}index.html`), new RegExp(`https://ivanimports\\.es${destination}`));
   }
 });
 
@@ -82,18 +78,16 @@ test("las redirecciones exactas no forman bucles", () => {
 
 test("el sitemap publica solo los hubs canónicos", () => {
   const sitemap = read("sitemap.xml");
-  for (const path of ["ruta", "herramientas", "respuestas", "recursos", "actualizaciones"]) {
-    assert.match(sitemap, new RegExp(`<loc>https://ivanimports\\.es/academia/${path}</loc>`));
-    assert.doesNotMatch(sitemap, new RegExp(`<loc>https://ivanimports\\.es/academia/${path}/</loc>`));
-  }
-  assert.doesNotMatch(sitemap, /<loc>https:\/\/ivanimports\.es\/(?:ruta|herramientas|consultoria)\/?<\/loc>/);
+  for (const path of ["academia", "herramientas", "mi-operacion", "recursos"]) assert.match(sitemap, new RegExp(`<loc>https://ivanimports\\.es/${path}/</loc>`));
+  assert.doesNotMatch(sitemap, /<loc>https:\/\/ivanimports\.es\/academia\/(?:ruta|herramientas|respuestas|recursos|actualizaciones)\/?<\/loc>/);
 });
 
 test("el generador normaliza todos los enlaces internos a hubs", () => {
   const generator = read("scripts/build-public-pages.mjs");
-  for (const path of ["ruta", "herramientas", "respuestas", "recursos", "actualizaciones"]) {
-    assert.match(generator, new RegExp(`replaceAll\\('href=\\"/academia/${path}/\\"', 'href=\\"/academia/${path}\\"'\\)`));
-  }
+  assert.match(generator, /replaceAll\('href="\/academia\/ruta\/"', 'href="\/academia\/"'\)/);
+  assert.match(generator, /replaceAll\('href="\/academia\/herramientas\/"', 'href="\/herramientas\/"'\)/);
+  assert.match(generator, /replaceAll\('href="\/academia\/respuestas\/"', 'href="\/recursos\/respuestas\/"'\)/);
+  assert.match(generator, /replaceAll\('href="\/academia\/recursos\/"', 'href="\/recursos\/"'\)/);
   const academy = read("academia/index.html");
-  assert.doesNotMatch(academy, /href="\/academia\/(?:ruta|herramientas|respuestas|recursos|actualizaciones)\/"/);
+  assert.doesNotMatch(academy, /href="\/academia\/(?:ruta|herramientas|respuestas|recursos|actualizaciones)\/?"/);
 });

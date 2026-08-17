@@ -49,7 +49,7 @@ function footerMarkup() {
   ].filter(Boolean).join("");
   return `<footer class="site-footer hub-footer"><div class="footer-inner">
     <div class="footer-brand"><a class="logo" href="/"><img class="brand-wordmark" src="/assets/brand/ivan-imports-wordmark-dark.svg" alt="IvanImports" width="430" height="88"></a><p>Tu centro de control para encontrar, analizar, comprar, traer y matricular vehículos desde Europa.</p></div>
-    <div class="footer-links"><strong>Explorar</strong><a href="/academia/">Academia gratuita</a><a href="/oportunidades/">Oportunidades</a><a href="/directos/">Directos</a><a href="/academia/herramientas/">Herramientas</a></div>
+    <div class="footer-links"><strong>Explorar</strong><a href="/academia/">Academia gratuita</a><a href="/oportunidades/">Oportunidades</a><a href="/directos/">Directos</a><a href="/herramientas/">Herramientas</a></div>
     <div class="footer-links"><strong>Pasar a la acción</strong><a href="/servicios/">Servicios PRO</a><a href="/servicios/consultoria/">Consultoría</a><a href="/servicios/primera-importacion-contigo/">Primera Importación Contigo</a>${social}</div>
   </div><div class="footer-bottom"><span>© <span data-current-year></span> IvanImports</span><span>Información educativa. Comprueba siempre los requisitos oficiales aplicables a tu operación.</span></div></footer>`;
 }
