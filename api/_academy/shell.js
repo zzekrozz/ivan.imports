@@ -21,7 +21,7 @@ export function academyShell({ route = "/academia/importa-tu-primer-coche/" } = 
   <meta name="theme-color" content="#071827">
   <title>Importa tu primer coche | Academia IvanImports</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/assets/academy/app.css">
+  <link rel="stylesheet" href="/assets/academy/app.css?v=1.1.0-vehicle3">
 </head>
 <body class="academy-app-page" data-academy-program="${ACADEMY_PROGRAM_ID}" data-academy-route="${escapeAttribute(route)}">
   <a class="skip-link" href="#academy-app">Saltar al programa</a>
@@ -29,7 +29,7 @@ export function academyShell({ route = "/academia/importa-tu-primer-coche/" } = 
     <p role="status">Preparando tu programa…</p>
   </div>
   <noscript>Necesitas activar JavaScript para utilizar la experiencia interactiva. Los recursos privados siguen disponibles desde tu cuenta.</noscript>
-  <script type="module" src="/assets/academy/app.js"></script>
+  <script type="module" src="/assets/academy/app.js?v=1.1.0-vehicle3"></script>
 </body>
 </html>`;
 }

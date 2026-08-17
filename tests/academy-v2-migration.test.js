@@ -401,7 +401,7 @@ const RED_ZONE_HASHES = Object.freeze({
   "api/_academy/content.js": "adcb001b2dd8e7cb820e5bed9ec488275d96ed6889fd765024f4cab1fd3c78da",
   "api/_academy/repository.js": "df886f15d2c4d6bbec4f524ab1196c5af6e488c7dfdcce1ecba52bbd569dd5be",
   "api/_academy/security.js": "b6b74b279436bd03c36570eabe1dbf1730ef182d15091e02ef83b406c2bd7b0c",
-  "api/_academy/shell.js": "169ed1e3bf66414a90ea59aa19f0043ff9d6d7940656e35dd673bfa72be2551e",
+  "api/_academy/shell.js": "c69e256cef48aa09ac3664757495ded1c6cc97335cf3baf5679c6aa42136275d",
   "scripts/_academy-entitlement-cli.mjs": "7659d2d6c0585bacc62e19472ae6313b21f1049d2e79396ac2c9cf257c00931c",
   "scripts/academy-backfill-entitlements.mjs": "b7eba491fb60675f3689e4f6d2dcd8ddc76f67105377f0116c83d478e4b291e3",
   "scripts/academy-grant-entitlement.mjs": "8ae1a80f6ade59af678e850b28f63c15d7fc0b022210ba7d3d762dfe522d538c",

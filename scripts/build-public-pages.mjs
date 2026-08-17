@@ -54,7 +54,7 @@ function head({ title, description, path, type = "website", schema = [], academy
   <link rel="canonical" href="${canonical}"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><meta name="theme-color" content="#f4f8fc">
   <meta property="og:site_name" content="IvanImports"><meta property="og:locale" content="es_ES"><meta property="og:type" content="${type}"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(description)}"><meta property="og:url" content="${canonical}"><meta property="og:image" content="${siteUrl}/assets/og-ivanimports.jpg">
   <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(description)}"><meta name="twitter:image" content="${siteUrl}/assets/og-ivanimports.jpg">
-  <link rel="stylesheet" href="/assets/site.css"><link rel="stylesheet" href="/assets/hub.css">${academy ? '<link rel="stylesheet" href="/assets/academy/app.css">' : ""}
+  <link rel="stylesheet" href="/assets/site.css"><link rel="stylesheet" href="/assets/hub.css">${academy ? '<link rel="stylesheet" href="/assets/academy/app.css?v=1.1.0-vehicle3">' : ""}
 ${schema.length ? `  ${schema.map(jsonLd).join("\n")}\n` : "\n"}</head>`;
 }
 
@@ -71,7 +71,7 @@ function basePage({ title, description, path, schema = [], body, pageEvent = "",
 
 function academyPage({ title, description, path, route, schema = [], content, enhance = true }) {
   if (!enhance) return `<!doctype html><html lang="es">${head({ title, description, path, schema, academy: true })}<body class="hub-page"><a class="skip-link" href="#academy-static-main">Saltar al contenido</a>${analyticsBody()}<site-header></site-header><main id="academy-static-main"><div class="hub-shell hub-section">${content}</div></main><site-footer></site-footer><script src="/assets/site-config.js"></script><script src="/assets/site.js"></script></body></html>`;
-  return `<!doctype html><html lang="es">${head({ title, description, path, schema, academy: true })}<body data-academy-route="${esc(route)}"><a class="skip-link" href="#academy-static-main">Saltar al contenido</a>${analyticsBody()}<div id="academy-app" data-academy-app><main id="academy-static-main" class="hub-page academy-static-fallback"><div class="hub-shell hub-section">${content}</div></main></div><script type="module" src="/assets/academy/app.js"></script></body></html>`;
+  return `<!doctype html><html lang="es">${head({ title, description, path, schema, academy: true })}<body data-academy-route="${esc(route)}"><a class="skip-link" href="#academy-static-main">Saltar al contenido</a>${analyticsBody()}<div id="academy-app" data-academy-app><main id="academy-static-main" class="hub-page academy-static-fallback"><div class="hub-shell hub-section">${content}</div></main></div><script type="module" src="/assets/academy/app.js?v=1.1.0-vehicle3"></script></body></html>`;
 }
 
 function canonicalizeAcademyHubLinks(source) {
@@ -154,10 +154,14 @@ await writeRoute("academia/conceptos/placas-verdes", academyPage({ title: placas
 
 for (const tool of program.tools) {
   const path = `/academia/herramientas/${tool.slug}/`;
-  const title = `${tool.title} | Herramientas IvanImports Academy`;
-  const description = tool.description;
-  const crumbs = [{ label: "Academia", href: "/academia/" }, { label: "Herramientas", href: "/academia/herramientas/" }, { label: tool.title, href: path }];
-  const content = `${breadcrumbs(crumbs)}<article class="hub-prose"><span class="hub-kicker">Herramienta gratuita</span><h1>${esc(tool.title)}</h1><p class="hub-page-lead">${esc(tool.description)}</p><p>Los datos que introduzcas se guardan únicamente en este dispositivo. La herramienta organiza tu análisis, pero no sustituye la comprobación documental, mecánica o fiscal de la operación.</p><div class="hub-actions"><a class="btn btn-primary" href="${path}" data-nav>Abrir herramienta</a><a class="btn btn-secondary" href="/academia/herramientas/">Ver las 17 herramientas</a></div></article>`;
+  const isVehicleAnalyzer = tool.id === "ad-analyzer";
+  const publicTitle = isVehicleAnalyzer ? "Analizador de anuncios de coches" : tool.title;
+  const title = isVehicleAnalyzer ? "Analizador de anuncios de coches de Alemania | IvanImports" : `${tool.title} | Herramientas IvanImports Academy`;
+  const description = isVehicleAnalyzer ? "Crea una ficha editable desde un anuncio de mobile.de y revisa precio, kilómetros, potencia, vendedor, estado y documentación antes de viajar." : tool.description;
+  const crumbs = [{ label: "Academia", href: "/academia/" }, { label: "Herramientas", href: "/academia/herramientas/" }, { label: publicTitle, href: path }];
+  const content = isVehicleAnalyzer
+    ? `${breadcrumbs(crumbs)}<article class="hub-prose"><span class="hub-kicker">Herramienta gratuita · mobile.de</span><h1>Analiza un anuncio de coche antes de comprarlo</h1><p class="hub-page-lead">Pega una URL de mobile.de y conviértela en una ficha normalizada, editable y guardada únicamente en tu dispositivo.</p><div class="hub-actions"><a class="btn btn-primary" href="${path}" data-nav>Abrir analizador</a><a class="btn btn-secondary" href="/academia/herramientas/">Ver las 17 herramientas</a></div><h2>Qué datos organiza</h2><p>La ficha reúne los datos públicos disponibles sobre precio, primera matriculación, kilómetros, potencia, combustible, cambio, vendedor, ubicación, estado, historial, documentación, equipamiento y descripción. Si algo no aparece, se muestra como «No indicado».</p><h2>Por qué revisar antes de viajar</h2><p>Un anuncio ayuda a detectar ausencias y preparar comprobaciones, pero no sustituye contrastar el vehículo, los documentos, los daños ni la fiscalidad. Actualmente la importación automática es compatible con mobile.de; también puedes crear una ficha manual.</p><p>Los datos introducidos se guardan únicamente en este dispositivo.</p></article>`
+    : `${breadcrumbs(crumbs)}<article class="hub-prose"><span class="hub-kicker">Herramienta gratuita</span><h1>${esc(tool.title)}</h1><p class="hub-page-lead">${esc(tool.description)}</p><p>Los datos que introduzcas se guardan únicamente en este dispositivo. La herramienta organiza tu análisis, pero no sustituye la comprobación documental, mecánica o fiscal de la operación.</p><div class="hub-actions"><a class="btn btn-primary" href="${path}" data-nav>Abrir herramienta</a><a class="btn btn-secondary" href="/academia/herramientas/">Ver las 17 herramientas</a></div></article>`;
   await writeRoute(`academia/herramientas/${tool.slug}`, academyPage({ title, description, path, route: "tool", schema: pageSchemas({ path, title, description, kind: "SoftwareApplication", breadcrumbs: crumbs }), content }));
 }
 

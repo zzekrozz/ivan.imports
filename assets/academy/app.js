@@ -16,6 +16,19 @@ import {
   sanitizeDecimalInput,
 } from "./private/cost-calculator.js";
 import { ACADEMY_PATCH_NOTES, ACADEMY_VERSION } from "./patch-notes.js";
+import {
+  VEHICLE_FUEL_LABELS,
+  VEHICLE_TRANSMISSION_LABELS,
+  applyVehicleEdits,
+  createEmptyVehicle,
+  duplicateVehicle,
+  findDuplicateVehicle,
+  formatVehicleRegistration,
+  mergeVehicleImport,
+  normalizeVehicle,
+  removeVehicle,
+  upsertVehicle,
+} from "./private/vehicle-model.js";
 
 const PROGRAM_ROOT = "/academia/";
 const STATE_STORAGE_KEY = "ivanimports.academy.public-state.v2";
@@ -167,6 +180,13 @@ const app = {
   toolCompleted: new Set(),
   migrationNeedsReview: false,
   migrationReviewTracked: false,
+  vehicleMode: "list",
+  vehicleSelectedId: null,
+  vehicleDraft: null,
+  vehicleImportUrl: "",
+  vehicleImportState: "idle",
+  vehicleImportMessage: "",
+  vehicleDuplicateId: null,
 };
 
 function escapeHtml(value = "") {
@@ -1381,7 +1401,12 @@ function toolDefinition(slug) {
   const canonical = canonicalToolSlug(slug);
   const fromProgram = (app.program?.tools || []).find((tool) => canonicalToolSlug(tool.slug || tool.id) === canonical);
   const standard = TOOL_CATALOG.find((tool) => tool.slug === canonical);
-  return { ...(standard || {}), ...(fromProgram || {}), slug: canonical, sourceSlug: fromProgram?.slug || fromProgram?.id || slug };
+  const definition = { ...(standard || {}), ...(fromProgram || {}), slug: canonical, sourceSlug: fromProgram?.slug || fromProgram?.id || slug };
+  if (canonical === "analizador-anuncio") {
+    definition.title = "Analizador de anuncios";
+    definition.description = "Importa una URL de mobile.de o crea una ficha normalizada y editable para revisar el vehículo.";
+  }
+  return definition;
 }
 
 function availableTools() {
@@ -1454,19 +1479,106 @@ function searchFilterSummary() {
 }
 
 function renderAdAnalyzerTool() {
-  const data = app.state.tools.adAnalyzer || {};
-  const checks = [
-    ["identity", "Versión y datos básicos identificables"], ["vin", "VIN disponible o solicitado"],
-    ["mileage", "Kilometraje coherente entre texto y fotos"], ["history", "Historial y mantenimiento mencionados"],
-    ["damage", "Daños y reformas explicados"], ["documents", "Documentación descrita"],
-    ["seller", "Vendedor y ubicación verificables"], ["photos", "Fotos suficientes, claras y consistentes"],
-  ];
-  const score = adAnalyzerScore();
-  return `<div class="academy-workspace"><section class="academy-card academy-form-card"><div class="academy-section-head"><div><h2>Ficha del anuncio</h2><p>Registra evidencias y ausencias antes de interpretar el anuncio.</p></div></div><div class="academy-form-grid"><div class="academy-field academy-field--wide"><label for="ad-url">Enlace o referencia</label><input id="ad-url" type="url" maxlength="1000" value="${escapeAttribute(data.url || "")}" data-tool-field="adAnalyzer.url"></div><div class="academy-field"><label for="ad-price">Precio anunciado (€)</label><input id="ad-price" type="number" min="0" step="any" value="${escapeAttribute(data.price ?? "")}" data-tool-field="adAnalyzer.price"></div><div class="academy-field"><label for="ad-mileage">Kilometraje anunciado</label><input id="ad-mileage" type="number" min="0" step="1" value="${escapeAttribute(data.mileage ?? "")}" data-tool-field="adAnalyzer.mileage"></div><div class="academy-field academy-field--wide"><label for="ad-claims">Qué afirma el anuncio</label><textarea id="ad-claims" maxlength="4000" data-tool-field="adAnalyzer.claims">${escapeHtml(data.claims || "")}</textarea></div><div class="academy-field academy-field--wide"><label for="ad-missing">Qué falta o genera dudas</label><textarea id="ad-missing" maxlength="4000" data-tool-field="adAnalyzer.missing">${escapeHtml(data.missing || "")}</textarea></div></div><div class="academy-checklist-grid" style="margin-top:1rem">${checks.map(([key, label]) => `<label class="academy-check"><input type="checkbox" data-tool-field="adAnalyzer.checks.${key}"${data.checks?.[key] ? " checked" : ""}><span>${label}</span></label>`).join("")}</div><div class="academy-form-grid" style="margin-top:1rem"><div class="academy-field"><label for="ad-decision">Decisión provisional</label><select id="ad-decision" data-tool-field="adAnalyzer.decision"><option value="">Sin decidir</option>${[["verify", "Pedir datos"], ["continue", "Seguir verificando"], ["discard", "Descartar"]].map(([value, label]) => `<option value="${value}"${data.decision === value ? " selected" : ""}>${label}</option>`).join("")}</select></div><div class="academy-field"><label for="ad-next">Siguiente comprobación</label><input id="ad-next" maxlength="500" value="${escapeAttribute(data.nextAction || "")}" data-tool-field="adAnalyzer.nextAction"></div></div></section><aside class="academy-card academy-result-card academy-sticky-card"><span class="academy-eyebrow">Cobertura del anuncio</span><div class="academy-tool-gauge" data-ad-gauge style="--gauge:${Math.round((score / checks.length) * 100)}"><div><strong data-ad-score>${score} de ${checks.length}</strong><small>señales registradas</small></div></div><div class="academy-decision-panel"><div><span>Lectura responsable</span><strong>${score === checks.length ? "Cobertura completa" : score >= 4 ? "Verificación en curso" : "Faltan evidencias"}</strong><small>Completar una casilla no sustituye verificar su evidencia.</small></div></div><div class="academy-tool-signal-row"><span>Identidad</span><span>Historial</span><span>Daños</span><span>Documentos</span></div></aside></div>`;
+  const data = ensureVehicleAnalyzer();
+  const importUrl = app.vehicleImportUrl || data.importUrl || "";
+  const vehicles = data.vehicles;
+  const selected = vehicles.find((vehicle) => vehicle.id === app.vehicleSelectedId) || null;
+  const editor = app.vehicleDraft && ["edit", "manual", "review"].includes(app.vehicleMode) ? renderVehicleEditor(app.vehicleDraft, app.vehicleMode) : "";
+  const detail = selected && app.vehicleMode === "detail" ? renderVehicleDetail(selected) : "";
+  const status = app.vehicleImportState === "loading"
+    ? `<div class="vehicle-import-status vehicle-import-status--loading" role="status" aria-live="polite"><span class="vehicle-loader" aria-hidden="true"></span><div><strong>Leyendo anuncio…</strong><p>Obteniendo los datos públicos y preparando una ficha editable.</p></div></div>`
+    : app.vehicleImportMessage ? `<div class="vehicle-import-status vehicle-import-status--${app.vehicleImportState === "error" ? "error" : "info"}" role="status" aria-live="polite"><div><strong>${app.vehicleImportState === "error" ? "No hemos podido importar el anuncio" : "Anuncio detectado"}</strong><p>${escapeHtml(app.vehicleImportMessage)}</p>${app.vehicleImportState === "error" ? '<button class="academy-button academy-button--secondary academy-button--small" type="button" data-action="vehicle-manual">Crear ficha manualmente</button>' : app.vehicleDuplicateId ? `<div class="academy-card-actions"><button class="academy-button academy-button--primary academy-button--small" type="button" data-action="vehicle-open" data-id="${escapeAttribute(app.vehicleDuplicateId)}">Abrir ficha</button><button class="academy-button academy-button--secondary academy-button--small" type="button" data-action="vehicle-update" data-id="${escapeAttribute(app.vehicleDuplicateId)}">Actualizar datos</button></div>` : ""}</div></div>` : "";
+  return `<div class="vehicle-analyzer">
+    <section class="academy-card vehicle-import-hero">
+      <div class="vehicle-import-copy"><span class="academy-eyebrow">Compatible actualmente: mobile.de</span><h2>Analiza un anuncio</h2><p>Pega el enlace de un vehículo y crea una ficha con sus datos principales. Los campos ausentes se muestran como «No indicado».</p></div>
+      <form class="vehicle-import-form" data-vehicle-import-form novalidate><label for="vehicle-import-url">URL del anuncio</label><div class="vehicle-import-control"><input id="vehicle-import-url" name="url" type="url" inputmode="url" autocomplete="url" maxlength="2000" required placeholder="https://www.mobile.de/..." value="${escapeAttribute(importUrl)}"><button class="academy-button academy-button--primary" type="submit"${app.vehicleImportState === "loading" ? " disabled" : ""}>Analizar anuncio</button></div><button class="academy-link-button" type="button" data-action="vehicle-manual">Crear ficha manualmente</button></form>${status}
+    </section>
+    ${editor || detail}
+    <section class="vehicle-library" aria-labelledby="vehicle-library-title"><div class="academy-section-head"><div><span class="academy-eyebrow">Guardado en este dispositivo</span><h2 id="vehicle-library-title">Mis vehículos</h2><p>Fichas normalizadas preparadas para comparar y calcular operaciones más adelante.</p></div>${vehicles.length ? `<span class="academy-badge">${vehicles.length} ${vehicles.length === 1 ? "vehículo" : "vehículos"}</span>` : ""}</div>
+      ${vehicles.length ? `<div class="vehicle-card-grid">${vehicles.map(renderVehicleCard).join("")}</div>` : `<div class="academy-empty"><div class="academy-state-copy"><strong>Todavía no hay vehículos guardados</strong><p>Importa un anuncio de mobile.de o crea una ficha manual.</p><button class="academy-button academy-button--primary" type="button" data-action="vehicle-manual">Crear el primero</button></div></div>`}
+    </section>
+  </div>`;
 }
 
-function adAnalyzerScore() {
-  return Object.values(app.state.tools.adAnalyzer?.checks || {}).filter(Boolean).length;
+function ensureVehicleAnalyzer() {
+  app.state.tools.adAnalyzer ||= {};
+  app.state.tools.adAnalyzer.vehicles = Array.isArray(app.state.tools.adAnalyzer.vehicles) ? app.state.tools.adAnalyzer.vehicles.map((vehicle) => normalizeVehicle(vehicle)) : [];
+  return app.state.tools.adAnalyzer;
+}
+
+function vehicleLabel(value, labels = null) {
+  if (value === null || value === undefined || value === "") return "No indicado";
+  return labels?.[value] || String(value);
+}
+
+function vehicleBoolean(value) { return value === true ? "Sí" : value === false ? "No" : "No indicado"; }
+function vehicleLocation(vehicle) { return [vehicle.city, vehicle.country].filter(Boolean).join(", ") || "No indicado"; }
+function vehicleTitle(vehicle) { return vehicle.title || [vehicle.make, vehicle.model, vehicle.variant].filter(Boolean).join(" ") || "Vehículo sin nombre"; }
+function vehiclePrice(vehicle) { return vehicle.price === null ? "Precio no indicado" : currency(vehicle.price); }
+function safeVehicleSourceUrl(value) { try { const url = new URL(value); return url.protocol === "https:" ? url.href : ""; } catch { return ""; } }
+
+function renderVehicleCard(vehicle) {
+  const warnings = [vehicle.vatDeductible === true && "IVA deducible", vehicle.accidentFree === false && "Accidentado", vehicle.damagedVehicle === true && "Daños declarados"].filter(Boolean);
+  return `<article class="academy-card vehicle-card"><div class="vehicle-card-media">${vehicle.images?.[0] ? `<img src="${escapeAttribute(vehicle.images[0])}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">` : `<span aria-hidden="true">${iconSvg("car")}</span>`}</div><div class="vehicle-card-body"><span class="academy-eyebrow">${escapeHtml(vehicle.source === "mobile.de" ? "mobile.de" : "Ficha manual")}</span><h3>${escapeHtml(vehicleTitle(vehicle))}</h3><strong class="vehicle-card-price">${escapeHtml(vehiclePrice(vehicle))}</strong><p>${escapeHtml([formatVehicleRegistration(vehicle.firstRegistration), vehicle.mileageKm === null ? null : `${vehicle.mileageKm.toLocaleString("es-ES")} km`].filter(Boolean).join(" · "))}</p><p>${escapeHtml([vehicleLabel(vehicle.fuelType, VEHICLE_FUEL_LABELS), vehicleLabel(vehicle.transmission, VEHICLE_TRANSMISSION_LABELS), vehicle.powerCv === null ? null : `${Math.round(vehicle.powerCv)} CV`].filter(Boolean).join(" · "))}</p><small>${escapeHtml(vehicleLocation(vehicle))}</small>${warnings.length ? `<div class="vehicle-card-flags">${warnings.map((warning) => `<span>${escapeHtml(warning)}</span>`).join("")}</div>` : ""}<div class="academy-card-actions"><button class="academy-button academy-button--primary academy-button--small" type="button" data-action="vehicle-open" data-id="${escapeAttribute(vehicle.id)}">Abrir ficha</button><button class="academy-button academy-button--ghost academy-button--small" type="button" data-action="vehicle-edit" data-id="${escapeAttribute(vehicle.id)}">Editar</button></div></div></article>`;
+}
+
+function renderVehicleAlerts(vehicle) {
+  const alerts = [
+    vehicle.accidentFree === false && ["Atención", "Vehículo indicado como accidentado", "danger"],
+    vehicle.damagedVehicle === true && ["Atención", "El anuncio declara daños o avería", "danger"],
+    vehicle.vatDeductible === true && ["Información", "IVA deducible indicado por el vendedor", "info"],
+    vehicle.cocMentioned === null && ["Información faltante", "CoC no indicado en el anuncio", "missing"],
+  ].filter(Boolean);
+  return `<div class="vehicle-alerts">${alerts.map(([title, copy, kind]) => `<div class="vehicle-alert vehicle-alert--${kind}"><strong>${title}</strong><span>${copy}</span></div>`).join("")}</div>`;
+}
+
+function renderVehicleDetail(vehicle) {
+  const sourceUrl = safeVehicleSourceUrl(vehicle.sourceUrl);
+  const fields = [
+    ["Marca", vehicle.make], ["Modelo", vehicle.model], ["Versión", vehicle.variant], ["Primera matriculación", formatVehicleRegistration(vehicle.firstRegistration)],
+    ["Kilómetros", vehicle.mileageKm === null ? null : `${vehicle.mileageKm.toLocaleString("es-ES")} km`], ["Potencia", [vehicle.powerCv === null ? null : `${Math.round(vehicle.powerCv)} CV`, vehicle.powerKw === null ? null : `${vehicle.powerKw} kW`].filter(Boolean).join(" / ")],
+    ["Combustible", vehicleLabel(vehicle.fuelType, VEHICLE_FUEL_LABELS)], ["Cambio", vehicleLabel(vehicle.transmission, VEHICLE_TRANSMISSION_LABELS)],
+    ["Precio anunciado", vehicle.price === null ? null : currency(vehicle.price)], ["Ubicación", vehicleLocation(vehicle)],
+    ["Vendedor", vehicle.company || vehicle.sellerName], ["Tipo de vendedor", vehicle.sellerType === "dealer" ? "Profesional" : vehicle.sellerType === "private" ? "Particular" : vehicle.sellerType],
+    ["CO₂", vehicle.co2 === null ? null : `${vehicle.co2} g/km`], ["Norma Euro", vehicle.euroNorm], ["TÜV / HU", formatVehicleRegistration(vehicle.huUntil)], ["Propietarios", vehicle.previousOwners],
+  ];
+  const direct = Object.values(vehicle.fieldSources || {}).filter((value) => value === "direct").length;
+  const derived = Object.values(vehicle.fieldSources || {}).filter((value) => value === "derived").length;
+  return `<section class="academy-card vehicle-detail" data-vehicle-detail><div class="vehicle-detail-hero">${vehicle.images?.[0] ? `<img src="${escapeAttribute(vehicle.images[0])}" alt="Imagen principal del anuncio de ${escapeAttribute(vehicleTitle(vehicle))}" referrerpolicy="no-referrer">` : ""}<div><span class="academy-eyebrow">Ficha de vehículo</span><h2>${escapeHtml(vehicleTitle(vehicle))}</h2><strong>${escapeHtml(vehiclePrice(vehicle))}</strong><div class="vehicle-badges">${[vehicle.year, vehicle.mileageKm === null ? null : `${vehicle.mileageKm.toLocaleString("es-ES")} km`, VEHICLE_FUEL_LABELS[vehicle.fuelType], VEHICLE_TRANSMISSION_LABELS[vehicle.transmission], vehicle.powerCv === null ? null : `${Math.round(vehicle.powerCv)} CV`, vehicle.country].filter(Boolean).map((item) => `<span>${escapeHtml(item)}</span>`).join("")}</div></div></div>
+    ${renderVehicleAlerts(vehicle)}
+    <div class="vehicle-detail-actions"><button class="academy-button academy-button--primary" type="button" data-action="vehicle-edit" data-id="${escapeAttribute(vehicle.id)}">Editar ficha</button>${vehicle.source === "mobile.de" ? `<button class="academy-button academy-button--secondary" type="button" data-action="vehicle-update" data-id="${escapeAttribute(vehicle.id)}">Actualizar desde mobile.de</button>` : ""}<button class="academy-button academy-button--secondary" type="button" data-action="vehicle-calculate" data-id="${escapeAttribute(vehicle.id)}"${vehicle.price === null ? " disabled" : ""}>Calcular operación</button><button class="academy-button academy-button--ghost" type="button" data-action="vehicle-back">Volver</button></div>
+    <section class="vehicle-section"><div class="academy-section-head"><div><h3>Datos principales</h3><p>Los datos derivados se indican; revisa siempre el anuncio y la documentación.</p></div><span class="academy-badge">${direct} directos · ${derived} derivados</span></div><dl class="vehicle-facts">${fields.map(([label, value]) => `<div><dt>${label}</dt><dd>${escapeHtml(value === null || value === undefined || value === "" ? "No indicado" : value)}</dd></div>`).join("")}</dl></section>
+    <section class="vehicle-section"><h3>Precio y fiscalidad del anuncio</h3><dl class="vehicle-facts"><div><dt>Precio bruto</dt><dd>${vehicle.priceGross === null ? "No indicado" : escapeHtml(currency(vehicle.priceGross))}</dd></div><div><dt>Precio neto</dt><dd>${vehicle.priceNet === null ? "No indicado" : escapeHtml(currency(vehicle.priceNet))}</dd></div><div><dt>IVA deducible</dt><dd>${vehicleBoolean(vehicle.vatDeductible)}</dd></div><div><dt>Negociable</dt><dd>${vehicleBoolean(vehicle.negotiable)}</dd></div></dl></section>
+    <section class="vehicle-section"><h3>Estado e historial</h3><dl class="vehicle-facts"><div><dt>Sin accidentes</dt><dd>${vehicleBoolean(vehicle.accidentFree)}</dd></div><div><dt>Vehículo dañado</dt><dd>${vehicleBoolean(vehicle.damagedVehicle)}</dd></div><div><dt>Apto para circular</dt><dd>${vehicleBoolean(vehicle.roadworthy)}</dd></div><div><dt>Historial completo</dt><dd>${vehicleBoolean(vehicle.fullServiceHistory)}</dd></div><div><dt>CoC mencionado</dt><dd>${vehicleBoolean(vehicle.cocMentioned)}</dd></div><div><dt>Garantía</dt><dd>${escapeHtml(vehicle.warranty || "No indicado")}</dd></div></dl></section>
+    <section class="vehicle-section"><h3>Equipamiento</h3>${vehicle.equipment?.length ? `<ul class="vehicle-equipment">${vehicle.equipment.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : "<p>No indicado en el anuncio.</p>"}</section>
+    <section class="vehicle-section"><h3>Descripción del vendedor</h3><p class="vehicle-description">${escapeHtml(vehicle.description || "No indicada en el anuncio.")}</p></section>
+    <div class="vehicle-danger-actions"><button class="academy-button academy-button--ghost academy-button--small" type="button" data-action="vehicle-duplicate" data-id="${escapeAttribute(vehicle.id)}">Duplicar</button><button class="academy-button academy-button--ghost academy-button--small" type="button" data-action="vehicle-delete" data-id="${escapeAttribute(vehicle.id)}">Eliminar ficha</button>${sourceUrl ? `<a class="academy-button academy-button--ghost academy-button--small" href="${escapeAttribute(sourceUrl)}" target="_blank" rel="noopener noreferrer">Abrir anuncio original</a>` : ""}</div>
+  </section>`;
+}
+
+const VEHICLE_FORM_FIELDS = Object.freeze([
+  ["make", "Marca", "text"], ["model", "Modelo", "text"], ["variant", "Versión", "text"], ["title", "Título de la ficha", "text"],
+  ["price", "Precio anunciado (€)", "number"], ["priceGross", "Precio bruto (€)", "number"], ["priceNet", "Precio neto (€)", "number"],
+  ["firstRegistration", "Primera matriculación", "month"], ["mileageKm", "Kilómetros", "number"], ["powerCv", "Potencia (CV)", "number"], ["powerKw", "Potencia (kW)", "number"],
+  ["fuelType", "Combustible", "fuel"], ["transmission", "Cambio", "transmission"], ["bodyType", "Carrocería", "text"], ["engineCc", "Cilindrada (cc)", "number"],
+  ["country", "País", "text"], ["city", "Ciudad", "text"], ["postalCode", "Código postal", "text"], ["sellerType", "Tipo de vendedor", "seller"], ["company", "Empresa", "text"], ["sellerName", "Vendedor", "text"],
+  ["co2", "CO₂ (g/km)", "number"], ["euroNorm", "Norma Euro", "text"], ["previousOwners", "Propietarios", "number"], ["huUntil", "TÜV / HU hasta", "month"],
+  ["vatDeductible", "IVA deducible", "boolean"], ["accidentFree", "Sin accidentes", "boolean"], ["damagedVehicle", "Vehículo dañado", "boolean"], ["roadworthy", "Apto para circular", "boolean"], ["fullServiceHistory", "Historial completo", "boolean"], ["cocMentioned", "CoC mencionado", "boolean"],
+  ["sourceUrl", "URL del anuncio", "url"], ["description", "Descripción del vendedor", "textarea"], ["equipment", "Equipamiento (uno por línea)", "textarea"],
+]);
+
+function renderVehicleEditor(vehicle, mode) {
+  const optionList = (options, value) => `<option value="">No indicado</option>${Object.entries(options).map(([key, label]) => `<option value="${key}"${value === key ? " selected" : ""}>${label}</option>`).join("")}`;
+  const control = ([name, label, type]) => {
+    const value = Array.isArray(vehicle[name]) ? vehicle[name].join("\n") : vehicle[name] ?? "";
+    if (type === "textarea") return `<div class="academy-field academy-field--wide"><label for="vehicle-${name}">${label}</label><textarea id="vehicle-${name}" name="${name}" maxlength="12000">${escapeHtml(value)}</textarea></div>`;
+    if (type === "fuel") return `<div class="academy-field"><label for="vehicle-${name}">${label}</label><select id="vehicle-${name}" name="${name}">${optionList(VEHICLE_FUEL_LABELS, value)}</select></div>`;
+    if (type === "transmission") return `<div class="academy-field"><label for="vehicle-${name}">${label}</label><select id="vehicle-${name}" name="${name}">${optionList(VEHICLE_TRANSMISSION_LABELS, value)}</select></div>`;
+    if (type === "boolean") return `<div class="academy-field"><label for="vehicle-${name}">${label}</label><select id="vehicle-${name}" name="${name}"><option value=""${value === "" ? " selected" : ""}>No indicado</option><option value="true"${value === true ? " selected" : ""}>Sí</option><option value="false"${value === false ? " selected" : ""}>No</option></select></div>`;
+    if (type === "seller") return `<div class="academy-field"><label for="vehicle-${name}">${label}</label><select id="vehicle-${name}" name="${name}"><option value="">No indicado</option><option value="dealer"${value === "dealer" ? " selected" : ""}>Profesional</option><option value="private"${value === "private" ? " selected" : ""}>Particular</option><option value="unknown"${value === "unknown" ? " selected" : ""}>Sin determinar</option></select></div>`;
+    return `<div class="academy-field${name === "sourceUrl" ? " academy-field--wide" : ""}"><label for="vehicle-${name}">${label}</label><input id="vehicle-${name}" name="${name}" type="${type}"${type === "number" ? ' min="0" step="any"' : ' maxlength="500"'} value="${escapeAttribute(value)}"></div>`;
+  };
+  return `<section class="academy-card vehicle-editor"><div class="academy-section-head"><div><span class="academy-eyebrow">${mode === "manual" ? "Entrada manual" : mode === "review" ? "Revisa antes de guardar" : "Cambios prioritarios"}</span><h2>${mode === "manual" ? "Crear vehículo manualmente" : "Editar ficha"}</h2><p>Los campos que edites manualmente tendrán prioridad en futuras actualizaciones.</p></div></div><form data-vehicle-form><input type="hidden" name="id" value="${escapeAttribute(vehicle.id)}"><div class="academy-form-grid">${VEHICLE_FORM_FIELDS.map(control).join("")}</div><div class="academy-page-actions"><button class="academy-button academy-button--primary" type="submit">Guardar ficha</button><button class="academy-button academy-button--secondary" type="button" data-action="vehicle-cancel">Cancelar</button></div></form></section>`;
 }
 
 function renderMarketToolLegacy() {
@@ -1942,10 +2054,6 @@ function updateDynamicResults() {
   if (filterGauge) filterGauge.style.setProperty("--gauge", filterCoverage);
   const filterCoverageText = document.querySelector("[data-filter-coverage]");
   if (filterCoverageText) filterCoverageText.textContent = `${filterCoverage}%`;
-  const adScore = document.querySelector("[data-ad-score]");
-  if (adScore) adScore.textContent = `${adAnalyzerScore()} de 8`;
-  const adGauge = document.querySelector("[data-ad-gauge]");
-  if (adGauge) adGauge.style.setProperty("--gauge", Math.round((adAnalyzerScore() / 8) * 100));
   const travelWarningsContainer = document.querySelector('[data-tool-id="viaje"] .academy-result-card .academy-grid');
   if (travelWarningsContainer) {
     const warnings = travelWarnings();
@@ -2028,6 +2136,62 @@ function closeSearch() {
   app.lastFocused?.focus?.();
 }
 
+function renderVehicleAnalyzerView() {
+  renderView();
+  const input = document.querySelector("#vehicle-import-url");
+  if (input) input.value = app.vehicleImportUrl || ensureVehicleAnalyzer().importUrl || "";
+}
+
+async function importVehicleUrl(url, { existingId = null } = {}) {
+  app.vehicleImportUrl = String(url || "").trim();
+  ensureVehicleAnalyzer().importUrl = app.vehicleImportUrl;
+  app.vehicleImportState = "loading";
+  app.vehicleImportMessage = "";
+  app.vehicleDuplicateId = null;
+  academyTrack("vehicle_import_started", { toolId: "analizador-anuncio", contentType: "mobile.de" });
+  renderVehicleAnalyzerView();
+  try {
+    const payload = await fetchJson("/api/vehicle/import", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: app.vehicleImportUrl }) });
+    const incoming = normalizeVehicle(payload.vehicle || {});
+    const data = ensureVehicleAnalyzer();
+    if (existingId) {
+      const index = data.vehicles.findIndex((vehicle) => vehicle.id === existingId);
+      if (index < 0) throw new Error("vehicle_not_found");
+      data.vehicles[index] = mergeVehicleImport(data.vehicles[index], incoming);
+      app.vehicleSelectedId = existingId;
+      app.vehicleMode = "detail";
+      app.vehicleImportState = "success";
+      app.vehicleImportMessage = "Ficha actualizada. Tus correcciones manuales se han conservado.";
+      scheduleSave({ immediate: true });
+      academyTrack("vehicle_import_success", { toolId: "analizador-anuncio", contentType: "update" });
+      renderVehicleAnalyzerView();
+      toast("Datos del anuncio actualizados.", "success");
+      return;
+    }
+    const duplicate = findDuplicateVehicle(data.vehicles, incoming);
+    if (duplicate) {
+      app.vehicleImportState = "duplicate";
+      app.vehicleImportMessage = "Ya tienes este vehículo guardado.";
+      app.vehicleDuplicateId = duplicate.id;
+      academyTrack("vehicle_import_success", { toolId: "analizador-anuncio", contentType: "duplicate" });
+      renderVehicleAnalyzerView();
+      return;
+    }
+    app.vehicleDraft = incoming;
+    app.vehicleMode = "review";
+    app.vehicleImportState = "success";
+    app.vehicleImportMessage = "Datos públicos importados. Revisa la ficha antes de guardarla.";
+    academyTrack("vehicle_import_success", { toolId: "analizador-anuncio", contentType: "mobile.de" });
+    renderVehicleAnalyzerView();
+    window.requestAnimationFrame(() => document.querySelector("[data-vehicle-form]")?.scrollIntoView({ block: "start", behavior: app.state.preferences.reducedMotion ? "auto" : "smooth" }));
+  } catch (error) {
+    app.vehicleImportState = "error";
+    app.vehicleImportMessage = error?.message || "No hemos podido leer automáticamente el anuncio.";
+    academyTrack("vehicle_import_failed", { toolId: "analizador-anuncio", contentType: error?.code || "request_failed" });
+    renderVehicleAnalyzerView();
+  }
+}
+
 function handleClick(event) {
   const visual = event.target.closest("[data-visual-interaction]");
   if (visual) academyTrack("academy_visual_interacted", { programId: app.program?.id, stageId: app.route?.name === "stage" ? findStage(app.route.slug)?.id : "", lessonId: app.route?.name === "lesson" ? findLesson(app.route.slug)?.id : "", visualId: visual.dataset.visualInteraction, contentType: "visual" });
@@ -2064,6 +2228,14 @@ function handleClick(event) {
   const action = event.target.closest("[data-action]")?.dataset.action;
   if (!action) return;
   const target = event.target.closest("[data-action]");
+  if (action === "vehicle-manual") { app.vehicleDraft = createEmptyVehicle(); app.vehicleMode = "manual"; app.vehicleSelectedId = null; app.vehicleImportMessage = ""; renderView(); window.requestAnimationFrame(() => document.querySelector('[data-vehicle-form] input:not([type="hidden"])')?.focus()); }
+  if (action === "vehicle-open") { app.vehicleSelectedId = target.dataset.id; app.vehicleMode = "detail"; app.vehicleImportMessage = ""; app.vehicleDuplicateId = null; renderView(); window.requestAnimationFrame(() => document.querySelector("[data-vehicle-detail]")?.scrollIntoView({ block: "start" })); }
+  if (action === "vehicle-edit") { const vehicle = ensureVehicleAnalyzer().vehicles.find((item) => item.id === target.dataset.id); if (vehicle) { app.vehicleDraft = clone(vehicle); app.vehicleSelectedId = vehicle.id; app.vehicleMode = "edit"; renderView(); window.requestAnimationFrame(() => document.querySelector('[data-vehicle-form] input:not([type="hidden"])')?.focus()); } }
+  if (action === "vehicle-back" || action === "vehicle-cancel") { app.vehicleMode = "list"; app.vehicleSelectedId = null; app.vehicleDraft = null; renderView(); }
+  if (action === "vehicle-delete") { const vehicle = ensureVehicleAnalyzer().vehicles.find((item) => item.id === target.dataset.id); if (vehicle && window.confirm(`¿Eliminar la ficha de ${vehicleTitle(vehicle)}?`)) { app.state.tools.adAnalyzer.vehicles = removeVehicle(app.state.tools.adAnalyzer.vehicles, vehicle.id); app.vehicleMode = "list"; app.vehicleSelectedId = null; scheduleSave({ immediate: true }); renderView(); toast("Ficha eliminada.", "success"); } }
+  if (action === "vehicle-duplicate") { const vehicle = ensureVehicleAnalyzer().vehicles.find((item) => item.id === target.dataset.id); if (vehicle) { const copy = duplicateVehicle(vehicle); app.state.tools.adAnalyzer.vehicles = upsertVehicle(app.state.tools.adAnalyzer.vehicles, copy); app.vehicleSelectedId = copy.id; app.vehicleMode = "detail"; scheduleSave({ immediate: true }); renderView(); toast("Ficha duplicada como entrada manual.", "success"); } }
+  if (action === "vehicle-update") { const vehicle = ensureVehicleAnalyzer().vehicles.find((item) => item.id === target.dataset.id); if (vehicle?.sourceUrl) void importVehicleUrl(vehicle.sourceUrl, { existingId: vehicle.id }); }
+  if (action === "vehicle-calculate") { const vehicle = ensureVehicleAnalyzer().vehicles.find((item) => item.id === target.dataset.id); if (vehicle?.price !== null && vehicle?.price !== undefined) { ensureCosts().expenses.purchase = String(vehicle.price); scheduleSave({ immediate: true }); navigate(toolHref("coste-total")); toast("Precio del vehículo enviado a la calculadora.", "success"); } }
   if (action === "search-suggest") {
     const input = document.querySelector("[data-search-input]");
     if (input) { input.value = target.dataset.query || ""; renderSearchResultList(input.value); input.focus(); }
@@ -2213,7 +2385,39 @@ function bindSectionTracking() {
   document.querySelectorAll("[data-lesson-section]").forEach((section) => app.sectionObserver.observe(section));
 }
 
-function handleSubmit(event) {
+async function handleSubmit(event) {
+  if (event.target.matches("[data-vehicle-import-form]")) {
+    event.preventDefault();
+    const url = String(new FormData(event.target).get("url") || "").trim();
+    if (!url) { app.vehicleImportState = "error"; app.vehicleImportMessage = "El enlace no parece válido."; renderView(); return; }
+    await importVehicleUrl(url);
+    return;
+  }
+  if (event.target.matches("[data-vehicle-form]")) {
+    event.preventDefault();
+    const isNewManualVehicle = app.vehicleMode === "manual";
+    const values = Object.fromEntries(new FormData(event.target));
+    const original = app.vehicleDraft || createEmptyVehicle();
+    ["price", "priceGross", "priceNet", "mileageKm", "powerCv", "powerKw", "engineCc", "co2", "previousOwners"].forEach((key) => { values[key] = values[key] === "" ? null : Number(values[key]); });
+    ["vatDeductible", "accidentFree", "damagedVehicle", "roadworthy", "fullServiceHistory", "cocMentioned"].forEach((key) => { values[key] = values[key] === "" ? null : values[key] === "true"; });
+    values.equipment = String(values.equipment || "").split(/\r?\n/).map((item) => item.trim()).filter(Boolean);
+    const changes = {};
+    Object.entries(values).forEach(([key, value]) => { if (key !== "id" && JSON.stringify(value) !== JSON.stringify(original[key])) changes[key] = value; });
+    let vehicle = original.source === "manual" ? normalizeVehicle({ ...original, ...values, source: "manual" }) : applyVehicleEdits(original, changes);
+    vehicle = normalizeVehicle({ ...vehicle, id: original.id });
+    const data = ensureVehicleAnalyzer();
+    data.vehicles = upsertVehicle(data.vehicles, vehicle);
+    app.vehicleSelectedId = vehicle.id;
+    app.vehicleMode = "detail";
+    app.vehicleDraft = null;
+    app.vehicleImportState = "idle";
+    app.vehicleImportMessage = "";
+    scheduleSave({ immediate: true });
+    if (isNewManualVehicle) academyTrack("vehicle_manual_created", { toolId: "analizador-anuncio", contentType: "manual" });
+    renderView();
+    toast("Ficha guardada en este dispositivo.", "success");
+    return;
+  }
   if (event.target.matches("[data-candidate-form]")) {
     event.preventDefault(); const values = Object.fromEntries(new FormData(event.target));
     ["price", "mileage", "year"].forEach((key) => { values[key] = values[key] === "" ? "" : finite(values[key]); });

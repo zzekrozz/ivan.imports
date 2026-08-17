@@ -1,6 +1,28 @@
-export const ACADEMY_VERSION = "1.0.1";
+export const ACADEMY_VERSION = "1.1.0";
 
 export const ACADEMY_PATCH_NOTES = Object.freeze([
+  Object.freeze({
+    version: "1.1.0",
+    date: "16 agosto 2026",
+    title: "Fichas de vehículos desde mobile.de",
+    summary: "Nueva base normalizada para importar, revisar y guardar vehículos sin inventar datos ausentes.",
+    sections: Object.freeze([
+      Object.freeze({
+        label: "NUEVO",
+        items: Object.freeze([
+          "El Analizador crea fichas editables desde URLs compatibles de mobile.de o mediante entrada manual.",
+          "Mis vehículos conserva fichas en el dispositivo y permite abrir, actualizar, duplicar, eliminar y enviar el precio a la calculadora.",
+        ]),
+      }),
+      Object.freeze({
+        label: "SEGURIDAD",
+        items: Object.freeze([
+          "La importación server-side limita protocolos, hosts, redirecciones, tiempo y tamaño de respuesta.",
+          "Los datos ausentes permanecen como no indicados y el contenido remoto se presenta siempre como texto seguro.",
+        ]),
+      }),
+    ]),
+  }),
   Object.freeze({
     version: "1.0.1",
     date: "14 agosto 2026",
