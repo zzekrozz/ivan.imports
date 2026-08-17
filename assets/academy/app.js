@@ -17,8 +17,10 @@ import {
 } from "./private/cost-calculator.js";
 import { ACADEMY_PATCH_NOTES, ACADEMY_VERSION } from "./patch-notes.js";
 import { TOOL_CATALOG, toolCatalogEntry, validateToolCatalog } from "./private/tool-catalog.js";
+import { PLATFORM_AREAS, navigationItem, platformAreaForRoute } from "./private/platform-navigation.js";
 import {
   VEHICLE_FUEL_LABELS,
+  VEHICLE_STATUS_LABELS,
   VEHICLE_TRANSMISSION_LABELS,
   applyVehicleEdits,
   createEmptyVehicle,
@@ -26,6 +28,7 @@ import {
   findDuplicateVehicle,
   formatVehicleRegistration,
   mergeVehicleImport,
+  migrateLegacyCandidatesToVehicles,
   normalizeVehicle,
   removeVehicle,
   upsertVehicle,
@@ -223,7 +226,7 @@ function safeInternalPath(value, fallback = PROGRAM_ROOT) {
   try {
     const url = new URL(value || fallback, location.origin);
     if (url.origin !== location.origin) return fallback;
-    const allowed = /^\/(?:academia|herramientas|mi-operacion|recursos|actualizaciones)(?:\/|$)/i;
+    const allowed = /^\/(?:academia|herramientas|mis-vehiculos|mi-operacion|recursos|actualizaciones)(?:\/|$)/i;
     return allowed.test(url.pathname) ? `${url.pathname}${url.search}${url.hash}` : fallback;
   } catch {
     return fallback;
@@ -354,8 +357,12 @@ function normalizeState(payload) {
   state.progress.startedLessonIds = [...new Set(state.progress.startedLessonIds || [])].map(String);
   state.progress.completedStageIds = [...new Set(source.completedStageIds || state.progress.completedStageIds || [])].map(String);
   state.operation = source.operation && Object.keys(source.operation).length ? source.operation : null;
-  state.candidates = Array.isArray(source.candidates) ? source.candidates : [];
   state.tools = source.tools && typeof source.tools === "object" ? source.tools : {};
+  state.tools.adAnalyzer ||= {};
+  const legacyCandidates = Array.isArray(source.candidates) ? source.candidates : [];
+  state.tools.adAnalyzer.vehicles = migrateLegacyCandidatesToVehicles(state.tools.adAnalyzer.vehicles, legacyCandidates);
+  state.candidates = [];
+  if (legacyCandidates.length) state.migration = { ...(source.migration || {}), legacyCandidatesToVehicles: { version: 1, count: legacyCandidates.length } };
   state.preferences = { ...base.preferences, ...(source.preferences || {}) };
   state.revision = finite(payload?.revision ?? source.revision, 0);
   return normalizeStoredNumbers(state);
@@ -373,7 +380,7 @@ function serializableState(state) {
     version: finite(state.version, 1) || 1,
     progress,
     operation: state.operation && typeof state.operation === "object" ? clone(state.operation) : {},
-    candidates: clone((state.candidates || []).slice(0, 20)),
+    candidates: [],
     tools: clone(state.tools || {}),
     preferences,
     activeLessonId: String(state.progress?.currentLessonId || state.activeLessonId || ""),
@@ -456,8 +463,11 @@ function parseRoute(pathname = location.pathname) {
   if ((match = path.match(/^\/academia\/etapa\/([^/]+)$/i))) return { name: "stage", slug: decodeURIComponent(match[1]) };
   if ((match = path.match(/^\/academia\/paso\/([^/]+)$/i))) return { name: "lesson", slug: decodeURIComponent(match[1]) };
   if ((match = path.match(/^\/herramientas\/([^/]+)$/i))) return { name: "tool", slug: decodeURIComponent(match[1]) };
+  if ((match = path.match(/^\/mis-vehiculos\/([^/]+)$/i)) && match[1].toLowerCase() !== "candidatos") return { name: "vehicle", vehicleId: decodeURIComponent(match[1]) };
+  if (path === "/mis-vehiculos/candidatos") return { name: "candidates" };
+  if (path === "/mis-vehiculos") return { name: "vehicles" };
   if (path === "/mi-operacion/candidatos") return { name: "candidates" };
-  if (path === "/mi-operacion") return { name: "operation" };
+  if (path === "/mi-operacion") return { name: "vehicles" };
   if (path === "/herramientas") return { name: "tools" };
   if (path === "/recursos/respuestas") return { name: "answers" };
   if (path === "/recursos") return { name: "resources" };
@@ -471,14 +481,15 @@ function routePath(route) {
   if (route.name === "stage") return `/academia/etapa/${route.slug}/`;
   if (route.name === "lesson") return `/academia/paso/${route.slug}/`;
   if (route.name === "tool") return toolHref(route.slug);
-  return ({ operation: "/mi-operacion/", candidates: "/mi-operacion/candidatos/", tools: "/herramientas/", answers: "/recursos/respuestas/", resources: "/recursos/", support: "/academia/soporte/", account: "/academia/cuenta/", dashboard: PROGRAM_ROOT })[route.name] || PROGRAM_ROOT;
+  if (route.name === "vehicle") return `/mis-vehiculos/${encodeURIComponent(route.vehicleId)}/`;
+  return ({ vehicles: "/mis-vehiculos/", candidates: "/mis-vehiculos/candidatos/", tools: "/herramientas/", answers: "/recursos/respuestas/", resources: "/recursos/", support: "/academia/soporte/", account: "/academia/cuenta/", dashboard: PROGRAM_ROOT })[route.name] || PROGRAM_ROOT;
 }
 
 function normalizeRenderedNavigation(root = document) {
   const fixed = {
     "/ruta": PROGRAM_ROOT, "/academia/ruta": PROGRAM_ROOT,
-    "/mi-operacion": "/mi-operacion/", "/academia/mi-operacion": "/mi-operacion/",
-    "/candidatos": "/mi-operacion/candidatos/", "/academia/candidatos": "/mi-operacion/candidatos/",
+    "/mi-operacion": "/mis-vehiculos/", "/academia/mi-operacion": "/mis-vehiculos/",
+    "/candidatos": "/mis-vehiculos/candidatos/", "/academia/candidatos": "/mis-vehiculos/candidatos/",
     "/herramientas": "/herramientas/", "/academia/herramientas": "/herramientas/",
     "/respuestas": "/recursos/respuestas/", "/academia/respuestas": "/recursos/respuestas/",
     "/recursos": "/recursos/", "/academia/recursos": "/recursos/",
@@ -506,7 +517,7 @@ function normalizeRenderedNavigation(root = document) {
 }
 
 function addPageResetControl(root = document) {
-  const toolId = app.route.name === "operation" ? "operation-dashboard" : app.route.name === "candidates" ? "candidate-board" : "";
+  const toolId = app.route.name === "candidates" ? "candidate-board" : "";
   if (!toolId) return;
   const actions = root.querySelector?.("[data-view-root] .academy-page-head .academy-page-actions");
   if (!actions || actions.querySelector('[data-action="tool-reset"]')) return;
@@ -613,29 +624,21 @@ function handleVideoEvent(event) {
 }
 
 function navCurrent(name) {
-  if (name === "academy") return ["dashboard", "stage", "lesson"].includes(app.route.name);
-  if (name === "operation") return ["operation", "candidates"].includes(app.route.name);
-  if (name === "tools") return ["tools", "tool"].includes(app.route.name);
-  if (name === "resources") return ["resources", "answers"].includes(app.route.name);
-  return app.route.name === name;
-}
-
-function addOperationVehicleSummary(root = document) {
-  if (app.route.name !== "operation") return;
-  const form = root.querySelector?.("[data-view-root] .academy-operation-sections");
-  if (!form || root.querySelector("[data-operation-vehicles]")) return;
-  const vehicles = ensureVehicleAnalyzer().vehicles || [];
-  const latest = vehicles[0];
-  form.insertAdjacentHTML("beforebegin", `<section class="academy-card academy-operation-vehicles" data-operation-vehicles><div><span class="academy-eyebrow">Mis vehículos</span><h2>${vehicles.length ? `${vehicles.length} ${vehicles.length === 1 ? "ficha guardada" : "fichas guardadas"}` : "Todavía no hay fichas guardadas"}</h2><p>${latest ? `Última ficha: ${escapeHtml(vehicleTitle(latest))}.` : "Importa un anuncio o crea una ficha manual cuando tengas un vehículo que estudiar."}</p></div><div class="academy-page-actions"><a class="academy-button academy-button--secondary" href="/mi-operacion/candidatos/" data-nav>Ver candidatos</a><a class="academy-button academy-button--primary" href="${toolHref("analizador-anuncio")}" data-nav>${vehicles.length ? "Abrir mis vehículos" : "Añadir vehículo"}</a></div></section>`);
+  return PLATFORM_AREAS.find((area) => area.id === name)?.routeNames.includes(app.route.name) || false;
 }
 
 function navLink(href, name, label, icon) {
-  return `<a class="academy-nav-link" href="${href}" data-nav${navCurrent(name) ? ' aria-current="page"' : ""}>
+  return `<a class="academy-nav-link" href="${href}"${href === "/" ? "" : " data-nav"}${navCurrent(name) ? ' aria-current="page"' : ""}>
     <span class="academy-nav-icon">${iconSvg(icon, { className: "academy-icon" })}</span><span>${escapeHtml(label)}</span></a>`;
 }
 
 function mobileNavLink(href, name, label, icon) {
   return `<a href="${href}" data-nav${navCurrent(name) ? ' aria-current="page"' : ""}><span>${iconSvg(icon, { className: "academy-icon" })}</span><span>${escapeHtml(label)}</span></a>`;
+}
+
+function vehicleHref(vehicleOrId) {
+  const id = typeof vehicleOrId === "object" ? vehicleOrId?.id : vehicleOrId;
+  return `/mis-vehiculos/${encodeURIComponent(String(id || ""))}/`;
 }
 
 function activeRouteStageId() {
@@ -680,10 +683,7 @@ function renderModulePicker(model, mobile = false) {
 }
 
 function currentAreaName() {
-  if (["operation", "candidates"].includes(app.route.name)) return "Mi operación";
-  if (["tools", "tool"].includes(app.route.name)) return "Herramientas";
-  if (["resources", "answers"].includes(app.route.name)) return "Recursos";
-  return "Academia";
+  return platformAreaForRoute(app.route.name).label;
 }
 
 function userInitials() {
@@ -692,49 +692,58 @@ function userInitials() {
   return name.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "AI";
 }
 
+function contextualItem(item) {
+  const config = navigationItem(item);
+  const current = config.routeNames?.includes(app.route.name) || (config.href === "/mis-vehiculos/" && app.route.name === "vehicle");
+  return `<a class="academy-nav-link" href="${escapeAttribute(config.href)}" data-nav${current ? ' aria-current="page"' : ""}><span class="academy-nav-icon">${iconSvg(config.icon || "route", { className: "academy-icon" })}</span><span>${escapeHtml(config.label)}</span>${config.badge ? `<span class="academy-nav-badge">${escapeHtml(config.badge)}</span>` : ""}</a>`;
+}
+
+function toolCategories() {
+  return [...new Set(TOOL_CATALOG.filter((tool) => tool.publicPath.startsWith("/herramientas/")).map((tool) => tool.category))];
+}
+
+function renderContextSidebar(area, dashboard) {
+  if (area.id === "academy") return `<div class="academy-sidebar-section"><span class="academy-sidebar-section-label">Academia</span>${contextualItem({ label: "Continuar aprendiendo", href: dashboard.currentLesson ? lessonHref(dashboard.currentLesson) : PROGRAM_ROOT, icon: "chevron", routeNames: [] })}</div><div class="academy-sidebar-section academy-sidebar-section--modules">${renderModulePicker(dashboard)}</div><div class="academy-sidebar-section academy-sidebar-section--utility"><button class="academy-nav-link" type="button" data-action="search-open"><span class="academy-nav-icon">${iconSvg("search", { className: "academy-icon" })}</span><span>Buscar en la Academia</span></button></div>`;
+  if (area.id === "tools") return `<div class="academy-sidebar-section"><span class="academy-sidebar-section-label">Herramientas</span>${contextualItem({ label: "Todas las herramientas", href: "/herramientas/", icon: "tools", routeNames: ["tools"] })}</div><div class="academy-sidebar-section"><span class="academy-sidebar-section-label">Categorías</span>${toolCategories().map((category) => contextualItem({ label: category, href: `/herramientas/#categoria-${slugify(category)}`, icon: "route", routeNames: [] })).join("")}</div>`;
+  if (area.id === "vehicles") return `<div class="academy-sidebar-section"><span class="academy-sidebar-section-label">Mis vehículos</span>${contextualItem({ label: "Resumen", href: "/mis-vehiculos/", icon: "home", routeNames: ["vehicles"] })}${contextualItem({ label: "Vehículos", href: "/mis-vehiculos/#vehiculos", icon: "car", routeNames: [] })}${contextualItem({ label: "Candidatos", href: "/mis-vehiculos/candidatos/", icon: "candidates", routeNames: ["candidates"] })}</div>${app.route.name === "vehicle" ? `<div class="academy-sidebar-section"><span class="academy-sidebar-section-label">Ficha actual</span>${contextualItem({ label: vehicleTitle(ensureVehicleAnalyzer().vehicles.find((vehicle) => vehicle.id === app.route.vehicleId) || {}), href: routePath(app.route), icon: "car", routeNames: ["vehicle"] })}</div>` : ""}`;
+  return `<div class="academy-sidebar-section"><span class="academy-sidebar-section-label">Recursos</span>${contextualItem({ label: "Inicio de Recursos", href: "/recursos/", icon: "route", routeNames: ["resources"] })}${contextualItem({ label: "Centro de respuestas", href: "/recursos/respuestas/", icon: "support", routeNames: ["answers"] })}</div>`;
+}
+
+function renderMobileContextPicker(area, dashboard) {
+  if (area.id === "academy") return renderModulePicker(dashboard, true);
+  const items = area.id === "tools" ? [{ label: "Todas", href: "/herramientas/" }, ...toolCategories().map((label) => ({ label, href: `/herramientas/#categoria-${slugify(label)}` }))] : area.id === "vehicles" ? [{ label: "Resumen", href: "/mis-vehiculos/" }, { label: "Vehículos", href: "/mis-vehiculos/#vehiculos" }, { label: "Candidatos", href: "/mis-vehiculos/candidatos/" }] : [{ label: "Inicio", href: "/recursos/" }, { label: "Respuestas", href: "/recursos/respuestas/" }];
+  return `<div class="academy-module-picker academy-module-picker--mobile"><button class="academy-module-picker-trigger" type="button" data-action="modules-toggle" aria-expanded="${app.modulesOpen}" aria-controls="academy-context-mobile"><span><small>Sección actual</small><strong>${escapeHtml(area.label)}</strong></span>${iconSvg("chevron")}</button><div class="academy-module-picker-panel" id="academy-context-mobile"${app.modulesOpen ? "" : " hidden"}>${items.map((item) => `<a class="academy-sidebar-module" href="${escapeAttribute(item.href)}" data-nav><span class="academy-sidebar-module-copy"><strong>${escapeHtml(item.label)}</strong></span></a>`).join("")}</div></div>`;
+}
+
 function renderShell() {
   const progress = progressInfo();
   const dashboard = academyDashboardModel(app.program, app.state);
-  const currentTitle = pageTitle();
+  const area = platformAreaForRoute(app.route.name);
   app.root.className = `academy-app${app.state.preferences.presentationMode ? " academy-app--presentation" : ""}`;
   app.root.innerHTML = `
     <div class="academy-app-shell">
-      <aside class="academy-sidebar" aria-label="Navegación principal de IvanImports">
-        <a class="academy-sidebar-brand" href="${PROGRAM_ROOT}" data-nav>
+      <aside class="academy-sidebar" aria-label="Navegación contextual de ${escapeAttribute(area.label)}">
+        <a class="academy-sidebar-brand" href="${area.path}"${area.id === "home" ? "" : " data-nav"}>
           <img src="/assets/brand/ivan-imports-wordmark-light.svg" width="430" height="88" alt="IvanImports">
-          <span>Plataforma IvanImports</span><small>${escapeHtml(currentAreaName())}</small>
+          <span>Plataforma IvanImports</span><small>${escapeHtml(area.label)}</small>
         </a>
-        <nav class="academy-sidebar-nav">
-          <div class="academy-sidebar-section">
-            <span class="academy-sidebar-section-label">Áreas</span>
-            ${navLink(PROGRAM_ROOT, "academy", "Academia", "book")}
-            ${navLink("/mi-operacion/", "operation", "Mi operación", "car")}
-            ${navLink("/herramientas/", "tools", "Herramientas", "tools")}
-            ${navLink("/recursos/", "resources", "Recursos", "route")}
-          </div>
-          ${["dashboard", "stage", "lesson"].includes(app.route.name) ? `<div class="academy-sidebar-section academy-sidebar-section--modules">${renderModulePicker(dashboard)}</div>` : ""}
-          <div class="academy-sidebar-section academy-sidebar-section--utility">
-            <span class="academy-sidebar-section-label">Academia</span>
-            <button class="academy-nav-link" type="button" data-action="search-open"><span class="academy-nav-icon">${iconSvg("search", { className: "academy-icon" })}</span><span>Buscar en la Academia</span></button>
-            <a class="academy-nav-link" href="/academia/ayuda/"><span class="academy-nav-icon">${iconSvg("support", { className: "academy-icon" })}</span><span>Ayuda</span></a>
-            <a class="academy-nav-link academy-nav-link--pro" href="/servicios/"><span class="academy-nav-icon">✦</span><span>Servicios PRO</span></a>
-          </div>
-        </nav>
-        <div class="academy-sidebar-progress">
+        <nav class="academy-sidebar-nav" aria-label="Funciones de ${escapeAttribute(area.label)}">${renderContextSidebar(area, dashboard)}</nav>
+        <div class="academy-sidebar-footer"><a class="academy-nav-link" href="/academia/ayuda/"><span class="academy-nav-icon">${iconSvg("support", { className: "academy-icon" })}</span><span>Ayuda</span></a></div>
+        ${area.id === "academy" ? `<div class="academy-sidebar-progress">
           <span>Progreso global</span><strong>${progress.percentage}%</strong>
           <div class="academy-progress-track"><div class="academy-progress-bar" style="--progress:${progress.percentage}%"></div></div>
-        </div>
+        </div>` : ""}
       </aside>
       <div class="academy-shell-main">
         <header class="academy-topbar">
-          <a class="academy-home-link" href="/" aria-label="Ir al inicio de IvanImports">${iconSvg("home", { className: "academy-icon" })}<span>Inicio</span></a>
-          <div class="academy-topbar-title"><strong>${escapeHtml(currentTitle)}</strong><span>${escapeHtml(currentAreaName())}</span></div>${app.state.preferences.presentationMode ? `<span class="academy-presentation-badge">Demo segura</span>` : ""}
-          ${["dashboard", "stage", "lesson"].includes(app.route.name) ? renderModulePicker(dashboard, true) : ""}
+          <nav class="academy-global-nav" aria-label="Áreas de IvanImports">${PLATFORM_AREAS.map((item) => navLink(item.path, item.id, item.label, item.icon)).join("")}</nav>
+          <a class="academy-mobile-home" href="/" aria-label="Ir al Inicio">${iconSvg("home", { className: "academy-icon" })}</a>
+          ${renderMobileContextPicker(area, dashboard)}
           <div class="academy-topbar-actions">
             <span class="academy-save-status" data-save-status data-state="${app.saveState}" aria-live="polite">${app.saveState === "saving" ? "Guardando…" : ""}</span>
-            <button class="academy-search-trigger" type="button" data-action="search-open" aria-label="Buscar en la Academia">
+            ${area.search ? `<button class="academy-search-trigger" type="button" data-action="search-open" aria-label="Buscar en la Academia">
               ${iconSvg("search", { className: "academy-icon" })}<span>¿Qué necesitas resolver?</span><kbd>Ctrl/⌘ K</kbd>
-            </button>
+            </button>` : ""}
             <a class="academy-version-chip" href="/actualizaciones/" aria-label="Ver actualizaciones">v${escapeHtml(ACADEMY_VERSION)}</a>
           </div>
         </header>
@@ -742,11 +751,10 @@ function renderShell() {
       </div>
     </div>
     <nav class="academy-mobile-nav" aria-label="Navegación móvil">
-      ${mobileNavLink(PROGRAM_ROOT, "academy", "Academia", "book")}${mobileNavLink("/mi-operacion/", "operation", "Mi operación", "car")}
+      ${mobileNavLink(PROGRAM_ROOT, "academy", "Academia", "book")}${mobileNavLink("/mis-vehiculos/", "vehicles", "Mis vehículos", "car")}
       ${mobileNavLink("/herramientas/", "tools", "Herramientas", "tools")}${mobileNavLink("/recursos/", "resources", "Recursos", "route")}
     </nav>
-    ${renderSearchDialog()}
-    ${renderCandidateDialog()}
+    ${area.search ? renderSearchDialog() : ""}
     ${renderOnboardingDialog()}
     <div class="academy-toast-region" data-toast-region aria-live="polite"></div>`;
 }
@@ -755,15 +763,16 @@ function pageTitle() {
   if (app.route.name === "stage") return findStage(app.route.slug)?.title || "Etapa";
   if (app.route.name === "lesson") return findLesson(app.route.slug)?.title || "Lección";
   if (app.route.name === "tool") return toolDefinition(app.route.slug)?.title || "Herramienta";
-  return ({ dashboard: "Academia", route: "Ruta completa", operation: "Mi operación", candidates: "Vehículos candidatos", tools: "Herramientas", answers: "Centro de respuestas", resources: "Recursos", support: "Errores y sugerencias", updates: "Actualizaciones", account: "Preferencias" })[app.route.name] || app.program.title;
+  return ({ dashboard: "Academia", route: "Ruta completa", vehicles: "Mis vehículos", vehicle: "Ficha de vehículo", candidates: "Vehículos candidatos", tools: "Herramientas", answers: "Centro de respuestas", resources: "Recursos", support: "Errores y sugerencias", updates: "Actualizaciones", account: "Preferencias" })[app.route.name] || app.program.title;
 }
 
 function documentTitle() {
   if (app.route.name === "tool") return toolDefinition(app.route.slug)?.seoTitle || `${pageTitle()} | Herramientas IvanImports`;
   return ({
     tools: "Herramientas para importar coches | IvanImports",
-    operation: "Mi operación de importación | IvanImports",
-    candidates: "Vehículos candidatos | Mi operación IvanImports",
+    vehicles: "Mis vehículos | IvanImports",
+    vehicle: "Ficha de vehículo | Mis vehículos IvanImports",
+    candidates: "Vehículos candidatos | Mis vehículos IvanImports",
     resources: "Recursos para importar coches | IvanImports",
     answers: "Centro de respuestas | Recursos IvanImports",
   })[app.route.name] || `${pageTitle()} | ${currentAreaName()} IvanImports`;
@@ -773,18 +782,19 @@ function renderView() {
   if (!app.root || !app.program || !app.state) return;
   renderShell();
   const view = document.querySelector("[data-view-root]");
-  const renderers = { dashboard: renderDashboard, route: renderRoutePage, stage: renderStage, lesson: renderLesson, operation: renderOperation, candidates: renderCandidates, tools: renderTools, tool: renderTool, answers: renderAnswers, resources: renderResources, support: renderSupport, updates: renderUpdates, account: renderAccount };
+  const renderers = { dashboard: renderDashboard, route: renderRoutePage, stage: renderStage, lesson: renderLesson, vehicles: renderVehicles, vehicle: renderVehicleWorkspace, candidates: renderCandidates, tools: renderTools, tool: renderTool, answers: renderAnswers, resources: renderResources, support: renderSupport, updates: renderUpdates, account: renderAccount };
   try {
     const progress = progressInfo();
     const showCompletion = ["dashboard", "route", "stage", "lesson"].includes(app.route.name);
     view.innerHTML = `${renderMigrationNotice()}${showCompletion ? renderCompletionHeroes(progress, app.route.name === "dashboard") : ""}${(renderers[app.route.name] || renderDashboard)()}${renderFeedbackStrip()}`;
     normalizeRenderedNavigation(app.root);
     addPageResetControl(app.root);
-    addOperationVehicleSummary(app.root);
     trackCompletionTransitions(progress);
     document.title = documentTitle();
     const canonical = document.querySelector('link[rel="canonical"]');
     if (canonical) canonical.href = `https://ivanimports.es${routePath(app.route)}`;
+    const robots = document.querySelector('meta[name="robots"]');
+    if (robots) robots.content = ["vehicles", "vehicle", "candidates"].includes(app.route.name) ? "noindex,nofollow,noarchive" : "index,follow,max-image-preview:large";
     updateDynamicResults();
     bindSectionTracking();
   } catch (error) {
@@ -802,7 +812,7 @@ function renderLearningCompletion(progress, primaryHeading = false) {
   if (!progress.totalLessons || progress.percentage !== 100) return "";
   const heading = primaryHeading ? "h1" : "h2";
   const copy = app.program.learningCompletionCopy || "Ruta de aprendizaje completada.";
-  return `<section class="academy-completion-hero academy-completion-hero--learning" role="status" aria-labelledby="academy-learning-completion-title"><div><span class="academy-eyebrow">Aprendizaje completado</span><${heading} id="academy-learning-completion-title">Tu formación está completa.</${heading}><p>${escapeHtml(copy)}</p><small>Esto confirma tu aprendizaje; no afirma que una operación real haya terminado.</small></div><div class="academy-page-actions"><a class="academy-button academy-button--primary" href="${PROGRAM_ROOT}" data-nav>Repasar la Academia</a><a class="academy-button academy-button--secondary" href="/mi-operacion/" data-nav>Abrir operación real</a></div></section>`;
+  return `<section class="academy-completion-hero academy-completion-hero--learning" role="status" aria-labelledby="academy-learning-completion-title"><div><span class="academy-eyebrow">Aprendizaje completado</span><${heading} id="academy-learning-completion-title">Tu formación está completa.</${heading}><p>${escapeHtml(copy)}</p><small>Esto confirma tu aprendizaje; no afirma que una operación real haya terminado.</small></div><div class="academy-page-actions"><a class="academy-button academy-button--primary" href="${PROGRAM_ROOT}" data-nav>Repasar la Academia</a><a class="academy-button academy-button--secondary" href="/mis-vehiculos/" data-nav>Abrir Mis vehículos</a></div></section>`;
 }
 
 function realOperationCompleted() {
@@ -818,7 +828,7 @@ function renderRealCompletion(primaryHeading = false) {
   if (!realOperationCompleted()) return "";
   const heading = primaryHeading ? "h1" : "h2";
   const copy = app.program.realOperationCompletionCopy || "Operación real completada.";
-  return `<section class="academy-completion-hero academy-completion-hero--real" role="status" aria-labelledby="academy-real-completion-title"><div><span class="academy-eyebrow">Operación real cerrada</span><${heading} id="academy-real-completion-title">Matrícula española confirmada.</${heading}><p>${escapeHtml(copy)}</p></div><div class="academy-page-actions"><a class="academy-button academy-button--primary" href="/mi-operacion" data-nav>Ver expediente</a><a class="academy-button academy-button--secondary" href="/recursos" data-nav>Abrir recursos</a></div></section>`;
+  return `<section class="academy-completion-hero academy-completion-hero--real" role="status" aria-labelledby="academy-real-completion-title"><div><span class="academy-eyebrow">Operación real cerrada</span><${heading} id="academy-real-completion-title">Matrícula española confirmada.</${heading}><p>${escapeHtml(copy)}</p></div><div class="academy-page-actions"><a class="academy-button academy-button--primary" href="/mis-vehiculos/" data-nav>Ver Mis vehículos</a><a class="academy-button academy-button--secondary" href="/recursos" data-nav>Abrir recursos</a></div></section>`;
 }
 
 function renderCompletionHeroes(progress, primaryHeading = false) {
@@ -886,7 +896,7 @@ function renderDashboardLegacy() {
       </section>
       <aside class="academy-dashboard-rail">
         ${renderCurrentStageCard(currentStage, currentLessons, progress)}
-        <section class="academy-card academy-operation-mini"><h3>Operación activa</h3>${operation ? `<p><strong>${escapeHtml(operation.title || operation.brand || "Mi importación")}</strong><br>${escapeHtml(operation.nextAction || "Define tu siguiente acción.")}</p><a class="academy-button academy-button--secondary academy-button--small" href="/mi-operacion" data-nav>Abrir expediente</a>` : `<p>Todavía no has creado una operación. Puedes aprender sin tener un coche mirado.</p><a class="academy-button academy-button--secondary academy-button--small" href="/mi-operacion" data-nav>Crear mi primera operación</a>`}</section>
+        <section class="academy-card academy-operation-mini"><h3>Mis vehículos</h3><p>Guarda candidatos y coches reales sin mezclar esta información con tu progreso educativo.</p><a class="academy-button academy-button--secondary academy-button--small" href="/mis-vehiculos/" data-nav>Abrir Mis vehículos</a></section>
         ${renderSupportMini()}
       </aside>
     </div>
@@ -910,18 +920,8 @@ function routeViewModels(progress = progressInfo()) {
 }
 
 function renderDashboardOperation() {
-  const operation = app.state.operation;
-  const candidates = app.state.candidates.filter((candidate) => !candidate.discarded);
-  if (!operation) return `<section class="academy-card academy-operation-empty"><div class="academy-operation-empty-icon">${iconSvg("car")}</div><span class="academy-eyebrow">Operación real</span><h2>Aprende primero o crea tu expediente cuando tengas un caso.</h2><p>La ruta de aprendizaje no necesita un coche. El expediente real empieza solo cuando tú lo decides.</p><a class="academy-button academy-button--primary" href="/mi-operacion" data-nav>Crear mi operación</a></section>`;
-  const checkpoints = [
-    ["searching", "Búsqueda", ["searching", "candidate", "verifying", "travel", "inspection", "purchased", "returning", "spain", "itv", "taxes", "dgt", "registered"]],
-    ["verification", "Verificación", ["verifying", "travel", "inspection", "purchased", "returning", "spain", "itv", "taxes", "dgt", "registered"]],
-    ["travel", "Compra y vuelta", ["travel", "inspection", "purchased", "returning", "spain", "itv", "taxes", "dgt", "registered"]],
-    ["spain", "Trámites España", ["spain", "itv", "taxes", "dgt", "registered"]],
-    ["registered", "Matrícula", ["registered", "matriculado"]],
-  ];
-  const status = normalizeText(operation.status || "learning");
-  return `<div class="academy-operation-dashboard"><section class="academy-card academy-operation-command"><div><span class="academy-eyebrow">Expediente activo</span><h2>${escapeHtml(operation.title || operation.carWanted || "Mi primera importación")}</h2><p>${escapeHtml(operation.nextAction || "Define la siguiente acción para mantener el control.")}</p></div><div class="academy-operation-command-actions"><span class="academy-badge">${escapeHtml(operation.country || "País pendiente")}</span><a class="academy-button academy-button--primary" href="/mi-operacion" data-nav>Abrir expediente</a></div></section><section class="academy-card academy-operation-timeline"><h2>Del candidato a la matrícula</h2><ol>${checkpoints.map(([id, label, activeStatuses], index) => `<li data-complete="${activeStatuses.includes(status)}"><span>${activeStatuses.includes(status) ? "✓" : index + 1}</span><strong>${label}</strong></li>`).join("")}</ol></section><div class="academy-grid academy-grid--3"><article class="academy-card academy-stat-card"><span>Candidatos activos</span><strong>${candidates.length}</strong><a href="/candidatos" data-nav>Comparar planes →</a></article><article class="academy-card academy-stat-card"><span>Presupuesto</span><strong>${currency(operation.totalBudget)}</strong><a href="/herramientas/coste-total" data-nav>Revisar coste →</a></article><article class="academy-card academy-stat-card"><span>Cierre real</span><strong>${realOperationCompleted() ? "Confirmado" : "Pendiente"}</strong><a href="/herramientas/espana" data-nav>Ver carpeta →</a></article></div></div>`;
+  const vehicles = ensureVehicleAnalyzer().vehicles;
+  return `<section class="academy-card academy-operation-empty"><div class="academy-operation-empty-icon">${iconSvg("car")}</div><span class="academy-eyebrow">Centro operativo</span><h2>${vehicles.length ? `${vehicles.length} ${vehicles.length === 1 ? "vehículo guardado" : "vehículos guardados"}` : "Tus vehículos viven fuera de la Academia"}</h2><p>La Academia conserva tu progreso educativo; Mis vehículos reúne candidatos y coches reales.</p><a class="academy-button academy-button--primary" href="/mis-vehiculos/" data-nav>Abrir Mis vehículos</a></section>`;
 }
 
 function dashboardContinue(model) {
@@ -1366,7 +1366,7 @@ function renderOperationField([key, label, type, options], operation) {
   return `<div class="academy-field${wide}"><label for="operation-${key}">${label}</label><input id="operation-${key}" type="${type}" data-operation-field="${key}" value="${escapeAttribute(value)}" placeholder="${escapeAttribute(options || "")}"${type === "number" ? ' min="0" step="any"' : ' maxlength="500"'}></div>`;
 }
 
-function renderOperation() {
+function renderOperationDeprecated() {
   const operation = app.state.operation || {};
   const statusLabel = OPERATION_FIELDS.find(([key]) => key === "status")?.[3]?.find(([value]) => value === (operation.status === "zero" ? "learning" : operation.status))?.[1] || "Aprendiendo";
   const sections = [
@@ -1378,10 +1378,30 @@ function renderOperation() {
   return `${renderPageHead("Operación real", "Mi expediente de importación", "Esta zona describe un caso real. Completar la ruta de aprendizaje no cambia automáticamente su estado.", `<a class="academy-button academy-button--secondary" href="/academia/candidatos" data-nav>${iconSvg("candidates")} Ver candidatos</a>`)}<section class="academy-operation-overview"><article class="academy-card academy-operation-command"><div><span class="academy-eyebrow">Estado actual</span><h2>${escapeHtml(operation.title || operation.carWanted || "Sin operación creada")}</h2><p>${escapeHtml(operation.nextAction || "Completa el primer bloque para definir la siguiente acción.")}</p></div><div><span class="academy-badge">${escapeHtml(statusLabel)}</span><strong>${currency(operation.totalBudget)}</strong><small>presupuesto disponible</small></div></article><div class="academy-grid academy-grid--3"><article class="academy-card academy-stat-card"><span>Vehículo</span><strong>${escapeHtml([operation.brand, operation.model].filter(Boolean).join(" ") || "Pendiente")}</strong><small>${escapeHtml(operation.version || operation.carWanted || "")}</small></article><article class="academy-card academy-stat-card"><span>País / ubicación</span><strong>${escapeHtml(operation.country || "Pendiente")}</strong><small>${escapeHtml(operation.location || "")}</small></article><article class="academy-card academy-stat-card"><span>Cierre real</span><strong>${realOperationCompleted() ? "Confirmado" : "Pendiente"}</strong><a href="${toolHref("espana")}" data-nav>Revisar carpeta →</a></article></div></section><form class="academy-operation-sections" data-operation-form novalidate>${sections.map(([number, title, copy, fields, open]) => `<details class="academy-card academy-operation-section"${open ? " open" : ""}><summary><span>${number}</span><div><strong>${title}</strong><small>${copy}</small></div>${iconSvg("chevron")}</summary><div class="academy-form-grid">${fields.map((field) => renderOperationField(field, operation)).join("")}</div></details>`).join("")}</form>`;
 }
 
+function vehicleStatusCount(vehicles, status) {
+  return vehicles.filter((vehicle) => vehicle.status === status).length;
+}
+
+function renderVehicles() {
+  const vehicles = ensureVehicleAnalyzer().vehicles;
+  const summaries = [
+    ["candidate", "candidatos"], ["purchased", "comprados"], ["in_spain", "en España"], ["sold", "vendidos"],
+  ].map(([status, label]) => [vehicleStatusCount(vehicles, status), label]).filter(([count]) => count > 0);
+  const actions = `<button class="academy-button academy-button--primary" type="button" data-action="vehicle-manual">${iconSvg("car")} Añadir vehículo</button><a class="academy-button academy-button--secondary" href="/mis-vehiculos/candidatos/" data-nav>Ver candidatos</a>`;
+  return `${renderPageHead("Centro operativo", "Mis vehículos", "Guarda, analiza y gestiona los coches que estás estudiando o importando.", actions)}
+    ${vehicles.length ? `<section class="academy-card vehicles-summary" aria-label="Resumen de vehículos"><div><strong>${vehicles.length}</strong><span>${vehicles.length === 1 ? "vehículo" : "vehículos"}</span></div>${summaries.map(([count, label]) => `<div><strong>${count}</strong><span>${escapeHtml(label)}</span></div>`).join("")}</section><section id="vehiculos" class="vehicle-library" aria-labelledby="vehicles-title"><div class="academy-section-head"><div><span class="academy-eyebrow">Guardados en este dispositivo</span><h2 id="vehicles-title">Tus vehículos</h2><p>Cada ficha conserva el mismo ID durante todo su ciclo.</p></div><a class="academy-button academy-button--ghost academy-button--small" href="${toolHref("analizador-anuncio")}" data-nav>Importar anuncio</a></div><div class="vehicle-card-grid">${vehicles.map(renderVehicleCard).join("")}</div></section>` : `<section class="academy-empty vehicles-empty"><div class="academy-state-copy"><span class="academy-eyebrow">Primer paso</span><strong>Todavía no tienes vehículos guardados</strong><p>Importa un anuncio o crea una ficha manual para empezar.</p><div class="academy-page-actions"><button class="academy-button academy-button--primary" type="button" data-action="vehicle-manual">Añadir vehículo</button><a class="academy-button academy-button--secondary" href="${toolHref("analizador-anuncio")}" data-nav>Analizar anuncio</a></div></div></section>`}`;
+}
+
+function renderVehicleWorkspace() {
+  const vehicle = ensureVehicleAnalyzer().vehicles.find((item) => item.id === app.route.vehicleId);
+  if (!vehicle) return `${renderPageHead("Mis vehículos", "No encontramos este vehículo", "La ficha no existe en este dispositivo o fue eliminada.", `<a class="academy-button academy-button--primary" href="/mis-vehiculos/" data-nav>Volver a Mis vehículos</a>`)}${renderErrorState("Ficha no disponible", "Los datos permanecen únicamente en el dispositivo donde se guardaron.")}`;
+  return `<nav aria-label="Migas de pan"><ol class="academy-breadcrumbs"><li><a href="/mis-vehiculos/" data-nav>Mis vehículos</a></li><li aria-current="page">${escapeHtml(vehicleTitle(vehicle))}</li></ol></nav>${renderVehicleDetail(vehicle, 1)}`;
+}
+
 function renderCandidates(embedded = false) {
-  const candidates = app.state.candidates || [];
-  return `${renderPageHead("Plan A/B/C", "Vehículos candidatos", "Guarda alternativas, ordénalas y descarta sin borrar el historial.", `<button class="academy-button academy-button--primary" type="button" data-action="candidate-new">Añadir candidato</button>`, embedded ? 2 : 1)}
-    ${candidates.length ? `<div class="academy-candidate-grid">${candidates.map(renderCandidateCard).join("")}</div>` : `<div class="academy-empty"><div class="academy-state-copy"><strong>Todavía no tienes candidatos</strong><p>No has viajado para comprar un coche concreto. Añade Plan A, B y C para comparar sin precipitarte.</p><button class="academy-button academy-button--primary" type="button" data-action="candidate-new">Crear mi primer candidato</button></div></div>`}`;
+  const candidates = ensureVehicleAnalyzer().vehicles.filter((vehicle) => ["candidate", "analyzing", "negotiating", "discarded"].includes(vehicle.status));
+  return `${renderPageHead("Mis vehículos", "Vehículos candidatos", "Revisa las alternativas activas y descartadas sin crear un modelo de datos paralelo.", `<button class="academy-button academy-button--primary" type="button" data-action="vehicle-manual">Añadir candidato</button>`, embedded ? 2 : 1)}
+    ${candidates.length ? `<div class="vehicle-card-grid">${candidates.map(renderVehicleCard).join("")}</div>` : `<div class="academy-empty"><div class="academy-state-copy"><strong>Todavía no tienes candidatos</strong><p>Importa un anuncio o crea una ficha manual; su estado inicial será Candidato.</p><div class="academy-page-actions"><button class="academy-button academy-button--primary" type="button" data-action="vehicle-manual">Crear candidato</button><a class="academy-button academy-button--secondary" href="${toolHref("analizador-anuncio")}" data-nav>Analizar anuncio</a></div></div></div>`}`;
 }
 
 function renderCandidateCard(candidate) {
@@ -1403,6 +1423,12 @@ function toolDefinition(slug) {
     definition.title = "Analizador de anuncios";
     definition.description = "Importa una URL de mobile.de o crea una ficha normalizada y editable para revisar el vehículo.";
   }
+  if (canonical === "operation-dashboard") {
+    definition.title = "Mis vehículos";
+    definition.h1 = "Mis vehículos";
+    definition.publicPath = "/mis-vehiculos/";
+  }
+  if (canonical === "candidate-board") definition.publicPath = "/mis-vehiculos/candidatos/";
   return definition;
 }
 
@@ -1420,9 +1446,9 @@ function renderTools() {
   const categories = [...new Set(tools.map((tool) => tool.category))];
   const featured = tools.filter((tool) => tool.featured);
   const card = (tool, prominent = false) => `<a class="academy-card academy-tool-card${prominent ? " academy-tool-card--featured" : ""}" href="${tool.publicPath}" data-nav><span class="academy-tool-icon">${iconSvg(toolIconName(tool.sourceSlug || tool.slug), { className: "academy-tool-svg" })}</span><span class="academy-badge">${escapeHtml(tool.category)}</span><h3>${escapeHtml(tool.h1 || tool.title)}</h3><p>${escapeHtml(tool.description || "Herramienta práctica de importación.")}</p><strong>Abrir herramienta ${iconSvg("chevron")}</strong></a>`;
-  return `<section class="academy-tools-hero">${renderPageHead("Herramientas IvanImports", "Herramientas para importar coches", "Calcula costes, analiza anuncios, compara el mercado y prepara cada paso de tu importación con utilidades independientes de la Academia.", `<a class="academy-button academy-button--secondary" href="/mi-operacion/" data-nav>${iconSvg("car")} Abrir Mi operación</a>`)}<picture class="academy-tools-hero-media" aria-hidden="true"><img src="/assets/visuals/final/tools-operations.webp" alt="" width="1672" height="941" decoding="async" fetchpriority="high"></picture></section>
+  return `<section class="academy-tools-hero">${renderPageHead("Herramientas IvanImports", "Herramientas para importar coches", "Calcula costes, analiza anuncios, compara el mercado y prepara cada paso de tu importación con utilidades independientes de la Academia.", `<a class="academy-button academy-button--secondary" href="/mis-vehiculos/" data-nav>${iconSvg("car")} Abrir Mis vehículos</a>`)}<picture class="academy-tools-hero-media" aria-hidden="true"><img src="/assets/visuals/final/tools-operations.webp" alt="" width="1672" height="941" decoding="async" fetchpriority="high"></picture></section>
     <section class="academy-tool-group academy-tool-group--featured"><div class="academy-section-head"><div><span class="academy-eyebrow">Accesos destacados</span><h2>Empieza por las herramientas clave</h2><p>Las utilidades más utilizadas para analizar, calcular y decidir.</p></div></div><div class="academy-tool-grid">${featured.map((tool) => card(tool, true)).join("")}</div></section>
-    <div class="academy-tool-groups">${categories.map((category) => { const members = tools.filter((tool) => tool.category === category); return `<section class="academy-tool-group"><div class="academy-section-head"><div><span class="academy-eyebrow">${String(members.length).padStart(2, "0")} ${members.length === 1 ? "herramienta" : "herramientas"}</span><h2>${escapeHtml(category)}</h2></div></div><div class="academy-tool-grid">${members.map((tool) => card(tool)).join("")}</div></section>`; }).join("")}</div>`;
+    <div class="academy-tool-groups">${categories.map((category) => { const members = tools.filter((tool) => tool.category === category); return `<section class="academy-tool-group" id="categoria-${slugify(category)}"><div class="academy-section-head"><div><span class="academy-eyebrow">${String(members.length).padStart(2, "0")} ${members.length === 1 ? "herramienta" : "herramientas"}</span><h2>${escapeHtml(category)}</h2></div></div><div class="academy-tool-grid">${members.map((tool) => card(tool)).join("")}</div></section>`; }).join("")}</div>`;
 }
 
 function renderTool() {
@@ -1514,7 +1540,7 @@ function safeVehicleSourceUrl(value) { try { const url = new URL(value); return 
 
 function renderVehicleCard(vehicle) {
   const warnings = [vehicle.vatDeductible === true && "IVA deducible", vehicle.accidentFree === false && "Accidentado", vehicle.damagedVehicle === true && "Daños declarados"].filter(Boolean);
-  return `<article class="academy-card vehicle-card"><div class="vehicle-card-media">${vehicle.images?.[0] ? `<img src="${escapeAttribute(vehicle.images[0])}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">` : `<span aria-hidden="true">${iconSvg("car")}</span>`}</div><div class="vehicle-card-body"><span class="academy-eyebrow">${escapeHtml(vehicle.source === "mobile.de" ? "mobile.de" : "Ficha manual")}</span><h3>${escapeHtml(vehicleTitle(vehicle))}</h3><strong class="vehicle-card-price">${escapeHtml(vehiclePrice(vehicle))}</strong><p>${escapeHtml([formatVehicleRegistration(vehicle.firstRegistration), vehicle.mileageKm === null ? null : `${vehicle.mileageKm.toLocaleString("es-ES")} km`].filter(Boolean).join(" · "))}</p><p>${escapeHtml([vehicleLabel(vehicle.fuelType, VEHICLE_FUEL_LABELS), vehicleLabel(vehicle.transmission, VEHICLE_TRANSMISSION_LABELS), vehicle.powerCv === null ? null : `${Math.round(vehicle.powerCv)} CV`].filter(Boolean).join(" · "))}</p><small>${escapeHtml(vehicleLocation(vehicle))}</small>${warnings.length ? `<div class="vehicle-card-flags">${warnings.map((warning) => `<span>${escapeHtml(warning)}</span>`).join("")}</div>` : ""}<div class="academy-card-actions"><button class="academy-button academy-button--primary academy-button--small" type="button" data-action="vehicle-open" data-id="${escapeAttribute(vehicle.id)}">Abrir ficha</button><button class="academy-button academy-button--ghost academy-button--small" type="button" data-action="vehicle-edit" data-id="${escapeAttribute(vehicle.id)}">Editar</button></div></div></article>`;
+  return `<article class="academy-card vehicle-card"><div class="vehicle-card-media">${vehicle.images?.[0] ? `<img src="${escapeAttribute(vehicle.images[0])}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">` : `<span aria-hidden="true">${iconSvg("car")}</span>`}</div><div class="vehicle-card-body"><div class="vehicle-card-kickers"><span class="academy-eyebrow">${escapeHtml(vehicle.source === "mobile.de" ? "mobile.de" : "Ficha manual")}</span><span class="academy-badge">${escapeHtml(VEHICLE_STATUS_LABELS[vehicle.status] || "Candidato")}</span></div><h3>${escapeHtml(vehicleTitle(vehicle))}</h3><strong class="vehicle-card-price">${escapeHtml(vehiclePrice(vehicle))}</strong><p>${escapeHtml([formatVehicleRegistration(vehicle.firstRegistration), vehicle.mileageKm === null ? null : `${vehicle.mileageKm.toLocaleString("es-ES")} km`].filter(Boolean).join(" · "))}</p><p>${escapeHtml([vehicleLabel(vehicle.fuelType, VEHICLE_FUEL_LABELS), vehicleLabel(vehicle.transmission, VEHICLE_TRANSMISSION_LABELS), vehicle.powerCv === null ? null : `${Math.round(vehicle.powerCv)} CV`].filter(Boolean).join(" · "))}</p><small>${escapeHtml(vehicleLocation(vehicle))}</small>${warnings.length ? `<div class="vehicle-card-flags">${warnings.map((warning) => `<span>${escapeHtml(warning)}</span>`).join("")}</div>` : ""}<div class="academy-card-actions"><a class="academy-button academy-button--primary academy-button--small" href="${vehicleHref(vehicle)}" data-nav>Abrir ficha</a><button class="academy-button academy-button--ghost academy-button--small" type="button" data-action="vehicle-edit" data-id="${escapeAttribute(vehicle.id)}">Editar</button></div></div></article>`;
 }
 
 function renderVehicleAlerts(vehicle) {
@@ -1527,7 +1553,7 @@ function renderVehicleAlerts(vehicle) {
   return `<div class="vehicle-alerts">${alerts.map(([title, copy, kind]) => `<div class="vehicle-alert vehicle-alert--${kind}"><strong>${title}</strong><span>${copy}</span></div>`).join("")}</div>`;
 }
 
-function renderVehicleDetail(vehicle) {
+function renderVehicleDetail(vehicle, headingLevel = 2) {
   const sourceUrl = safeVehicleSourceUrl(vehicle.sourceUrl);
   const fields = [
     ["Marca", vehicle.make], ["Modelo", vehicle.model], ["Versión", vehicle.variant], ["Primera matriculación", formatVehicleRegistration(vehicle.firstRegistration)],
@@ -1539,7 +1565,7 @@ function renderVehicleDetail(vehicle) {
   ];
   const direct = Object.values(vehicle.fieldSources || {}).filter((value) => value === "direct").length;
   const derived = Object.values(vehicle.fieldSources || {}).filter((value) => value === "derived").length;
-  return `<section class="academy-card vehicle-detail" data-vehicle-detail><div class="vehicle-detail-hero">${vehicle.images?.[0] ? `<img src="${escapeAttribute(vehicle.images[0])}" alt="Imagen principal del anuncio de ${escapeAttribute(vehicleTitle(vehicle))}" referrerpolicy="no-referrer">` : ""}<div><span class="academy-eyebrow">Ficha de vehículo</span><h2>${escapeHtml(vehicleTitle(vehicle))}</h2><strong>${escapeHtml(vehiclePrice(vehicle))}</strong><div class="vehicle-badges">${[vehicle.year, vehicle.mileageKm === null ? null : `${vehicle.mileageKm.toLocaleString("es-ES")} km`, VEHICLE_FUEL_LABELS[vehicle.fuelType], VEHICLE_TRANSMISSION_LABELS[vehicle.transmission], vehicle.powerCv === null ? null : `${Math.round(vehicle.powerCv)} CV`, vehicle.country].filter(Boolean).map((item) => `<span>${escapeHtml(item)}</span>`).join("")}</div></div></div>
+  return `<section class="academy-card vehicle-detail" data-vehicle-detail><div class="vehicle-detail-hero">${vehicle.images?.[0] ? `<img src="${escapeAttribute(vehicle.images[0])}" alt="Imagen principal del anuncio de ${escapeAttribute(vehicleTitle(vehicle))}" referrerpolicy="no-referrer">` : ""}<div><span class="academy-eyebrow">Ficha de vehículo · ${escapeHtml(VEHICLE_STATUS_LABELS[vehicle.status] || "Candidato")}</span><h${headingLevel}>${escapeHtml(vehicleTitle(vehicle))}</h${headingLevel}><strong>${escapeHtml(vehiclePrice(vehicle))}</strong><div class="vehicle-badges">${[vehicle.year, vehicle.mileageKm === null ? null : `${vehicle.mileageKm.toLocaleString("es-ES")} km`, VEHICLE_FUEL_LABELS[vehicle.fuelType], VEHICLE_TRANSMISSION_LABELS[vehicle.transmission], vehicle.powerCv === null ? null : `${Math.round(vehicle.powerCv)} CV`, vehicle.country].filter(Boolean).map((item) => `<span>${escapeHtml(item)}</span>`).join("")}</div></div></div>
     ${renderVehicleAlerts(vehicle)}
     <div class="vehicle-detail-actions"><button class="academy-button academy-button--primary" type="button" data-action="vehicle-edit" data-id="${escapeAttribute(vehicle.id)}">Editar ficha</button>${vehicle.source === "mobile.de" ? `<button class="academy-button academy-button--secondary" type="button" data-action="vehicle-update" data-id="${escapeAttribute(vehicle.id)}">Actualizar desde mobile.de</button>` : ""}<button class="academy-button academy-button--secondary" type="button" data-action="vehicle-calculate" data-id="${escapeAttribute(vehicle.id)}"${vehicle.price === null ? " disabled" : ""}>Calcular operación</button><button class="academy-button academy-button--ghost" type="button" data-action="vehicle-back">Volver</button></div>
     <section class="vehicle-section"><div class="academy-section-head"><div><h3>Datos principales</h3><p>Los datos derivados se indican; revisa siempre el anuncio y la documentación.</p></div><span class="academy-badge">${direct} directos · ${derived} derivados</span></div><dl class="vehicle-facts">${fields.map(([label, value]) => `<div><dt>${label}</dt><dd>${escapeHtml(value === null || value === undefined || value === "" ? "No indicado" : value)}</dd></div>`).join("")}</dl></section>
@@ -1552,6 +1578,7 @@ function renderVehicleDetail(vehicle) {
 }
 
 const VEHICLE_FORM_FIELDS = Object.freeze([
+  ["status", "Estado", "status"],
   ["make", "Marca", "text"], ["model", "Modelo", "text"], ["variant", "Versión", "text"], ["title", "Título de la ficha", "text"],
   ["price", "Precio anunciado (€)", "number"], ["priceGross", "Precio bruto (€)", "number"], ["priceNet", "Precio neto (€)", "number"],
   ["firstRegistration", "Primera matriculación", "month"], ["mileageKm", "Kilómetros", "number"], ["powerCv", "Potencia (CV)", "number"], ["powerKw", "Potencia (kW)", "number"],
@@ -1569,6 +1596,7 @@ function renderVehicleEditor(vehicle, mode) {
     if (type === "textarea") return `<div class="academy-field academy-field--wide"><label for="vehicle-${name}">${label}</label><textarea id="vehicle-${name}" name="${name}" maxlength="12000">${escapeHtml(value)}</textarea></div>`;
     if (type === "fuel") return `<div class="academy-field"><label for="vehicle-${name}">${label}</label><select id="vehicle-${name}" name="${name}">${optionList(VEHICLE_FUEL_LABELS, value)}</select></div>`;
     if (type === "transmission") return `<div class="academy-field"><label for="vehicle-${name}">${label}</label><select id="vehicle-${name}" name="${name}">${optionList(VEHICLE_TRANSMISSION_LABELS, value)}</select></div>`;
+    if (type === "status") return `<div class="academy-field"><label for="vehicle-${name}">${label}</label><select id="vehicle-${name}" name="${name}">${optionList(VEHICLE_STATUS_LABELS, value)}</select></div>`;
     if (type === "boolean") return `<div class="academy-field"><label for="vehicle-${name}">${label}</label><select id="vehicle-${name}" name="${name}"><option value=""${value === "" ? " selected" : ""}>No indicado</option><option value="true"${value === true ? " selected" : ""}>Sí</option><option value="false"${value === false ? " selected" : ""}>No</option></select></div>`;
     if (type === "seller") return `<div class="academy-field"><label for="vehicle-${name}">${label}</label><select id="vehicle-${name}" name="${name}"><option value="">No indicado</option><option value="dealer"${value === "dealer" ? " selected" : ""}>Profesional</option><option value="private"${value === "private" ? " selected" : ""}>Particular</option><option value="unknown"${value === "unknown" ? " selected" : ""}>Sin determinar</option></select></div>`;
     return `<div class="academy-field${name === "sourceUrl" ? " academy-field--wide" : ""}"><label for="vehicle-${name}">${label}</label><input id="vehicle-${name}" name="${name}" type="${type}"${type === "number" ? ' min="0" step="any"' : ' maxlength="500"'} value="${escapeAttribute(value)}"></div>`;
@@ -2228,12 +2256,12 @@ function handleClick(event) {
     document.querySelectorAll(".academy-module-picker-panel").forEach((panel) => { panel.hidden = !app.modulesOpen; });
     if (app.modulesOpen) window.requestAnimationFrame(() => target.closest(".academy-module-picker")?.querySelector(".academy-sidebar-module")?.focus());
   }
-  if (action === "vehicle-manual") { app.vehicleDraft = createEmptyVehicle(); app.vehicleMode = "manual"; app.vehicleSelectedId = null; app.vehicleImportMessage = ""; renderView(); window.requestAnimationFrame(() => document.querySelector('[data-vehicle-form] input:not([type="hidden"])')?.focus()); }
-  if (action === "vehicle-open") { app.vehicleSelectedId = target.dataset.id; app.vehicleMode = "detail"; app.vehicleImportMessage = ""; app.vehicleDuplicateId = null; renderView(); window.requestAnimationFrame(() => document.querySelector("[data-vehicle-detail]")?.scrollIntoView({ block: "start" })); }
-  if (action === "vehicle-edit") { const vehicle = ensureVehicleAnalyzer().vehicles.find((item) => item.id === target.dataset.id); if (vehicle) { app.vehicleDraft = clone(vehicle); app.vehicleSelectedId = vehicle.id; app.vehicleMode = "edit"; renderView(); window.requestAnimationFrame(() => document.querySelector('[data-vehicle-form] input:not([type="hidden"])')?.focus()); } }
-  if (action === "vehicle-back" || action === "vehicle-cancel") { app.vehicleMode = "list"; app.vehicleSelectedId = null; app.vehicleDraft = null; renderView(); }
-  if (action === "vehicle-delete") { const vehicle = ensureVehicleAnalyzer().vehicles.find((item) => item.id === target.dataset.id); if (vehicle && window.confirm(`¿Eliminar la ficha de ${vehicleTitle(vehicle)}?`)) { app.state.tools.adAnalyzer.vehicles = removeVehicle(app.state.tools.adAnalyzer.vehicles, vehicle.id); app.vehicleMode = "list"; app.vehicleSelectedId = null; scheduleSave({ immediate: true }); renderView(); toast("Ficha eliminada.", "success"); } }
-  if (action === "vehicle-duplicate") { const vehicle = ensureVehicleAnalyzer().vehicles.find((item) => item.id === target.dataset.id); if (vehicle) { const copy = duplicateVehicle(vehicle); app.state.tools.adAnalyzer.vehicles = upsertVehicle(app.state.tools.adAnalyzer.vehicles, copy); app.vehicleSelectedId = copy.id; app.vehicleMode = "detail"; scheduleSave({ immediate: true }); renderView(); toast("Ficha duplicada como entrada manual.", "success"); } }
+  if (action === "vehicle-manual") { app.vehicleDraft = createEmptyVehicle(); app.vehicleMode = "manual"; app.vehicleSelectedId = null; app.vehicleImportMessage = ""; if (app.route.name !== "tool" || canonicalToolSlug(app.route.slug) !== "analizador-anuncio") navigate(toolHref("analizador-anuncio")); else renderView(); window.requestAnimationFrame(() => document.querySelector('[data-vehicle-form] input:not([type="hidden"])')?.focus()); }
+  if (action === "vehicle-open") { navigate(vehicleHref(target.dataset.id)); }
+  if (action === "vehicle-edit") { const vehicle = ensureVehicleAnalyzer().vehicles.find((item) => item.id === target.dataset.id); if (vehicle) { app.vehicleDraft = clone(vehicle); app.vehicleSelectedId = vehicle.id; app.vehicleMode = "edit"; if (app.route.name !== "tool" || canonicalToolSlug(app.route.slug) !== "analizador-anuncio") navigate(toolHref("analizador-anuncio")); else renderView(); window.requestAnimationFrame(() => document.querySelector('[data-vehicle-form] input:not([type="hidden"])')?.focus()); } }
+  if (action === "vehicle-back" || action === "vehicle-cancel") { app.vehicleMode = "list"; app.vehicleSelectedId = null; app.vehicleDraft = null; if (app.route.name === "vehicle") navigate("/mis-vehiculos/"); else renderView(); }
+  if (action === "vehicle-delete") { const vehicle = ensureVehicleAnalyzer().vehicles.find((item) => item.id === target.dataset.id); if (vehicle && window.confirm(`¿Eliminar la ficha de ${vehicleTitle(vehicle)}?`)) { app.state.tools.adAnalyzer.vehicles = removeVehicle(app.state.tools.adAnalyzer.vehicles, vehicle.id); app.vehicleMode = "list"; app.vehicleSelectedId = null; scheduleSave({ immediate: true }); if (app.route.name === "vehicle") navigate("/mis-vehiculos/"); else renderView(); toast("Ficha eliminada.", "success"); } }
+  if (action === "vehicle-duplicate") { const vehicle = ensureVehicleAnalyzer().vehicles.find((item) => item.id === target.dataset.id); if (vehicle) { const copy = duplicateVehicle(vehicle); app.state.tools.adAnalyzer.vehicles = upsertVehicle(app.state.tools.adAnalyzer.vehicles, copy); app.vehicleSelectedId = copy.id; app.vehicleMode = "detail"; scheduleSave({ immediate: true }); navigate(vehicleHref(copy)); toast("Ficha duplicada como entrada manual.", "success"); } }
   if (action === "vehicle-update") { const vehicle = ensureVehicleAnalyzer().vehicles.find((item) => item.id === target.dataset.id); if (vehicle?.sourceUrl) void importVehicleUrl(vehicle.sourceUrl, { existingId: vehicle.id }); }
   if (action === "vehicle-calculate") { const vehicle = ensureVehicleAnalyzer().vehicles.find((item) => item.id === target.dataset.id); if (vehicle?.price !== null && vehicle?.price !== undefined) { ensureCosts().expenses.purchase = String(vehicle.price); scheduleSave({ immediate: true }); navigate(toolHref("coste-total")); toast("Precio del vehículo enviado a la calculadora.", "success"); } }
   if (action === "search-suggest") {
@@ -2414,7 +2442,7 @@ async function handleSubmit(event) {
     app.vehicleImportMessage = "";
     scheduleSave({ immediate: true });
     if (isNewManualVehicle) academyTrack("vehicle_manual_created", { toolId: "analizador-anuncio", contentType: "manual" });
-    renderView();
+    navigate(vehicleHref(vehicle));
     toast("Ficha guardada en este dispositivo.", "success");
     return;
   }
@@ -2473,7 +2501,7 @@ function bindEvents() {
       const candidateDialog = document.querySelector("[data-candidate-dialog]");
       if (candidateDialog?.open) { event.preventDefault(); candidateDialog.close(); return; }
     }
-    if ((event.metaKey || event.ctrlKey) && event.key.toLocaleLowerCase("es") === "k") { event.preventDefault(); openSearch(); }
+    if ((event.metaKey || event.ctrlKey) && event.key.toLocaleLowerCase("es") === "k" && platformAreaForRoute(app.route.name).search) { event.preventDefault(); openSearch(); }
   });
   document.addEventListener("click", (event) => { if (event.target.closest("[data-support-open]")) academyTrack("academy_support_opened", { programId: app.program?.id }); });
 }
@@ -2516,7 +2544,9 @@ async function boot() {
         }
       }
     }
+    const legacyCandidatesNeedMigration = Array.isArray(unwrap(statePayloadForRender, "state")?.candidates) && unwrap(statePayloadForRender, "state").candidates.length > 0;
     app.state = normalizeState(statePayloadForRender);
+    if (legacyCandidatesNeedMigration && !app.migrationNeedsReview) migratedState = true;
     app.state.preferences.presentationMode = false;
     document.documentElement.classList.toggle("academy-reduce-motion", Boolean(app.state.preferences.reducedMotion));
     document.documentElement.classList.toggle("academy-presentation-mode", Boolean(app.state.preferences.presentationMode));

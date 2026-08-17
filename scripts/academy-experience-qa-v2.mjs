@@ -39,8 +39,8 @@ const BLOCKING_SEVERITIES = new Set(["P0", "P1"]);
 const REQUIRED_PUBLIC_ROUTES = Object.freeze([
   "academia/index.html",
   "herramientas/index.html",
-  "mi-operacion/index.html",
-  "mi-operacion/candidatos/index.html",
+  "mis-vehiculos/index.html",
+  "mis-vehiculos/candidatos/index.html",
   "recursos/index.html",
   "recursos/respuestas/index.html",
 ]);
@@ -302,7 +302,7 @@ function checkAssetAndRouteIntegrity(result, root, landingSource, shellSource, f
   checkResult(result, { id: "assets.internal-references", category: "assets", ok: brokenAssets.length === 0, message: "Las referencias internas a CSS, JS, SVG e imágenes deben existir en el repositorio.", evidence: brokenAssets.join(", ") });
 
   const missingRoutes = REQUIRED_PUBLIC_ROUTES.filter((path) => !existsSync(resolve(root, path)));
-  checkResult(result, { id: "routes.public-areas", category: "routes", ok: missingRoutes.length === 0, message: "Academia, Herramientas, Mi operación y Recursos deben tener entradas públicas reales.", evidence: missingRoutes.join(", ") });
+  checkResult(result, { id: "routes.public-areas", category: "routes", ok: missingRoutes.length === 0, message: "Academia, Herramientas, Mis vehículos y Recursos deben tener entradas reales.", evidence: missingRoutes.join(", ") });
   checkResult(result, { id: "landing.public-entry", category: "landing", ok: /isAccessibleForFree/.test(landingSource) && frontendSource.includes("ENTRAR EN LA ACADEMIA") && frontendSource.includes("PRIMERA IMPORTACIÓN CONTIGO") && !/academia\/acceso/.test(landingSource + frontendSource), message: "La portada debe abrir la Academia gratis y separar con claridad la opción de acompañamiento PRO." });
   checkResult(result, { id: "assets.responsive-css", category: "assets", ok: /@media\s*\(max-width:\s*360px\)/.test(stylesheetSource) && /@media\s*\(min-width:\s*1600px\)/.test(stylesheetSource), severity: "P2", message: "La hoja pública debe cubrir móvil estrecho y escritorio amplio." });
 }

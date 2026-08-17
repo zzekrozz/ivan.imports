@@ -25,7 +25,7 @@ window.IVAN_IMPORTS_CONFIG = Object.freeze({
     opportunities: "/oportunidades/",
     directos: "/directos/",
     tools: "/herramientas/",
-    operation: "/mi-operacion/",
+    operation: "/mis-vehiculos/",
     resources: "/recursos/",
     services: "/servicios/",
     updates: "/actualizaciones/",

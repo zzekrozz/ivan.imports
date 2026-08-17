@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { applyVehicleEdits, duplicateVehicle, findDuplicateVehicle, mergeVehicleImport, normalizeFirstRegistration, normalizeFuelType, normalizeMileage, normalizeTransmission, normalizeVehicle, removeVehicle, upsertVehicle } from "../assets/academy/private/vehicle-model.js";
+import { VEHICLE_STATUS_LABELS, applyVehicleEdits, duplicateVehicle, findDuplicateVehicle, mergeVehicleImport, migrateLegacyCandidatesToVehicles, normalizeFirstRegistration, normalizeFuelType, normalizeMileage, normalizeTransmission, normalizeVehicle, removeVehicle, upsertVehicle } from "../assets/academy/private/vehicle-model.js";
 
 test("normaliza números, fechas y enums sin inventar ausencias", () => {
   assert.equal(normalizeMileage("145.000 km"), 145000);
@@ -38,10 +38,30 @@ test("almacenamiento puro crea, actualiza, elimina y duplica", () => {
 });
 
 test("actualización remota conserva overrides manuales y añade historial de precio", () => {
-  const imported = normalizeVehicle({ source: "mobile.de", sourceListingId: "1", make: "BMW", price: 12900 });
+  const imported = normalizeVehicle({ source: "mobile.de", sourceListingId: "1", status: "negotiating", make: "BMW", price: 12900 });
   const edited = applyVehicleEdits(imported, { make: "BMW corregido" });
   const updated = mergeVehicleImport(edited, normalizeVehicle({ source: "mobile.de", sourceListingId: "1", make: "BMW AG", price: 11900 }));
   assert.equal(updated.make, "BMW corregido");
   assert.equal(updated.price, 11900);
+  assert.equal(updated.status, "negotiating");
   assert.deepEqual(updated.priceHistory.map((entry) => entry.price), [12900, 11900]);
+});
+
+test("Vehicle soporta el lifecycle normalizado sin inventar estados", () => {
+  assert.deepEqual(Object.keys(VEHICLE_STATUS_LABELS), ["candidate", "analyzing", "negotiating", "purchased", "transport", "in_spain", "registered", "for_sale", "sold", "discarded"]);
+  assert.equal(normalizeVehicle({}).status, "candidate");
+  assert.equal(normalizeVehicle({ status: "purchased" }).status, "purchased");
+  assert.equal(normalizeVehicle({ status: "desconocido" }).status, "candidate");
+});
+
+test("los candidatos legacy migran al mismo Vehicle una sola vez y conservan ID", () => {
+  const legacy = [{ id: "candidate-1", brand: "BMW", model: "X3", mileage: 190000, price: 8000, priority: "A" }];
+  const first = migrateLegacyCandidatesToVehicles([], legacy);
+  const second = migrateLegacyCandidatesToVehicles(first, legacy);
+  assert.equal(first.length, 1);
+  assert.equal(second.length, 1);
+  assert.equal(second[0].id, "candidate-1");
+  assert.equal(second[0].status, "candidate");
+  assert.equal(second[0].make, "BMW");
+  assert.equal(second[0].mileageKm, 190000);
 });

@@ -9,8 +9,8 @@ const vercel = JSON.parse(read("vercel.json"));
 const redirects = new Map(vercel.redirects.map(({ source, destination }) => [source, destination]));
 const rewrites = new Map(vercel.rewrites.map(({ source, destination }) => [source, destination]));
 
-test("las cuatro áreas canónicas tienen páginas públicas reales y no dependen de rewrites", () => {
-  for (const route of ["academia", "herramientas", "mi-operacion", "recursos"]) assert.match(read(`${route}/index.html`), new RegExp(`https://ivanimports\\.es/${route}/`));
+test("las cuatro áreas internas canónicas tienen páginas reales y no dependen de rewrites", () => {
+  for (const route of ["academia", "herramientas", "mis-vehiculos", "recursos"]) assert.match(read(`${route}/index.html`), new RegExp(`https://ivanimports\\.es/${route}/`));
   for (const legacy of ["/academia/ruta", "/academia/herramientas", "/academia/respuestas", "/academia/recursos"]) assert.equal(rewrites.has(legacy), false);
 });
 
@@ -18,7 +18,7 @@ test("los aliases públicos resuelven las variantes con y sin barra", () => {
   assert.equal(redirects.get("/ruta"), "/academia/");
   assert.equal(redirects.get("/ruta/"), "/academia/");
   assert.equal(redirects.has("/herramientas"), false);
-  assert.equal(redirects.has("/mi-operacion"), false);
+  assert.equal(redirects.get("/mi-operacion"), "/mis-vehiculos/");
   assert.equal(redirects.has("/recursos"), false);
   assert.equal(redirects.get("/consultoria"), "/servicios/consultoria/");
   assert.equal(redirects.get("/consultoria/"), "/servicios/consultoria/");
@@ -78,7 +78,8 @@ test("las redirecciones exactas no forman bucles", () => {
 
 test("el sitemap publica solo los hubs canónicos", () => {
   const sitemap = read("sitemap.xml");
-  for (const path of ["academia", "herramientas", "mi-operacion", "recursos"]) assert.match(sitemap, new RegExp(`<loc>https://ivanimports\\.es/${path}/</loc>`));
+  for (const path of ["academia", "herramientas", "recursos"]) assert.match(sitemap, new RegExp(`<loc>https://ivanimports\\.es/${path}/</loc>`));
+  assert.doesNotMatch(sitemap, /mis-vehiculos|mi-operacion/);
   assert.doesNotMatch(sitemap, /<loc>https:\/\/ivanimports\.es\/academia\/(?:ruta|herramientas|respuestas|recursos|actualizaciones)\/?<\/loc>/);
 });
 

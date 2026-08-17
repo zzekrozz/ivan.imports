@@ -1,6 +1,6 @@
 const entries = [
-  ["operation-dashboard", "operation-dashboard", "Mi operación", "/mi-operacion/", "Mi operación", false, 0, "Expediente central con estado, candidato activo y siguiente acción."],
-  ["candidate-board", "candidate-board", "Candidatos", "/mi-operacion/candidatos/", "Mi operación", false, 1, "Organiza anuncios, datos pendientes y decisiones."],
+  ["operation-dashboard", "operation-dashboard", "Mis vehículos", "/mis-vehiculos/", "Mis vehículos", false, 0, "Centro operativo de vehículos guardados y su estado actual."],
+  ["candidate-board", "candidate-board", "Candidatos", "/mis-vehiculos/candidatos/", "Mis vehículos", false, 1, "Organiza vehículos candidatos sin duplicar su ficha."],
   ["budget-calculator", "presupuesto", "Presupuesto inicial", "/herramientas/presupuesto-inicial/", "Costes y rentabilidad", false, 20, "Separa coche, viaje, exportación, España e imprevistos."],
   ["search-filter-builder", "filtros", "Filtros y búsquedas", "/herramientas/filtros-busqueda/", "Vehículos y anuncios", false, 30, "Guarda criterios comparables y rutinas de búsqueda."],
   ["ad-analyzer", "analizador-anuncio", "Analizador de anuncios", "/herramientas/analizador-anuncios/", "Vehículos y anuncios", true, 10, "Crea una ficha editable desde un anuncio de mobile.de."],

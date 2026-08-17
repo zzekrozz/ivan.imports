@@ -16,7 +16,7 @@ if (program.stages?.length !== 13 || program.lessons?.length !== 72 || program.c
 validateToolCatalog(program.tools);
 if (!features.academy || !features.opportunities || !features.directos || !features.services) throw new Error("Faltan superficies públicas obligatorias");
 
-const generatedRoots = ["academia/etapa", "academia/paso", "academia/conceptos", "academia/herramientas", "herramientas", "mi-operacion", "recursos"];
+const generatedRoots = ["academia/etapa", "academia/paso", "academia/conceptos", "academia/herramientas", "herramientas", "mi-operacion", "mis-vehiculos", "recursos"];
 for (const relative of generatedRoots) {
   const target = resolve(root, relative);
   if (!target.startsWith(`${root}${sep}`)) throw new Error(`Ruta generada fuera del proyecto: ${target}`);
@@ -180,11 +180,15 @@ const toolsIndexDescription = "Calculadoras, analizador de anuncios, comparador 
 const toolsIndexContent = `<article class="hub-prose"><span class="hub-kicker">Herramientas IvanImports</span><h1>Herramientas para importar coches</h1><p class="hub-page-lead">Calcula costes, analiza anuncios, compara el mercado y prepara cada paso sin mezclar tu operación con las lecciones de la Academia.</p><div class="hub-related">${publicTools.map((tool) => `<a href="${tool.publicPath}" data-nav><strong>${esc(tool.title)}</strong><span>${esc(tool.description)}</span></a>`).join("")}</div></article>`;
 await writeRoute("herramientas", academyPage({ title: toolsIndexTitle, description: toolsIndexDescription, path: toolsIndexPath, route: "tools", schema: pageSchemas({ path: toolsIndexPath, title: toolsIndexTitle, description: toolsIndexDescription, kind: "CollectionPage" }), content: toolsIndexContent }));
 
-const operationPath = "/mi-operacion/";
-const operationTitle = "Mi operación de importación | IvanImports";
-const operationDescription = "Expediente local para organizar el vehículo, los candidatos, la documentación y la siguiente decisión de tu importación.";
-await writeRoute("mi-operacion", academyPage({ title: operationTitle, description: operationDescription, path: operationPath, route: "operation", schema: pageSchemas({ path: operationPath, title: operationTitle, description: operationDescription, kind: "WebApplication" }), content: `<article class="hub-prose"><span class="hub-kicker">Tu espacio de trabajo</span><h1>Mi operación</h1><p class="hub-page-lead">Organiza tu expediente, candidatos y vehículos guardados. Tus datos permanecen en este dispositivo.</p><div class="hub-actions"><a class="btn btn-primary" href="${operationPath}" data-nav>Abrir mi operación</a><a class="btn btn-secondary" href="/mi-operacion/candidatos/" data-nav>Ver candidatos</a></div></article>` }));
-await writeRoute("mi-operacion/candidatos", academyPage({ title: "Vehículos candidatos | Mi operación IvanImports", description: "Organiza alternativas y decisiones antes de comprar un coche en Europa.", path: "/mi-operacion/candidatos/", route: "candidates", schema: pageSchemas({ path: "/mi-operacion/candidatos/", title: "Vehículos candidatos | IvanImports", description: "Organiza alternativas y decisiones antes de comprar." }), content: `<article class="hub-prose"><span class="hub-kicker">Mi operación</span><h1>Vehículos candidatos</h1><p class="hub-page-lead">Conserva planes A, B y C sin perder el historial de descartes.</p><a class="btn btn-primary" href="/mi-operacion/candidatos/" data-nav>Abrir candidatos</a></article>` }));
+function privateAcademyPage(options) {
+  return academyPage(options).replace('content="index,follow,max-image-preview:large"', 'content="noindex,nofollow,noarchive"');
+}
+
+const vehiclesPath = "/mis-vehiculos/";
+const vehiclesTitle = "Mis vehículos | IvanImports";
+const vehiclesDescription = "Guarda, analiza y gestiona vehículos en este dispositivo.";
+await writeRoute("mis-vehiculos", privateAcademyPage({ title: vehiclesTitle, description: vehiclesDescription, path: vehiclesPath, route: "vehicles", content: `<article class="hub-prose"><span class="hub-kicker">Espacio privado local</span><h1>Mis vehículos</h1><p class="hub-page-lead">Guarda, analiza y gestiona los coches que estás estudiando o importando.</p><a class="btn btn-primary" href="${vehiclesPath}" data-nav>Abrir Mis vehículos</a></article>` }));
+await writeRoute("mis-vehiculos/candidatos", privateAcademyPage({ title: "Vehículos candidatos | Mis vehículos IvanImports", description: "Revisa vehículos candidatos guardados en este dispositivo.", path: "/mis-vehiculos/candidatos/", route: "candidates", content: `<article class="hub-prose"><span class="hub-kicker">Mis vehículos</span><h1>Vehículos candidatos</h1><p class="hub-page-lead">Conserva alternativas sin duplicar su ficha de vehículo.</p><a class="btn btn-primary" href="/mis-vehiculos/candidatos/" data-nav>Abrir candidatos</a></article>` }));
 
 const resourcesPath = "/recursos/";
 const resourcesTitle = "Recursos para importar coches | IvanImports";
@@ -309,7 +313,7 @@ await writeFile(join(root, "404.html"), `${basePage({
 })}\n`, "utf8");
 
 const sitemapRoutes = ["/", "/academia/", "/herramientas/", "/mi-operacion/", "/mi-operacion/candidatos/", "/recursos/", "/recursos/respuestas/", "/academia/ayuda/", "/academia/edicion-pdf/", "/oportunidades/", "/directos/", "/servicios/", "/recomendaciones/", "/go/", "/actualizaciones/", "/placasverdes/", ...program.stages.map((stage) => `/academia/etapa/${stage.slug}/`), ...program.lessons.map((lesson) => `/academia/paso/${lesson.slug}/`), ...program.concepts.filter((concept) => standaloneConceptIds.has(concept.id)).map((concept) => `/academia/conceptos/${slugify(concept.title)}/`), placasPath, ...publicTools.map((tool) => tool.publicPath), ...opportunitiesData.opportunities.filter((item) => item.published).map((item) => `/oportunidades/${item.slug}/`), ...servicesData.services.filter((item) => item.active).map(servicePath)];
-const uniqueRoutes = [...new Set(sitemapRoutes)];
+const uniqueRoutes = [...new Set(sitemapRoutes.filter((route) => !route.startsWith("/mi-operacion/") && !route.startsWith("/mis-vehiculos/")))];
 await writeFile(join(root, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${uniqueRoutes.map((route) => `  <url><loc>${siteUrl}${route}</loc><lastmod>2026-08-13</lastmod></url>`).join("\n")}\n</urlset>\n`, "utf8");
 
 console.log(`Páginas públicas generadas: ${program.stages.length} etapas, ${program.lessons.length} lecciones, ${standaloneConceptIds.size + 1} conceptos SEO, ${program.tools.length} herramientas, ${servicesData.services.filter((item) => item.active).length} servicios.`);

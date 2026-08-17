@@ -202,10 +202,10 @@ test("la integración elimina la tabla antigua y actualiza sin reconstruir el fo
   assert.doesNotMatch(source, /\[data-market-field\], \[data-cost-field\]/);
 });
 
-test("la navegación principal separa las cuatro áreas y elimina el acceso privilegiado a la calculadora", async () => {
+test("la navegación principal separa las cinco áreas y elimina el acceso privilegiado a la calculadora", async () => {
   const source = await readFile(new URL("assets/academy/app.js", root), "utf8");
   const shellSource = source.slice(source.indexOf("function navCurrent"), source.indexOf("function pageTitle"));
-  for (const label of ["Academia", "Mi operación", "Herramientas", "Recursos"]) assert.match(shellSource, new RegExp(`"${label}"`));
+  for (const label of ["Inicio", "Academia", "Herramientas", "Mis vehículos", "Recursos"]) assert.match(shellSource, new RegExp(label));
   assert.doesNotMatch(shellSource, /"calculator", "Calculadora"/);
   assert.doesNotMatch(shellSource, />Ruta completa</);
 });

@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import test from "node:test";
 import { TOOL_CATALOG, validateToolCatalog } from "../assets/academy/private/tool-catalog.js";
+import { PLATFORM_AREAS, navigationItem, platformAreaForRoute } from "../assets/academy/private/platform-navigation.js";
 
 const root = resolve(import.meta.dirname, "..");
 const read = (path) => readFileSync(resolve(root, path), "utf8");
@@ -10,25 +11,30 @@ const program = JSON.parse(read("assets/academy/program-v2.json"));
 const vercel = JSON.parse(read("vercel.json"));
 const redirects = new Map(vercel.redirects.map((entry) => [entry.source, entry]));
 
-test("el catálogo canónico conserva 17 herramientas únicas repartidas entre Herramientas y Mi operación", () => {
+test("el catálogo canónico conserva 17 herramientas únicas repartidas entre Herramientas y Mis vehículos", () => {
   assert.equal(validateToolCatalog(program.tools), true);
   assert.equal(TOOL_CATALOG.length, 17);
   assert.equal(new Set(TOOL_CATALOG.map((tool) => tool.id)).size, 17);
   assert.equal(new Set(TOOL_CATALOG.map((tool) => tool.publicPath)).size, 17);
   assert.equal(TOOL_CATALOG.filter((tool) => tool.publicPath.startsWith("/herramientas/")).length, 15);
-  assert.deepEqual(TOOL_CATALOG.filter((tool) => tool.publicPath.startsWith("/mi-operacion/")).map((tool) => tool.id), ["operation-dashboard", "candidate-board"]);
+  assert.deepEqual(TOOL_CATALOG.filter((tool) => tool.publicPath.startsWith("/mis-vehiculos/")).map((tool) => tool.id), ["operation-dashboard", "candidate-board"]);
 });
 
-test("el shell muestra cuatro áreas, inicio real y módulos cerrados por defecto", () => {
+test("el shell usa topbar global de cinco áreas y sidebar contextual", () => {
   const source = read("assets/academy/app.js");
   const shell = source.slice(source.indexOf("function renderShell"), source.indexOf("function pageTitle"));
-  for (const label of ["Academia", "Mi operación", "Herramientas", "Recursos"]) assert.match(shell, new RegExp(`"${label}"`));
-  assert.match(shell, /class="academy-home-link" href="\/"/);
+  assert.deepEqual(PLATFORM_AREAS.map((area) => area.label), ["Inicio", "Academia", "Herramientas", "Mis vehículos", "Recursos"]);
+  assert.match(shell, /academy-global-nav/);
+  assert.match(shell, /renderContextSidebar/);
+  assert.match(source, /area\.search \? renderSearchDialog\(\) : ""/);
   assert.match(source, /modulesOpen: false/);
   assert.match(source, /data-action="modules-toggle" aria-expanded="\$\{app\.modulesOpen\}"/);
   assert.match(source, /event\.key === "Escape"/);
   assert.doesNotMatch(shell, />Más</);
   assert.doesNotMatch(shell, /"calculator", "Calculadora"/);
+  assert.doesNotMatch(shell, /Servicios PRO/);
+  assert.equal(platformAreaForRoute("vehicle").id, "vehicles");
+  assert.deepEqual(navigationItem({ label: "Mercado" }).locked, false);
 });
 
 test("la portada de Academia contiene aprendizaje y no duplica mapa, herramientas ni operación", () => {
@@ -43,8 +49,8 @@ test("la portada de Academia contiene aprendizaje y no duplica mapa, herramienta
   assert.match(search, /if \(entry\.kind === "tool"\) return/);
 });
 
-test("cada área y herramienta tiene una única página canónica pública", () => {
-  for (const area of ["academia", "herramientas", "mi-operacion", "recursos"]) {
+test("cada área y herramienta tiene una única página canónica", () => {
+  for (const area of ["academia", "herramientas", "mis-vehiculos", "recursos"]) {
     const html = read(`${area}/index.html`);
     assert.match(html, new RegExp(`<link rel="canonical" href="https://ivanimports\\.es/${area}/">`));
   }
@@ -77,8 +83,8 @@ test("las rutas antiguas redirigen en un único salto permanente", () => {
   const areas = new Map([
     ["/academia/ruta", "/academia/"],
     ["/academia/herramientas", "/herramientas/"],
-    ["/academia/mi-operacion", "/mi-operacion/"],
-    ["/academia/candidatos", "/mi-operacion/candidatos/"],
+    ["/academia/mi-operacion", "/mis-vehiculos/"],
+    ["/academia/candidatos", "/mis-vehiculos/candidatos/"],
     ["/academia/recursos", "/recursos/"],
     ["/academia/respuestas", "/recursos/respuestas/"],
   ]);
@@ -86,6 +92,8 @@ test("las rutas antiguas redirigen en un único salto permanente", () => {
     assert.equal(redirects.get(source)?.destination, destination);
     assert.equal(redirects.get(source)?.permanent, true);
   }
+  assert.equal(redirects.get("/mi-operacion")?.destination, "/mis-vehiculos/");
+  assert.equal(redirects.get("/mi-operacion/candidatos")?.destination, "/mis-vehiculos/candidatos/");
 });
 
 test("SEO, sitemap y persistencia conservan sus contratos", () => {
@@ -98,6 +106,8 @@ test("SEO, sitemap y persistencia conservan sus contratos", () => {
   const sitemap = read("sitemap.xml");
   for (const tool of TOOL_CATALOG.filter((item) => item.publicPath.startsWith("/herramientas/"))) assert.match(sitemap, new RegExp(`<loc>https://ivanimports\\.es${tool.publicPath}</loc>`));
   assert.doesNotMatch(sitemap, /\/academia\/(?:ruta|herramientas|mi-operacion|candidatos|recursos|respuestas)/);
+  assert.doesNotMatch(sitemap, /\/mis-vehiculos\//);
+  assert.match(read("mis-vehiculos/index.html"), /noindex,nofollow,noarchive/);
   const app = read("assets/academy/app.js");
   assert.match(app, /if \(app\.route\.name === "tool"\) return toolDefinition\(app\.route\.slug\)\?\.seoTitle/);
   assert.match(app, /document\.title = documentTitle\(\)/);

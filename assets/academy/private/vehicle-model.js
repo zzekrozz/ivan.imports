@@ -18,6 +18,19 @@ export const VEHICLE_TRANSMISSION_LABELS = Object.freeze({
   other: "Otro",
 });
 
+export const VEHICLE_STATUS_LABELS = Object.freeze({
+  candidate: "Candidato",
+  analyzing: "Analizando",
+  negotiating: "Negociando",
+  purchased: "Comprado",
+  transport: "En transporte",
+  in_spain: "En España",
+  registered: "Matriculado",
+  for_sale: "En venta",
+  sold: "Vendido",
+  discarded: "Descartado",
+});
+
 const FUEL_TERMS = Object.freeze([
   ["plug_in_hybrid", /plug[ -]?in|phev|híbrido enchufable|hybrid.*extern/i],
   ["electric", /electric|elektro|eléctrico|bev/i],
@@ -129,11 +142,17 @@ function makeId() {
   return `vehicle_${globalThis.crypto?.randomUUID?.() || `${Date.now()}_${Math.random().toString(36).slice(2)}`}`;
 }
 
+export function normalizeVehicleStatus(value) {
+  const status = String(value || "").trim().toLowerCase();
+  return Object.hasOwn(VEHICLE_STATUS_LABELS, status) ? status : "candidate";
+}
+
 export function createEmptyVehicle(input = {}) {
   const now = new Date().toISOString();
   return {
     schemaVersion: VEHICLE_SCHEMA_VERSION,
     id: input.id || makeId(),
+    status: normalizeVehicleStatus(input.status),
     source: input.source || "manual",
     sourceListingId: null,
     sourceUrl: null,
@@ -182,6 +201,7 @@ export function normalizeVehicle(input = {}, metadata = {}) {
     ...input,
     schemaVersion: VEHICLE_SCHEMA_VERSION,
     id: input.id || base.id,
+    status: normalizeVehicleStatus(input.status),
     source: metadata.source || input.source || base.source,
     sourceListingId: stringOrNull(metadata.sourceListingId || input.sourceListingId),
     sourceUrl: stringOrNull(metadata.sourceUrl || input.sourceUrl),
@@ -243,7 +263,7 @@ export function applyVehicleEdits(vehicle, edits = {}) {
 
 export function mergeVehicleImport(existing, incoming) {
   const normalizedIncoming = normalizeVehicle(incoming);
-  const merged = { ...existing, ...normalizedIncoming, id: existing.id, createdAt: existing.createdAt, manualOverrides: { ...(existing.manualOverrides || {}) } };
+  const merged = { ...existing, ...normalizedIncoming, id: existing.id, status: normalizeVehicleStatus(existing.status), createdAt: existing.createdAt, manualOverrides: { ...(existing.manualOverrides || {}) } };
   Object.keys(merged.manualOverrides).forEach((field) => { if (merged.manualOverrides[field]) merged[field] = existing[field]; });
   const history = [...(existing.priceHistory || []), ...(normalizedIncoming.priceHistory || [])];
   merged.priceHistory = history.filter((entry, index) => history.findIndex((other) => other.price === entry.price && other.checkedAt === entry.checkedAt) === index).slice(-50);
@@ -265,6 +285,47 @@ export function removeVehicle(vehicles, id) {
 
 export function duplicateVehicle(vehicle) {
   return normalizeVehicle({ ...vehicle, id: makeId(), source: "manual", sourceListingId: null, sourceUrl: vehicle.sourceUrl, importedAt: null, createdAt: new Date().toISOString(), title: `${vehicle.title || [vehicle.make, vehicle.model].filter(Boolean).join(" ") || "Vehículo"} (copia)` });
+}
+
+function stableLegacyId(candidate, index) {
+  if (candidate?.id) return String(candidate.id).slice(0, 100);
+  const source = JSON.stringify([candidate?.title, candidate?.brand, candidate?.model, candidate?.year, candidate?.price, index]);
+  let hash = 2166136261;
+  for (let cursor = 0; cursor < source.length; cursor += 1) hash = Math.imul(hash ^ source.charCodeAt(cursor), 16777619);
+  return `vehicle_legacy_${(hash >>> 0).toString(36)}`;
+}
+
+export function migrateLegacyCandidatesToVehicles(vehicles = [], candidates = []) {
+  let migrated = (Array.isArray(vehicles) ? vehicles : []).map((vehicle) => normalizeVehicle(vehicle));
+  (Array.isArray(candidates) ? candidates : []).forEach((candidate, index) => {
+    const id = stableLegacyId(candidate, index);
+    if (migrated.some((vehicle) => vehicle.id === id)) return;
+    migrated = upsertVehicle(migrated, normalizeVehicle({
+      id,
+      status: candidate.discarded ? "discarded" : "candidate",
+      source: "manual",
+      title: candidate.title,
+      make: candidate.brand || candidate.make,
+      model: candidate.model,
+      variant: candidate.version || candidate.variant,
+      year: candidate.year,
+      mileageKm: candidate.mileageKm ?? candidate.mileage,
+      price: candidate.price,
+      country: candidate.country,
+      city: candidate.location || candidate.city,
+      sourceUrl: candidate.adUrl || candidate.sourceUrl,
+      sellerName: candidate.contact || candidate.sellerName,
+      description: candidate.notes || candidate.documents || null,
+      createdAt: candidate.createdAt,
+      updatedAt: candidate.updatedAt,
+      legacyCandidate: {
+        priority: candidate.priority || null,
+        availability: candidate.availability || null,
+        distance: candidate.distance || null,
+      },
+    }));
+  });
+  return migrated;
 }
 
 export function formatVehicleRegistration(value) {

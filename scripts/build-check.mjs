@@ -9,7 +9,7 @@ const read = (path) => readFileSync(join(root, path), "utf8");
 const json = (path) => JSON.parse(read(path));
 
 const requiredRoutes = [
-  "index.html", "404.html", "academia/index.html", "herramientas/index.html", "mi-operacion/index.html", "mi-operacion/candidatos/index.html", "recursos/index.html", "recursos/respuestas/index.html", "go/index.html", "placasverdes/index.html", "oportunidades/index.html", "directos/index.html", "servicios/index.html", "subastaspro/index.html", "recomendaciones/index.html", "actualizaciones/index.html", "academia/ayuda/index.html", "academia/edicion-pdf/index.html", "importa-en-7-dias/gracias/index.html", "gracias-acompanamiento/index.html"
+  "index.html", "404.html", "academia/index.html", "herramientas/index.html", "mis-vehiculos/index.html", "mis-vehiculos/candidatos/index.html", "recursos/index.html", "recursos/respuestas/index.html", "go/index.html", "placasverdes/index.html", "oportunidades/index.html", "directos/index.html", "servicios/index.html", "subastaspro/index.html", "recomendaciones/index.html", "actualizaciones/index.html", "academia/ayuda/index.html", "academia/edicion-pdf/index.html", "importa-en-7-dias/gracias/index.html", "gracias-acompanamiento/index.html"
 ];
 for (const route of requiredRoutes) if (!existsSync(join(root, route))) failures.push(`Falta la ruta pública: ${route}`);
 
@@ -40,7 +40,7 @@ const toolPages = TOOL_CATALOG.filter((tool) => tool.publicPath.startsWith("/her
 if (stagePages.length !== 13) failures.push(`Deben existir 13 páginas de etapa; hay ${stagePages.length}`);
 if (lessonPages.length !== 72) failures.push(`Deben existir 72 páginas de lección; hay ${lessonPages.length}`);
 if (conceptPages.length < 10 || conceptPages.length >= 317) failures.push("Los conceptos SEO deben ser una selección útil, no cero ni 317 páginas finas");
-if (toolPages.length !== 15) failures.push(`Deben existir 15 páginas en Herramientas y 2 superficies en Mi operación; hay ${toolPages.length} páginas de herramienta`);
+if (toolPages.length !== 15) failures.push(`Deben existir 15 páginas en Herramientas y 2 superficies en Mis vehículos; hay ${toolPages.length} páginas de herramienta`);
 
 const seoPages = [...stagePages.map((entry) => join(root, "academia/etapa", entry.name, "index.html")), ...lessonPages.map((entry) => join(root, "academia/paso", entry.name, "index.html"))];
 const titles = new Set();
@@ -139,7 +139,7 @@ const dist = join(root, "dist");
 if (relative(root, dist) !== "dist") throw new Error("Ruta de salida no segura");
 rmSync(dist, { recursive: true, force: true });
 mkdirSync(dist, { recursive: true });
-const publicDirectories = ["academia", "actualizaciones", "assets", "directos", "go", "gracias-acompanamiento", "herramientas", "importa-en-7-dias", "mi-operacion", "oportunidades", "placasverdes", "recursos", "recomendaciones", "servicios", "subastaspro"];
+const publicDirectories = ["academia", "actualizaciones", "assets", "directos", "go", "gracias-acompanamiento", "herramientas", "importa-en-7-dias", "mis-vehiculos", "oportunidades", "placasverdes", "recursos", "recomendaciones", "servicios", "subastaspro"];
 const publicFiles = ["index.html", "404.html", "CNAME", "favicon.svg", "robots.txt", "sitemap.xml"];
 for (const directory of publicDirectories) if (existsSync(join(root, directory))) cpSync(join(root, directory), join(dist, directory), { recursive: true });
 for (const file of publicFiles) if (existsSync(join(root, file))) cpSync(join(root, file), join(dist, file));
