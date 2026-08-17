@@ -1,6 +1,7 @@
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { dirname, extname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { TOOL_CATALOG, validateToolCatalog } from "../assets/academy/private/tool-catalog.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const failures = [];
@@ -8,7 +9,7 @@ const read = (path) => readFileSync(join(root, path), "utf8");
 const json = (path) => JSON.parse(read(path));
 
 const requiredRoutes = [
-  "index.html", "404.html", "academia/index.html", "go/index.html", "placasverdes/index.html", "oportunidades/index.html", "directos/index.html", "servicios/index.html", "subastaspro/index.html", "recomendaciones/index.html", "actualizaciones/index.html", "academia/ayuda/index.html", "academia/edicion-pdf/index.html", "importa-en-7-dias/gracias/index.html", "gracias-acompanamiento/index.html"
+  "index.html", "404.html", "academia/index.html", "herramientas/index.html", "mi-operacion/index.html", "mi-operacion/candidatos/index.html", "recursos/index.html", "recursos/respuestas/index.html", "go/index.html", "placasverdes/index.html", "oportunidades/index.html", "directos/index.html", "servicios/index.html", "subastaspro/index.html", "recomendaciones/index.html", "actualizaciones/index.html", "academia/ayuda/index.html", "academia/edicion-pdf/index.html", "importa-en-7-dias/gracias/index.html", "gracias-acompanamiento/index.html"
 ];
 for (const route of requiredRoutes) if (!existsSync(join(root, route))) failures.push(`Falta la ruta pública: ${route}`);
 
@@ -25,6 +26,7 @@ const visualAssets = ["before-search-desk.webp", "directos-studio.webp", "tools-
 for (const asset of visualAssets) if (!existsSync(join(root, "assets/visuals/final", asset))) failures.push(`Falta el activo visual final optimizado: ${asset}`);
 
 if (program.access !== "public-free" || program.stages?.length !== 13 || program.lessons?.length !== 72 || program.concepts?.length !== 317 || program.tools?.length !== 17) failures.push("La Academia debe conservar acceso público y el contrato 13/72/317/17");
+try { validateToolCatalog(program.tools); } catch (error) { failures.push(error.message); }
 if (/\/api\/academy\/(?:session|program|state|resource)|academia\/acceso/i.test(academyHtml + academyApp)) failures.push("La experiencia pública depende de infraestructura privada");
 if (!/localStorage\.setItem\(STATE_STORAGE_KEY/.test(academyApp) || !/ivanimports\.academy\.public-state\.v2/.test(academyApp)) failures.push("El progreso público no conserva su clave local");
 if (/requestAnimationFrame\(openOnboarding\)/.test(academyApp) || !/data-action="onboarding-open"/.test(academyApp)) failures.push("El onboarding debe ser opcional y no abrirse automáticamente");
@@ -34,11 +36,11 @@ if (!existsSync(join(root, "assets/academy/app.js")) || !existsSync(join(root, "
 const stagePages = readdirSync(join(root, "academia/etapa"), { withFileTypes: true }).filter((entry) => entry.isDirectory());
 const lessonPages = readdirSync(join(root, "academia/paso"), { withFileTypes: true }).filter((entry) => entry.isDirectory());
 const conceptPages = readdirSync(join(root, "academia/conceptos"), { withFileTypes: true }).filter((entry) => entry.isDirectory());
-const toolPages = readdirSync(join(root, "academia/herramientas"), { withFileTypes: true }).filter((entry) => entry.isDirectory());
+const toolPages = TOOL_CATALOG.filter((tool) => tool.publicPath.startsWith("/herramientas/")).map((tool) => join(root, tool.publicPath.slice(1), "index.html")).filter(existsSync);
 if (stagePages.length !== 13) failures.push(`Deben existir 13 páginas de etapa; hay ${stagePages.length}`);
 if (lessonPages.length !== 72) failures.push(`Deben existir 72 páginas de lección; hay ${lessonPages.length}`);
 if (conceptPages.length < 10 || conceptPages.length >= 317) failures.push("Los conceptos SEO deben ser una selección útil, no cero ni 317 páginas finas");
-if (toolPages.length !== 17) failures.push(`Deben existir 17 páginas de herramienta; hay ${toolPages.length}`);
+if (toolPages.length !== 15) failures.push(`Deben existir 15 páginas en Herramientas y 2 superficies en Mi operación; hay ${toolPages.length} páginas de herramienta`);
 
 const seoPages = [...stagePages.map((entry) => join(root, "academia/etapa", entry.name, "index.html")), ...lessonPages.map((entry) => join(root, "academia/paso", entry.name, "index.html"))];
 const titles = new Set();
@@ -104,10 +106,18 @@ const legacyToolSlugs = new Map([
   ["preguntas", "question-builder"], ["mercado", "market-comparator"], ["coste-total", "cost-calculator"],
   ["documentos", "document-passport"], ["viaje", "travel-planner"], ["inspeccion", "inspection-checklist"],
   ["pintura", "paint-sheet"], ["compra-salida", "purchase-exit-checklist"], ["vuelta", "return-checklist"],
-  ["espana", "spain-folder"], ["metodo-7-dias", "method7-planner"],
+  ["espana", "spain-folder"], ["metodo-7-dias", "method7-planner"], ["plan-abc", "plan-abc"],
 ]);
-for (const [legacy, publicSlug] of legacyToolSlugs) {
-  for (const suffix of ["", "/"]) if (toolRedirects.get(`/academia/herramientas/${legacy}${suffix}`) !== `/academia/herramientas/${publicSlug}/`) failures.push(`Falta redirección de herramienta antigua: ${legacy}${suffix}`);
+for (const [legacy, id] of legacyToolSlugs) {
+  const destination = TOOL_CATALOG.find((tool) => tool.id === id)?.publicPath;
+  if (toolRedirects.get(`/academia/herramientas/${legacy}`) !== destination) failures.push(`Falta redirección de herramienta antigua: ${legacy}`);
+}
+for (const tool of TOOL_CATALOG) for (const suffix of ["", "/"]) if (toolRedirects.get(`/academia/herramientas/${tool.id}${suffix}`) !== tool.publicPath) failures.push(`Falta redirección directa del slug antiguo: ${tool.id}${suffix}`);
+for (const tool of TOOL_CATALOG) {
+  for (const alias of new Set([tool.id, tool.slug])) {
+    if (tool.publicPath === `/herramientas/${alias}/`) continue;
+    for (const suffix of ["", "/"]) if (toolRedirects.get(`/herramientas/${alias}${suffix}`) !== tool.publicPath) failures.push(`Falta redirección pública histórica: ${alias}${suffix}`);
+  }
 }
 const rewriteSources = new Set((vercel.rewrites || []).map((entry) => entry.source));
 for (const endpoint of ["/api/stripe-importa-7-dias", "/api/importa-7-dias/order-status", "/api/importa-7-dias/download", "/api/importa-7-dias/reissue"]) if (!rewriteSources.has(endpoint)) failures.push(`Falta infraestructura histórica: ${endpoint}`);
@@ -129,7 +139,7 @@ const dist = join(root, "dist");
 if (relative(root, dist) !== "dist") throw new Error("Ruta de salida no segura");
 rmSync(dist, { recursive: true, force: true });
 mkdirSync(dist, { recursive: true });
-const publicDirectories = ["academia", "actualizaciones", "assets", "directos", "go", "gracias-acompanamiento", "importa-en-7-dias", "oportunidades", "placasverdes", "recomendaciones", "servicios", "subastaspro"];
+const publicDirectories = ["academia", "actualizaciones", "assets", "directos", "go", "gracias-acompanamiento", "herramientas", "importa-en-7-dias", "mi-operacion", "oportunidades", "placasverdes", "recursos", "recomendaciones", "servicios", "subastaspro"];
 const publicFiles = ["index.html", "404.html", "CNAME", "favicon.svg", "robots.txt", "sitemap.xml"];
 for (const directory of publicDirectories) if (existsSync(join(root, directory))) cpSync(join(root, directory), join(dist, directory), { recursive: true });
 for (const file of publicFiles) if (existsSync(join(root, file))) cpSync(join(root, file), join(dist, file));

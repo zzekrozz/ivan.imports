@@ -202,13 +202,12 @@ test("la integración elimina la tabla antigua y actualiza sin reconstruir el fo
   assert.doesNotMatch(source, /\[data-market-field\], \[data-cost-field\]/);
 });
 
-test("la navegación principal sustituye Ruta completa por la calculadora", async () => {
+test("la navegación principal separa las cuatro áreas y elimina el acceso privilegiado a la calculadora", async () => {
   const source = await readFile(new URL("assets/academy/app.js", root), "utf8");
   const shellSource = source.slice(source.indexOf("function navCurrent"), source.indexOf("function pageTitle"));
-  assert.match(shellSource, /navLink\(toolHref\("coste-total"\), "calculator", "Calculadora", "calculator"\)/);
-  assert.match(shellSource, /mobileNavLink\(toolHref\("coste-total"\), "calculator", "Calculadora", "calculator"\)/);
-  assert.doesNotMatch(shellSource, /navLink\("\/academia\/ruta", "route", "Ruta completa", "map"\)/);
-  assert.doesNotMatch(shellSource, /mobileNavLink\("\/academia\/ruta", "route", "Ruta", "map"\)/);
+  for (const label of ["Academia", "Mi operación", "Herramientas", "Recursos"]) assert.match(shellSource, new RegExp(`"${label}"`));
+  assert.doesNotMatch(shellSource, /"calculator", "Calculadora"/);
+  assert.doesNotMatch(shellSource, />Ruta completa</);
 });
 
 test("el CSS contiene layout responsive y evita tablas horizontales", async () => {
@@ -228,9 +227,9 @@ test("el cat\u00e1logo p\u00fablico describe el modelo sencillo sin estados para
 });
 
 test("la p\u00e1gina SEO de la calculadora conserva ruta y descripci\u00f3n actuales", async () => {
-  const html = await readFile(new URL("academia/herramientas/cost-calculator/index.html", root), "utf8");
-  assert.match(html, /<h1>Calculadora de coste total<\/h1>/);
-  assert.match(html, /Suma todos los gastos y descubre el precio, beneficio y compra m\u00e1xima/);
-  assert.match(html, /<link rel="canonical" href="https:\/\/ivanimports\.es\/academia\/herramientas\/cost-calculator\/">/);
+  const html = await readFile(new URL("herramientas/calculadora-coste-importacion/index.html", root), "utf8");
+  assert.match(html, /<h1>Calculadora de coste de importación de coches<\/h1>/);
+  assert.match(html, /Suma todos los gastos y calcula el coste real, el margen y la compra máxima/);
+  assert.match(html, /<link rel="canonical" href="https:\/\/ivanimports\.es\/herramientas\/calculadora-coste-importacion\/">/);
   assert.doesNotMatch(html, /Distingue estimado, confirmado, real/i);
 });

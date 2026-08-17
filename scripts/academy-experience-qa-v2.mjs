@@ -36,14 +36,13 @@ export const DEFAULT_QA_PATHS = Object.freeze({
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 const DEFAULT_ROOT = resolve(dirname(SCRIPT_PATH), "..");
 const BLOCKING_SEVERITIES = new Set(["P0", "P1"]);
-const REQUIRED_REWRITES = Object.freeze([
-  "/academia/ruta",
-  "/academia/mi-operacion",
-  "/academia/candidatos",
-  "/academia/herramientas",
-  "/academia/respuestas",
-  "/academia/recursos",
-  "/academia/actualizaciones",
+const REQUIRED_PUBLIC_ROUTES = Object.freeze([
+  "academia/index.html",
+  "herramientas/index.html",
+  "mi-operacion/index.html",
+  "mi-operacion/candidatos/index.html",
+  "recursos/index.html",
+  "recursos/respuestas/index.html",
 ]);
 const NEW_EXPERIENCE_ASSETS = Object.freeze([
   "assets/academy/app.js",
@@ -302,9 +301,8 @@ function checkAssetAndRouteIntegrity(result, root, landingSource, shellSource, f
   }
   checkResult(result, { id: "assets.internal-references", category: "assets", ok: brokenAssets.length === 0, message: "Las referencias internas a CSS, JS, SVG e imágenes deben existir en el repositorio.", evidence: brokenAssets.join(", ") });
 
-  const rewriteSources = new Set((Array.isArray(vercel.rewrites) ? vercel.rewrites : []).map((rewrite) => rewrite.source));
-  const missingRewrites = REQUIRED_REWRITES.filter((path) => !rewriteSources.has(path));
-  checkResult(result, { id: "routes.rewrites", category: "routes", ok: missingRewrites.length === 0, message: "Todas las rutas internas de Academia deben estar cubiertas por rewrites de servidor.", evidence: missingRewrites.join(", ") });
+  const missingRoutes = REQUIRED_PUBLIC_ROUTES.filter((path) => !existsSync(resolve(root, path)));
+  checkResult(result, { id: "routes.public-areas", category: "routes", ok: missingRoutes.length === 0, message: "Academia, Herramientas, Mi operación y Recursos deben tener entradas públicas reales.", evidence: missingRoutes.join(", ") });
   checkResult(result, { id: "landing.public-entry", category: "landing", ok: /isAccessibleForFree/.test(landingSource) && frontendSource.includes("ENTRAR EN LA ACADEMIA") && frontendSource.includes("PRIMERA IMPORTACIÓN CONTIGO") && !/academia\/acceso/.test(landingSource + frontendSource), message: "La portada debe abrir la Academia gratis y separar con claridad la opción de acompañamiento PRO." });
   checkResult(result, { id: "assets.responsive-css", category: "assets", ok: /@media\s*\(max-width:\s*360px\)/.test(stylesheetSource) && /@media\s*\(min-width:\s*1600px\)/.test(stylesheetSource), severity: "P2", message: "La hoja pública debe cubrir móvil estrecho y escritorio amplio." });
 }

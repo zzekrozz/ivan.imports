@@ -4,7 +4,7 @@ import { renderLessonVisuals, renderStageScene } from "./private/lesson-visuals.
 import { migrateAcademyStateV1ToV2, normalizeLegacyLessonMap, resolveLegacyDeepLink, resolveLegacyLessonTarget } from "./private/migration.js";
 import { ACADEMY_SEARCH_SUGGESTIONS, answerSemanticQuery } from "./private/semantic-search.js";
 import { normalizeNumberFieldValue } from "./private/form-values.js";
-import { academyDashboardModel, selectDashboardTools } from "./private/dashboard.js";
+import { academyDashboardModel } from "./private/dashboard.js";
 import {
   COST_EXPENSE_SECTIONS,
   calculateCostOperation,
@@ -16,6 +16,7 @@ import {
   sanitizeDecimalInput,
 } from "./private/cost-calculator.js";
 import { ACADEMY_PATCH_NOTES, ACADEMY_VERSION } from "./patch-notes.js";
+import { TOOL_CATALOG, toolCatalogEntry, validateToolCatalog } from "./private/tool-catalog.js";
 import {
   VEHICLE_FUEL_LABELS,
   VEHICLE_TRANSMISSION_LABELS,
@@ -36,47 +37,10 @@ const API = Object.freeze({
   program: "/assets/academy/program-v2.json",
 });
 
-const TOOL_CATALOG = Object.freeze([
-  { slug: "operation-dashboard", title: "Panel de operación", description: "Separa tu expediente real de la ruta de aprendizaje y conserva el siguiente paso.", group: "organizar" },
-  { slug: "candidate-board", title: "Tablero de candidatos", description: "Compara Plan A, B y C sin borrar decisiones anteriores.", group: "descubrir" },
-  { slug: "presupuesto", title: "Presupuesto inicial", description: "Separa los gastos reservados y calcula cuánto puedes destinar al vehículo.", group: "decidir" },
-  { slug: "filtros", title: "Filtros y búsquedas", description: "Guarda criterios comparables y una rutina de búsqueda repetible.", group: "descubrir" },
-  { slug: "analizador-anuncio", title: "Analizador de anuncio", description: "Convierte lo que muestra y omite un anuncio en comprobaciones concretas.", group: "descubrir" },
-  { slug: "mercado", title: "Comparador con España", description: "Ordena comparables añadidos manualmente y elige un valor conservador.", group: "decidir" },
-  { slug: "coste-total", title: "Calculadora de coste total", description: "Suma todos los gastos y descubre el precio, beneficio y compra máxima que hacen cuadrar la operación.", group: "decidir" },
-  { slug: "documentos", title: "Pasaporte documental", description: "Controla el estado de cada documento de tu operación.", group: "ejecutar" },
-  { slug: "preguntas", title: "Preparador de preguntas", description: "Agrupa tus dudas y prepara una conversación clara con el vendedor.", group: "descubrir" },
-  { slug: "plan-abc", title: "Plan A/B/C", description: "Prioriza candidatos y conserva alternativas antes de viajar.", group: "decidir" },
-  { slug: "viaje", title: "Planificador de viaje", description: "Reúne horarios, transporte, banco, placas y alternativas.", group: "ejecutar" },
-  { slug: "inspeccion", title: "Inspección presencial", description: "Registra comprobaciones delante del vehículo.", group: "ejecutar" },
-  { slug: "pintura", title: "Mediciones de pintura", description: "Registra espesores por panel y detecta qué zonas debes revisar con más contexto.", group: "ejecutar" },
-  { slug: "compra-salida", title: "Compra y salida", description: "Confirma contrato, originales, pago, llaves, placas y salida antes de marcharte.", group: "ejecutar" },
-  { slug: "vuelta", title: "Checklist de vuelta", description: "Controla documentación, vehículo, ruta y contingencias durante el regreso.", group: "ejecutar" },
-  { slug: "espana", title: "Carpeta España", description: "Ordena los hitos de ITV, fiscalidad, DGT y placas.", group: "ejecutar" },
-  { slug: "metodo-7-dias", title: "Método 7 días", description: "Encaja tareas, citas, pagos y bloqueos en una vista operativa.", group: "ejecutar" },
-]);
-
-const TOOL_ALIASES = Object.freeze({
-  "operation-dashboard": "operation-dashboard",
-  "budget-calculator": "presupuesto",
-  "candidate-board": "candidate-board",
-  "search-filter-builder": "filtros",
-  "ad-analyzer": "analizador-anuncio",
-  "question-builder": "preguntas",
-  "market-comparator": "mercado",
-  "cost-calculator": "coste-total",
-  "document-passport": "documentos",
-  "travel-planner": "viaje",
-  "inspection-checklist": "inspeccion",
-  "paint-sheet": "pintura",
-  "purchase-exit-checklist": "compra-salida",
-  "return-checklist": "vuelta",
-  "spain-folder": "espana",
-  "method7-planner": "metodo-7-dias",
-});
+const TOOL_ALIASES = Object.freeze(Object.fromEntries(TOOL_CATALOG.flatMap((tool) => [[tool.id, tool.slug], [tool.publicSlug, tool.slug], [tool.slug, tool.slug]])));
 
 const TOOL_PUBLIC_SLUGS = Object.freeze(Object.fromEntries(
-  Object.entries(TOOL_ALIASES).map(([publicSlug, internalSlug]) => [internalSlug, publicSlug]),
+  TOOL_CATALOG.map((tool) => [tool.slug, tool.publicSlug]),
 ));
 
 const TOOL_STATE_KEYS = Object.freeze({
@@ -187,6 +151,7 @@ const app = {
   vehicleImportState: "idle",
   vehicleImportMessage: "",
   vehicleDuplicateId: null,
+  modulesOpen: false,
 };
 
 function escapeHtml(value = "") {
@@ -258,10 +223,8 @@ function safeInternalPath(value, fallback = PROGRAM_ROOT) {
   try {
     const url = new URL(value || fallback, location.origin);
     if (url.origin !== location.origin) return fallback;
-    if (/^\/(?:ruta|etapa|paso|mi-operacion|candidatos|herramientas|respuestas|recursos|soporte|actualizaciones)(?:\/|$)/i.test(url.pathname)) {
-      url.pathname = `/academia${url.pathname}`;
-    }
-    return /^\/academia(?:\/|$)/i.test(url.pathname) ? `${url.pathname}${url.search}${url.hash}` : fallback;
+    const allowed = /^\/(?:academia|herramientas|mi-operacion|recursos|actualizaciones)(?:\/|$)/i;
+    return allowed.test(url.pathname) ? `${url.pathname}${url.search}${url.hash}` : fallback;
   } catch {
     return fallback;
   }
@@ -484,49 +447,43 @@ function publicToolSlug(slug) {
 }
 function toolHref(slug) {
   const canonical = canonicalToolSlug(slug);
-  if (canonical === "operation-dashboard") return "/academia/mi-operacion";
-  if (canonical === "candidate-board") return "/academia/candidatos";
-  return `/academia/herramientas/${encodeURIComponent(publicToolSlug(canonical))}/`;
+  return toolCatalogEntry(canonical)?.publicPath || `/herramientas/${encodeURIComponent(publicToolSlug(canonical))}/`;
 }
 
 function parseRoute(pathname = location.pathname) {
-  const programBase = PROGRAM_ROOT.replace(/\/+$/, "");
-  let path = String(pathname || "/").replace(/\/+$/, "") || "/";
-  if (path === programBase) path = "/";
-  else if (path.startsWith(`${programBase}/`)) path = path.slice(programBase.length) || "/";
+  const path = String(pathname || "/").replace(/\/+$/, "") || "/";
   let match;
-  if ((match = path.match(/^\/etapa\/([^/]+)$/i))) return { name: "stage", slug: decodeURIComponent(match[1]) };
-  if ((match = path.match(/^\/paso\/([^/]+)$/i))) return { name: "lesson", slug: decodeURIComponent(match[1]) };
+  if ((match = path.match(/^\/academia\/etapa\/([^/]+)$/i))) return { name: "stage", slug: decodeURIComponent(match[1]) };
+  if ((match = path.match(/^\/academia\/paso\/([^/]+)$/i))) return { name: "lesson", slug: decodeURIComponent(match[1]) };
   if ((match = path.match(/^\/herramientas\/([^/]+)$/i))) return { name: "tool", slug: decodeURIComponent(match[1]) };
-  if (path === "/ruta") return { name: "route" };
+  if (path === "/mi-operacion/candidatos") return { name: "candidates" };
   if (path === "/mi-operacion") return { name: "operation" };
-  if (path === "/candidatos") return { name: "candidates" };
   if (path === "/herramientas") return { name: "tools" };
-  if (path === "/respuestas") return { name: "answers" };
+  if (path === "/recursos/respuestas") return { name: "answers" };
   if (path === "/recursos") return { name: "resources" };
-  if (path === "/soporte") return { name: "support" };
-  if (path === "/actualizaciones") return { name: "updates" };
-  if (path === "/cuenta") return { name: "account" };
+  if (path === "/academia/soporte") return { name: "support" };
+  if (path === "/academia/cuenta") return { name: "account" };
+  if (path === "/academia/ruta") return { name: "dashboard" };
   return { name: "dashboard" };
 }
 
 function routePath(route) {
   if (route.name === "stage") return `/academia/etapa/${route.slug}/`;
   if (route.name === "lesson") return `/academia/paso/${route.slug}/`;
-  if (route.name === "tool") return `/academia/herramientas/${publicToolSlug(route.slug)}/`;
-  return ({ route: "/academia/ruta", operation: "/academia/mi-operacion", candidates: "/academia/candidatos", tools: "/academia/herramientas", answers: "/academia/respuestas", resources: "/academia/recursos", support: "/academia/soporte", updates: "/academia/actualizaciones", account: "/academia/cuenta", dashboard: PROGRAM_ROOT })[route.name] || PROGRAM_ROOT;
+  if (route.name === "tool") return toolHref(route.slug);
+  return ({ operation: "/mi-operacion/", candidates: "/mi-operacion/candidatos/", tools: "/herramientas/", answers: "/recursos/respuestas/", resources: "/recursos/", support: "/academia/soporte/", account: "/academia/cuenta/", dashboard: PROGRAM_ROOT })[route.name] || PROGRAM_ROOT;
 }
 
 function normalizeRenderedNavigation(root = document) {
   const fixed = {
-    "/ruta": "/academia/ruta", "/academia/ruta": "/academia/ruta",
-    "/mi-operacion": "/academia/mi-operacion", "/academia/mi-operacion": "/academia/mi-operacion",
-    "/candidatos": "/academia/candidatos", "/academia/candidatos": "/academia/candidatos",
-    "/herramientas": "/academia/herramientas", "/academia/herramientas": "/academia/herramientas",
-    "/respuestas": "/academia/respuestas", "/academia/respuestas": "/academia/respuestas",
-    "/recursos": "/academia/recursos", "/academia/recursos": "/academia/recursos",
-    "/actualizaciones": "/academia/actualizaciones", "/academia/actualizaciones": "/academia/actualizaciones",
-    "/cuenta": "/academia/cuenta", "/academia/cuenta": "/academia/cuenta",
+    "/ruta": PROGRAM_ROOT, "/academia/ruta": PROGRAM_ROOT,
+    "/mi-operacion": "/mi-operacion/", "/academia/mi-operacion": "/mi-operacion/",
+    "/candidatos": "/mi-operacion/candidatos/", "/academia/candidatos": "/mi-operacion/candidatos/",
+    "/herramientas": "/herramientas/", "/academia/herramientas": "/herramientas/",
+    "/respuestas": "/recursos/respuestas/", "/academia/respuestas": "/recursos/respuestas/",
+    "/recursos": "/recursos/", "/academia/recursos": "/recursos/",
+    "/actualizaciones": "/actualizaciones/", "/academia/actualizaciones": "/actualizaciones/",
+    "/cuenta": "/academia/cuenta/", "/academia/cuenta": "/academia/cuenta/",
   };
   root.querySelectorAll?.("a[data-nav]").forEach((anchor) => {
     const raw = anchor.getAttribute("href") || "";
@@ -562,6 +519,7 @@ function navigate(path, { replace = false } = {}) {
   const method = replace ? "replaceState" : "pushState";
   history[method]({}, "", destination);
   app.route = parseRoute(destinationUrl.pathname);
+  app.modulesOpen = false;
   renderView();
   const behavior = matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
   window.requestAnimationFrame(() => {
@@ -655,11 +613,20 @@ function handleVideoEvent(event) {
 }
 
 function navCurrent(name) {
-  if (name === "route") return app.route.name === "route";
+  if (name === "academy") return ["dashboard", "stage", "lesson"].includes(app.route.name);
   if (name === "operation") return ["operation", "candidates"].includes(app.route.name);
-  if (name === "calculator") return app.route.name === "tool" && canonicalToolSlug(app.route.slug) === "coste-total";
-  if (name === "tools") return app.route.name === "tools" || (app.route.name === "tool" && canonicalToolSlug(app.route.slug) !== "coste-total");
+  if (name === "tools") return ["tools", "tool"].includes(app.route.name);
+  if (name === "resources") return ["resources", "answers"].includes(app.route.name);
   return app.route.name === name;
+}
+
+function addOperationVehicleSummary(root = document) {
+  if (app.route.name !== "operation") return;
+  const form = root.querySelector?.("[data-view-root] .academy-operation-sections");
+  if (!form || root.querySelector("[data-operation-vehicles]")) return;
+  const vehicles = ensureVehicleAnalyzer().vehicles || [];
+  const latest = vehicles[0];
+  form.insertAdjacentHTML("beforebegin", `<section class="academy-card academy-operation-vehicles" data-operation-vehicles><div><span class="academy-eyebrow">Mis vehículos</span><h2>${vehicles.length ? `${vehicles.length} ${vehicles.length === 1 ? "ficha guardada" : "fichas guardadas"}` : "Todavía no hay fichas guardadas"}</h2><p>${latest ? `Última ficha: ${escapeHtml(vehicleTitle(latest))}.` : "Importa un anuncio o crea una ficha manual cuando tengas un vehículo que estudiar."}</p></div><div class="academy-page-actions"><a class="academy-button academy-button--secondary" href="/mi-operacion/candidatos/" data-nav>Ver candidatos</a><a class="academy-button academy-button--primary" href="${toolHref("analizador-anuncio")}" data-nav>${vehicles.length ? "Abrir mis vehículos" : "Añadir vehículo"}</a></div></section>`);
 }
 
 function navLink(href, name, label, icon) {
@@ -668,12 +635,7 @@ function navLink(href, name, label, icon) {
 }
 
 function mobileNavLink(href, name, label, icon) {
-  const current = name === "route" ? ["route", "stage", "lesson"].includes(app.route.name) : navCurrent(name);
-  return `<a href="${href}" data-nav${current ? ' aria-current="page"' : ""}><span>${iconSvg(icon, { className: "academy-icon" })}</span><span>${escapeHtml(label)}</span></a>`;
-}
-
-function mobileNavAction(label, icon, action) {
-  return `<button type="button" data-action="${action}"><span>${iconSvg(icon, { className: "academy-icon" })}</span><span>${escapeHtml(label)}</span></button>`;
+  return `<a href="${href}" data-nav${navCurrent(name) ? ' aria-current="page"' : ""}><span>${iconSvg(icon, { className: "academy-icon" })}</span><span>${escapeHtml(label)}</span></a>`;
 }
 
 function activeRouteStageId() {
@@ -693,6 +655,37 @@ function renderSidebarModules(model) {
   }).join("");
 }
 
+function currentModuleLabel() {
+  const active = activeRouteStageId();
+  const stage = app.program.stages.find((item) => String(item.id) === active);
+  if (!stage) return "Explorar los 12 módulos";
+  const number = String(stage.order ?? stage.number ?? "00").padStart(2, "0");
+  return `${number} · ${stage.shortTitle || stage.title}`;
+}
+
+function renderModulePicker(model, mobile = false) {
+  const suffix = mobile ? "mobile" : "sidebar";
+  const intro = app.program.stages.find((stage) => stage.kind === "prologue" || stage.countsTowardProgress === false);
+  const introState = intro ? stageStatus(intro) : "pending";
+  const introActive = intro && activeRouteStageId() === String(intro.id);
+  const introLink = intro ? `<a class="academy-sidebar-module academy-sidebar-module--intro" href="${stageHref(intro)}" data-nav data-status="${introState}"${introActive ? ' aria-current="page"' : ""}><span class="academy-sidebar-module-number">00</span><span class="academy-sidebar-module-copy"><strong>${escapeHtml(intro.shortTitle || intro.title || "Empieza aquí")}</strong><small>${introState === "complete" ? "Completado" : introState === "current" ? "En curso" : "Introducción"}</small></span><span class="academy-sidebar-module-mark" aria-hidden="true">${introState === "complete" ? "✓" : introState === "current" ? "•" : ""}</span></a>` : "";
+  return `<div class="academy-module-picker${mobile ? " academy-module-picker--mobile" : ""}">
+    <button class="academy-module-picker-trigger" type="button" data-action="modules-toggle" aria-expanded="${app.modulesOpen}" aria-controls="academy-module-list-${suffix}">
+      <span><small>Módulos de la Academia</small><strong>${escapeHtml(currentModuleLabel())}</strong></span>${iconSvg("chevron")}
+    </button>
+    <div class="academy-module-picker-panel" id="academy-module-list-${suffix}"${app.modulesOpen ? "" : " hidden"}>
+      ${introLink}${renderSidebarModules(model)}
+    </div>
+  </div>`;
+}
+
+function currentAreaName() {
+  if (["operation", "candidates"].includes(app.route.name)) return "Mi operación";
+  if (["tools", "tool"].includes(app.route.name)) return "Herramientas";
+  if (["resources", "answers"].includes(app.route.name)) return "Recursos";
+  return "Academia";
+}
+
 function userInitials() {
   const user = app.session?.user || app.session || {};
   const name = user.name || user.displayName || "Academia";
@@ -706,28 +699,23 @@ function renderShell() {
   app.root.className = `academy-app${app.state.preferences.presentationMode ? " academy-app--presentation" : ""}`;
   app.root.innerHTML = `
     <div class="academy-app-shell">
-      <aside class="academy-sidebar" aria-label="Navegación de la Academia">
+      <aside class="academy-sidebar" aria-label="Navegación principal de IvanImports">
         <a class="academy-sidebar-brand" href="${PROGRAM_ROOT}" data-nav>
           <img src="/assets/brand/ivan-imports-wordmark-light.svg" width="430" height="88" alt="IvanImports">
-          <span>Academia IvanImports</span><small>${escapeHtml(app.program.descriptor || "Desde cero, paso a paso")}</small>
+          <span>Plataforma IvanImports</span><small>${escapeHtml(currentAreaName())}</small>
         </a>
         <nav class="academy-sidebar-nav">
           <div class="academy-sidebar-section">
-            <span class="academy-sidebar-section-label">Academia</span>
-            ${navLink(PROGRAM_ROOT, "dashboard", "Inicio", "home")}
-            ${navLink(toolHref("coste-total"), "calculator", "Calculadora", "calculator")}
-            ${navLink("/academia/herramientas", "tools", "Herramientas", "tools")}
-            <button class="academy-nav-link" type="button" data-action="search-open"><span class="academy-nav-icon">${iconSvg("search", { className: "academy-icon" })}</span><span>Buscar</span></button>
+            <span class="academy-sidebar-section-label">Áreas</span>
+            ${navLink(PROGRAM_ROOT, "academy", "Academia", "book")}
+            ${navLink("/mi-operacion/", "operation", "Mi operación", "car")}
+            ${navLink("/herramientas/", "tools", "Herramientas", "tools")}
+            ${navLink("/recursos/", "resources", "Recursos", "route")}
           </div>
-          <div class="academy-sidebar-section academy-sidebar-section--modules">
-            <div class="academy-sidebar-section-heading"><span class="academy-sidebar-section-label">12 módulos</span><a href="/academia/ruta" data-nav>Ver ruta</a></div>
-            <a class="academy-sidebar-intro" href="${app.program.stages[0] ? stageHref(app.program.stages[0]) : "/academia/ruta"}" data-nav><span>00</span><strong>Empieza aquí</strong></a>
-            ${renderSidebarModules(dashboard)}
-          </div>
+          ${["dashboard", "stage", "lesson"].includes(app.route.name) ? `<div class="academy-sidebar-section academy-sidebar-section--modules">${renderModulePicker(dashboard)}</div>` : ""}
           <div class="academy-sidebar-section academy-sidebar-section--utility">
-            <span class="academy-sidebar-section-label">Más</span>
-            ${navLink("/academia/mi-operacion", "operation", "Mi operación", "car")}
-            ${navLink("/academia/recursos", "resources", "Recursos", "book")}
+            <span class="academy-sidebar-section-label">Academia</span>
+            <button class="academy-nav-link" type="button" data-action="search-open"><span class="academy-nav-icon">${iconSvg("search", { className: "academy-icon" })}</span><span>Buscar en la Academia</span></button>
             <a class="academy-nav-link" href="/academia/ayuda/"><span class="academy-nav-icon">${iconSvg("support", { className: "academy-icon" })}</span><span>Ayuda</span></a>
             <a class="academy-nav-link academy-nav-link--pro" href="/servicios/"><span class="academy-nav-icon">✦</span><span>Servicios PRO</span></a>
           </div>
@@ -739,21 +727,23 @@ function renderShell() {
       </aside>
       <div class="academy-shell-main">
         <header class="academy-topbar">
-          <div class="academy-topbar-title"><strong>${escapeHtml(currentTitle)}</strong><span>${escapeHtml(app.program.title)}</span></div>${app.state.preferences.presentationMode ? `<span class="academy-presentation-badge">Demo segura</span>` : ""}
+          <a class="academy-home-link" href="/" aria-label="Ir al inicio de IvanImports">${iconSvg("home", { className: "academy-icon" })}<span>Inicio</span></a>
+          <div class="academy-topbar-title"><strong>${escapeHtml(currentTitle)}</strong><span>${escapeHtml(currentAreaName())}</span></div>${app.state.preferences.presentationMode ? `<span class="academy-presentation-badge">Demo segura</span>` : ""}
+          ${["dashboard", "stage", "lesson"].includes(app.route.name) ? renderModulePicker(dashboard, true) : ""}
           <div class="academy-topbar-actions">
             <span class="academy-save-status" data-save-status data-state="${app.saveState}" aria-live="polite">${app.saveState === "saving" ? "Guardando…" : ""}</span>
             <button class="academy-search-trigger" type="button" data-action="search-open" aria-label="Buscar en la Academia">
               ${iconSvg("search", { className: "academy-icon" })}<span>¿Qué necesitas resolver?</span><kbd>Ctrl/⌘ K</kbd>
             </button>
-            <a class="academy-version-chip" href="/academia/actualizaciones" data-nav aria-label="Ver actualizaciones">v${escapeHtml(ACADEMY_VERSION)}</a>
+            <a class="academy-version-chip" href="/actualizaciones/" aria-label="Ver actualizaciones">v${escapeHtml(ACADEMY_VERSION)}</a>
           </div>
         </header>
         <main class="academy-main" id="academy-main" tabindex="-1" data-view-root></main>
       </div>
     </div>
     <nav class="academy-mobile-nav" aria-label="Navegación móvil">
-      ${mobileNavLink(PROGRAM_ROOT, "dashboard", "Inicio", "home")}${mobileNavLink(toolHref("coste-total"), "calculator", "Calculadora", "calculator")}
-      ${mobileNavLink("/academia/herramientas", "tools", "Herramientas", "tools")}${mobileNavAction("Buscar", "search", "search-open")}
+      ${mobileNavLink(PROGRAM_ROOT, "academy", "Academia", "book")}${mobileNavLink("/mi-operacion/", "operation", "Mi operación", "car")}
+      ${mobileNavLink("/herramientas/", "tools", "Herramientas", "tools")}${mobileNavLink("/recursos/", "resources", "Recursos", "route")}
     </nav>
     ${renderSearchDialog()}
     ${renderCandidateDialog()}
@@ -768,6 +758,17 @@ function pageTitle() {
   return ({ dashboard: "Academia", route: "Ruta completa", operation: "Mi operación", candidates: "Vehículos candidatos", tools: "Herramientas", answers: "Centro de respuestas", resources: "Recursos", support: "Errores y sugerencias", updates: "Actualizaciones", account: "Preferencias" })[app.route.name] || app.program.title;
 }
 
+function documentTitle() {
+  if (app.route.name === "tool") return toolDefinition(app.route.slug)?.seoTitle || `${pageTitle()} | Herramientas IvanImports`;
+  return ({
+    tools: "Herramientas para importar coches | IvanImports",
+    operation: "Mi operación de importación | IvanImports",
+    candidates: "Vehículos candidatos | Mi operación IvanImports",
+    resources: "Recursos para importar coches | IvanImports",
+    answers: "Centro de respuestas | Recursos IvanImports",
+  })[app.route.name] || `${pageTitle()} | ${currentAreaName()} IvanImports`;
+}
+
 function renderView() {
   if (!app.root || !app.program || !app.state) return;
   renderShell();
@@ -779,8 +780,9 @@ function renderView() {
     view.innerHTML = `${renderMigrationNotice()}${showCompletion ? renderCompletionHeroes(progress, app.route.name === "dashboard") : ""}${(renderers[app.route.name] || renderDashboard)()}${renderFeedbackStrip()}`;
     normalizeRenderedNavigation(app.root);
     addPageResetControl(app.root);
+    addOperationVehicleSummary(app.root);
     trackCompletionTransitions(progress);
-    document.title = `${pageTitle()} | Academia IvanImports`;
+    document.title = documentTitle();
     const canonical = document.querySelector('link[rel="canonical"]');
     if (canonical) canonical.href = `https://ivanimports.es${routePath(app.route)}`;
     updateDynamicResults();
@@ -800,7 +802,7 @@ function renderLearningCompletion(progress, primaryHeading = false) {
   if (!progress.totalLessons || progress.percentage !== 100) return "";
   const heading = primaryHeading ? "h1" : "h2";
   const copy = app.program.learningCompletionCopy || "Ruta de aprendizaje completada.";
-  return `<section class="academy-completion-hero academy-completion-hero--learning" role="status" aria-labelledby="academy-learning-completion-title"><div><span class="academy-eyebrow">Aprendizaje completado</span><${heading} id="academy-learning-completion-title">Tu mapa ya está completo.</${heading}><p>${escapeHtml(copy)}</p><small>Esto confirma tu aprendizaje; no afirma que una operación real haya terminado.</small></div><div class="academy-page-actions"><a class="academy-button academy-button--primary" href="/ruta" data-nav>Repasar mi ruta</a><a class="academy-button academy-button--secondary" href="/mi-operacion" data-nav>Abrir operación real</a></div></section>`;
+  return `<section class="academy-completion-hero academy-completion-hero--learning" role="status" aria-labelledby="academy-learning-completion-title"><div><span class="academy-eyebrow">Aprendizaje completado</span><${heading} id="academy-learning-completion-title">Tu formación está completa.</${heading}><p>${escapeHtml(copy)}</p><small>Esto confirma tu aprendizaje; no afirma que una operación real haya terminado.</small></div><div class="academy-page-actions"><a class="academy-button academy-button--primary" href="${PROGRAM_ROOT}" data-nav>Repasar la Academia</a><a class="academy-button academy-button--secondary" href="/mi-operacion/" data-nav>Abrir operación real</a></div></section>`;
 }
 
 function realOperationCompleted() {
@@ -844,7 +846,7 @@ function trackCompletionTransitions(progress) {
 function renderErrorState(title, copy, { retry = true } = {}) {
   const actions = retry
     ? `<button class="academy-button academy-button--primary" type="button" data-action="retry">Reintentar</button>`
-    : `<div class="academy-error-actions"><a class="academy-button academy-button--primary" href="/academia/ruta" data-nav>Volver a la ruta</a><button class="academy-button academy-button--secondary" type="button" data-action="search-open">Buscar en la Academia</button></div>`;
+    : `<div class="academy-error-actions"><a class="academy-button academy-button--primary" href="${PROGRAM_ROOT}" data-nav>Volver a la Academia</a><button class="academy-button academy-button--secondary" type="button" data-action="search-open">Buscar en la Academia</button></div>`;
   return `<div class="academy-error-state"><div class="academy-state-copy"><h1>${escapeHtml(title)}</h1><p>${escapeHtml(copy)}</p>${actions}</div></div>`;
 }
 
@@ -856,7 +858,7 @@ function renderPageHead(eyebrow, title, copy = "", actions = "", headingLevel = 
 function continueTarget() {
   const progress = progressInfo();
   if (progress.currentLesson) return { href: lessonHref(progress.currentLesson), label: progress.completedCount ? "Continuar por donde lo dejaste" : "Empezar mi ruta" };
-  return { href: "/ruta", label: "Explorar la ruta" };
+  return { href: PROGRAM_ROOT, label: "Explorar la Academia" };
 }
 
 function renderDashboardLegacy() {
@@ -870,7 +872,7 @@ function renderDashboardLegacy() {
     <section class="academy-dashboard-hero">
       <div class="academy-dashboard-copy"><span class="academy-eyebrow">Academia IvanImports</span><${heading}>Tu ruta de importación</${heading}>
         <p>De la primera búsqueda a la matrícula española: identifica dónde estás y cuál es tu siguiente paso.</p>
-        <div class="academy-dashboard-actions"><a class="academy-button academy-button--primary" href="${next.href}" data-nav>${escapeHtml(next.label)} <span aria-hidden="true">→</span></a><a class="academy-button academy-button--secondary" href="/ruta" data-nav>Ver ruta completa</a></div>
+        <div class="academy-dashboard-actions"><a class="academy-button academy-button--primary" href="${next.href}" data-nav>${escapeHtml(next.label)} <span aria-hidden="true">→</span></a><a class="academy-button academy-button--secondary" href="${PROGRAM_ROOT}" data-nav>Ver la Academia</a></div>
       </div>
       <div class="academy-progress-summary"><div class="academy-progress-number"><strong>${progress.percentage}</strong><span>%</span></div>
         <p>Has completado ${progress.completedStageIds.length} de ${progress.stages.length || 12} etapas · ${progress.completedCount} de ${progress.totalLessons} lecciones.</p>
@@ -923,9 +925,9 @@ function renderDashboardOperation() {
 }
 
 function dashboardContinue(model) {
-  if (model.isComplete) return { href: "/academia/ruta", label: "Repasar la ruta" };
+  if (model.isComplete) return { href: PROGRAM_ROOT, label: "Repasar la Academia" };
   if (model.currentLesson) return { href: lessonHref(model.currentLesson), label: model.isNew ? "Empezar Academia" : "Continuar" };
-  return { href: "/academia/ruta", label: "Explorar la ruta" };
+  return { href: PROGRAM_ROOT, label: "Explorar la Academia" };
 }
 
 function renderDashboardModule(stage) {
@@ -953,11 +955,10 @@ function renderDashboard() {
     ? "Empieza aquí"
     : `Módulo ${String(contextStage?.order || model.recommendedStage?.number || "01").padStart(2, "0")}`;
   const heading = model.isComplete || realOperationCompleted() ? "h2" : "h1";
-  const featuredTools = selectDashboardTools(app.program, model.recommendedStage?.id, 6);
   const completedModules = model.stages.filter((stage) => stage.complete).length;
   return `<div class="academy-control" data-dashboard-state="${model.isComplete ? "complete" : model.isNew ? "new" : "active"}">
     <section class="academy-control-hero" aria-labelledby="academy-control-title">
-      <div class="academy-control-hero-copy"><span class="academy-eyebrow">Academia IvanImports</span><${heading} id="academy-control-title">Aprende a importar un coche desde Europa, paso a paso.</${heading}><p>12 módulos para pasar de buscar el vehículo a tenerlo matriculado en España. Gratis y a tu ritmo.</p><div class="academy-control-facts" aria-label="Contenido de la Academia"><span>12 módulos</span><span>${app.program.lessons.length} lecciones</span><span>${app.program.tools.length} herramientas</span></div></div>
+      <div class="academy-control-hero-copy"><span class="academy-eyebrow">Academia IvanImports</span><${heading} id="academy-control-title">Aprende a importar un coche desde Europa, paso a paso.</${heading}><p>12 módulos para pasar de buscar el vehículo a tenerlo matriculado en España. Gratis y a tu ritmo.</p><div class="academy-control-facts" aria-label="Contenido de la Academia"><span>12 módulos</span><span>${app.program.lessons.length} lecciones</span><span>A tu ritmo</span></div></div>
       <div class="academy-control-next" aria-label="Tu siguiente paso">
         <div class="academy-control-next-head"><span>${model.isComplete ? "Ruta completada" : model.isNew ? "Tu punto de partida" : "Continúa donde lo dejaste"}</span><strong>${model.percentage}%</strong></div>
         <div class="academy-control-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${model.percentage}" aria-label="Progreso de la Academia"><span style="--progress:${model.percentage}%"></span></div>
@@ -967,12 +968,8 @@ function renderDashboard() {
       </div>
     </section>
     <section class="academy-control-search" aria-label="Buscar en la Academia"><span class="academy-control-search-icon">${iconSvg("search")}</span><div><strong>¿Qué necesitas encontrar?</strong><span>Busca “COC”, “placas”, “IVA”, “ITV” o “Alemania”.</span></div><button class="academy-button academy-button--secondary" type="button" data-action="search-open">Buscar en la Academia</button></section>
-    <section class="academy-control-section" aria-labelledby="academy-modules-title"><header class="academy-control-section-head"><div><span class="academy-eyebrow">Todo el proceso, en orden</span><h2 id="academy-modules-title">Tu ruta de importación</h2><p>Abre cualquier módulo o sigue el siguiente paso recomendado.</p></div><a href="/academia/ruta" data-nav>Ver ruta completa ${iconSvg("chevron")}</a></header><div class="academy-control-modules">${model.stages.map(renderDashboardModule).join("")}</div></section>
-    <section class="academy-control-section" aria-labelledby="academy-tools-title"><header class="academy-control-section-head"><div><span class="academy-eyebrow">Trabaja con tus propios datos</span><h2 id="academy-tools-title">Herramientas</h2><p>Calcula, compara y controla la operación sin salir de la Academia.</p></div><a href="/academia/herramientas" data-nav>Ver las ${app.program.tools.length} herramientas ${iconSvg("chevron")}</a></header><div class="academy-control-tools">${featuredTools.map(renderDashboardTool).join("")}</div></section>
-    <div class="academy-control-secondary">
-      <section class="academy-control-europe"><span class="academy-control-secondary-icon">${iconSvg("map")}</span><div><span class="academy-eyebrow">Explorar Europa</span><h2>Consulta la ruta sobre el mapa.</h2><p>Accede al mapa de Europa y abre cada etapa del recorrido.</p><a class="academy-button academy-button--secondary" href="/academia/ruta" data-nav>Abrir mapa ${iconSvg("chevron")}</a></div></section>
-      <section class="academy-control-about"><span class="academy-control-secondary-icon">${iconSvg("route")}</span><div><span class="academy-eyebrow">Academia gratuita IvanImports</span><h2>Una ruta práctica, completa y actualizable.</h2><p>Aprende el proceso por tu cuenta, paso a paso y a partir de la experiencia real de importar vehículos.</p><div class="academy-control-about-links"><a href="${app.program.stages[0] ? stageHref(app.program.stages[0]) : "/academia/ruta"}" data-nav>Leer el prólogo</a><a href="/academia/recursos" data-nav>Abrir recursos</a><a href="/academia/mi-operacion" data-nav>Mi operación</a></div></div></section>
-    </div>
+    <section class="academy-control-section" aria-labelledby="academy-modules-title"><header class="academy-control-section-head"><div><span class="academy-eyebrow">Todo el proceso, en orden</span><h2 id="academy-modules-title">Tu ruta de aprendizaje</h2><p>Abre cualquier módulo o sigue el siguiente paso recomendado.</p></div></header><div class="academy-control-modules">${model.stages.map(renderDashboardModule).join("")}</div></section>
+    <section class="academy-control-about"><span class="academy-control-secondary-icon">${iconSvg("route")}</span><div><span class="academy-eyebrow">Academia gratuita IvanImports</span><h2>Una formación práctica, completa y actualizable.</h2><p>Aprende el proceso por tu cuenta, paso a paso y a partir de la experiencia real de importar vehículos.</p><div class="academy-control-about-links"><a href="${app.program.stages[0] ? stageHref(app.program.stages[0]) : PROGRAM_ROOT}" data-nav>Leer el prólogo</a></div></div></section>
   </div>`;
 }
 
@@ -994,7 +991,7 @@ function renderDashboardStats(progress) {
 }
 
 function renderCurrentStageCard(stage, lessons, progress) {
-  if (!stage) return `<section class="academy-card academy-current-card"><span class="academy-badge">Ruta preparada</span><h2>Explora el programa</h2><p>El catálogo aparecerá aquí cuando esté disponible.</p><a class="academy-button" href="/ruta" data-nav>Ver ruta</a></section>`;
+  if (!stage) return `<section class="academy-card academy-current-card"><span class="academy-badge">Academia preparada</span><h2>Explora el programa</h2><p>El catálogo aparecerá aquí cuando esté disponible.</p><a class="academy-button" href="${PROGRAM_ROOT}" data-nav>Ver Academia</a></section>`;
   const completed = lessons.filter((lesson) => completedLessonSet().has(String(lesson.id))).length;
   const next = continueTarget();
   return `<section class="academy-card academy-current-card"><span class="academy-badge">Etapa actual</span><h2>${escapeHtml(stage.title)}</h2><p>${escapeHtml(stage.description || stage.subtitle || "Continúa con el siguiente paso recomendado.")}</p>
@@ -1006,7 +1003,7 @@ function renderNextStageCard(stage, progress) {
   const stages = progress.stages || coreStages();
   const index = stages.findIndex((item) => String(item.id) === String(stage?.id));
   const next = stages[index >= 0 ? index + 1 : 0];
-  if (!next) return `<section class="academy-card academy-next-stage-card"><span class="academy-eyebrow">Destino final</span><h3>Método 7 días</h3><p>Repasa el sistema completo y prepara tu operación real.</p><a href="/ruta" data-nav>Ver ruta completa ${iconSvg("chevron")}</a></section>`;
+  if (!next) return `<section class="academy-card academy-next-stage-card"><span class="academy-eyebrow">Destino final</span><h3>Método 7 días</h3><p>Repasa el sistema completo y prepara tu operación real.</p><a href="${PROGRAM_ROOT}" data-nav>Ver Academia ${iconSvg("chevron")}</a></section>`;
   return `<section class="academy-card academy-next-stage-card"><span class="academy-eyebrow">Siguiente etapa</span><h3>${escapeHtml(next.shortTitle || next.title)}</h3><p>${escapeHtml(next.description || next.subtitle || "Continúa avanzando por la ruta de importación.")}</p><a href="${stageHref(next)}" data-nav>Ver siguiente etapa ${iconSvg("chevron")}</a></section>`;
 }
 
@@ -1419,15 +1416,13 @@ function availableTools() {
 }
 
 function renderTools() {
-  const tools = availableTools();
-  const groups = [
-    ["organizar", "Organiza tu operación", "Expediente y estado antes de ejecutar."],
-    ["descubrir", "Descubre y verifica", "Búsqueda, anuncios, preguntas y candidatos."],
-    ["decidir", "Haz números y decide", "Presupuesto, mercado, coste total y alternativas."],
-    ["ejecutar", "Compra, vuelve y matricula", "Viaje, inspección, documentos y España."],
-  ];
-  const card = (tool) => `<a class="academy-card academy-tool-card" href="${toolHref(tool.slug)}" data-nav><span class="academy-tool-icon">${iconSvg(toolIconName(tool.sourceSlug || tool.slug), { className: "academy-tool-svg" })}</span><span class="academy-badge">${escapeHtml(tool.group || "operativa")}</span><h3>${escapeHtml(tool.title)}</h3><p>${escapeHtml(tool.description || "Herramienta de la ruta.")}</p><strong>Abrir herramienta ${iconSvg("chevron")}</strong></a>`;
-  return `<section class="academy-tools-hero">${renderPageHead("Centro operativo", "17 herramientas para una operación real", "Cada herramienta guarda datos de tu expediente. La ruta de aprendizaje permanece separada.", `<a class="academy-button academy-button--secondary" href="/academia/mi-operacion" data-nav>${iconSvg("car")} Abrir operación</a>`)}<picture class="academy-tools-hero-media" aria-hidden="true"><img src="/assets/visuals/final/tools-operations.webp" alt="" width="1672" height="941" decoding="async" fetchpriority="high"></picture></section><div class="academy-tool-groups">${groups.map(([key, title, copy]) => { const members = tools.filter((tool) => (tool.group || TOOL_CATALOG.find((item) => item.slug === tool.slug)?.group || "ejecutar") === key); return members.length ? `<section class="academy-tool-group"><div class="academy-section-head"><div><span class="academy-eyebrow">${String(members.length).padStart(2, "0")} herramientas</span><h2>${title}</h2><p>${copy}</p></div></div><div class="academy-tool-grid">${members.map(card).join("")}</div></section>` : ""; }).join("")}</div>`;
+  const tools = availableTools().filter((tool) => tool.publicPath?.startsWith("/herramientas/")).sort((a, b) => a.order - b.order);
+  const categories = [...new Set(tools.map((tool) => tool.category))];
+  const featured = tools.filter((tool) => tool.featured);
+  const card = (tool, prominent = false) => `<a class="academy-card academy-tool-card${prominent ? " academy-tool-card--featured" : ""}" href="${tool.publicPath}" data-nav><span class="academy-tool-icon">${iconSvg(toolIconName(tool.sourceSlug || tool.slug), { className: "academy-tool-svg" })}</span><span class="academy-badge">${escapeHtml(tool.category)}</span><h3>${escapeHtml(tool.h1 || tool.title)}</h3><p>${escapeHtml(tool.description || "Herramienta práctica de importación.")}</p><strong>Abrir herramienta ${iconSvg("chevron")}</strong></a>`;
+  return `<section class="academy-tools-hero">${renderPageHead("Herramientas IvanImports", "Herramientas para importar coches", "Calcula costes, analiza anuncios, compara el mercado y prepara cada paso de tu importación con utilidades independientes de la Academia.", `<a class="academy-button academy-button--secondary" href="/mi-operacion/" data-nav>${iconSvg("car")} Abrir Mi operación</a>`)}<picture class="academy-tools-hero-media" aria-hidden="true"><img src="/assets/visuals/final/tools-operations.webp" alt="" width="1672" height="941" decoding="async" fetchpriority="high"></picture></section>
+    <section class="academy-tool-group academy-tool-group--featured"><div class="academy-section-head"><div><span class="academy-eyebrow">Accesos destacados</span><h2>Empieza por las herramientas clave</h2><p>Las utilidades más utilizadas para analizar, calcular y decidir.</p></div></div><div class="academy-tool-grid">${featured.map((tool) => card(tool, true)).join("")}</div></section>
+    <div class="academy-tool-groups">${categories.map((category) => { const members = tools.filter((tool) => tool.category === category); return `<section class="academy-tool-group"><div class="academy-section-head"><div><span class="academy-eyebrow">${String(members.length).padStart(2, "0")} ${members.length === 1 ? "herramienta" : "herramientas"}</span><h2>${escapeHtml(category)}</h2></div></div><div class="academy-tool-grid">${members.map((tool) => card(tool)).join("")}</div></section>`; }).join("")}</div>`;
 }
 
 function renderTool() {
@@ -1436,9 +1431,9 @@ function renderTool() {
   academyTrack("academy_tool_used", { programId: app.program.id, toolId: tool.slug });
   const renderer = ({ presupuesto: renderBudgetTool, filtros: renderSearchFilterTool, "analizador-anuncio": renderAdAnalyzerTool, mercado: renderMarketTool, "coste-total": renderCostTool, documentos: renderDocumentsTool, preguntas: renderQuestionsTool, "plan-abc": renderPlanTool, viaje: renderTravelTool, inspeccion: renderInspectionTool, pintura: renderPaintTool, "compra-salida": renderPurchaseExitTool, vuelta: renderReturnTool, espana: renderSpainTool, "metodo-7-dias": renderMethodTool })[tool.slug];
   const completed = Boolean(app.state.tools?._completed?.[tool.slug]);
-  const content = renderer ? renderer() : tool.slug === "operation-dashboard" ? renderDashboardOperation() : tool.slug === "candidate-board" ? renderCandidates(true) : `<div class="academy-empty"><div class="academy-state-copy"><strong>Definición interactiva no recibida</strong><p>El catálogo identifica esta herramienta, pero todavía no existe un componente operativo asociado.</p><a class="academy-button academy-button--secondary" href="/academia/herramientas" data-nav>Volver al centro</a></div></div>`;
+  const content = renderer ? renderer() : tool.slug === "operation-dashboard" ? renderDashboardOperation() : tool.slug === "candidate-board" ? renderCandidates(true) : `<div class="academy-empty"><div class="academy-state-copy"><strong>Definición interactiva no recibida</strong><p>El catálogo identifica esta herramienta, pero todavía no existe un componente operativo asociado.</p><a class="academy-button academy-button--secondary" href="/herramientas/" data-nav>Volver al centro</a></div></div>`;
   const headActions = `<button class="academy-button academy-button--ghost academy-button--small" type="button" data-action="tool-reset" data-tool-id="${escapeAttribute(tool.slug)}">${tool.slug === "coste-total" ? "Vaciar calculadora" : "Vaciar herramienta"}</button><span class="academy-tool-head-icon">${iconSvg(toolIconName(tool.sourceSlug || tool.slug))}</span>`;
-  return `<nav aria-label="Migas de pan"><ol class="academy-breadcrumbs"><li><a href="${PROGRAM_ROOT}" data-nav>Inicio</a></li><li><a href="/academia/herramientas" data-nav>Herramientas</a></li><li aria-current="page">${escapeHtml(tool.title || tool.slug)}</li></ol></nav>${renderPageHead("Herramienta", tool.title || tool.slug, tool.description || "Tus cambios se guardan automáticamente.", headActions)}<div class="academy-tool-workbench" data-tool-id="${escapeAttribute(tool.slug)}">${content}${!["operation-dashboard", "candidate-board"].includes(tool.slug) ? `<section class="academy-tool-complete-card"><div><strong>${completed ? "Herramienta revisada" : "¿Has terminado esta comprobación?"}</strong><p>Marcarla no certifica el vehículo; registra que has terminado tu revisión actual.</p></div><button class="academy-button ${completed ? "academy-button--secondary" : "academy-button--primary"}" type="button" data-action="tool-complete" data-tool-id="${escapeAttribute(tool.slug)}">${completed ? "Volver a abrir" : "Marcar como revisada"}</button></section>` : ""}</div>`;
+  return `<nav aria-label="Migas de pan"><ol class="academy-breadcrumbs"><li><a href="/herramientas/" data-nav>Herramientas</a></li><li aria-current="page">${escapeHtml(tool.title || tool.slug)}</li></ol></nav>${renderPageHead("Herramienta", tool.h1 || tool.title || tool.slug, tool.description || "Tus cambios se guardan automáticamente.", headActions)}<div class="academy-tool-workbench" data-tool-id="${escapeAttribute(tool.slug)}">${content}${!["operation-dashboard", "candidate-board"].includes(tool.slug) ? `<section class="academy-tool-complete-card"><div><strong>${completed ? "Herramienta revisada" : "¿Has terminado esta comprobación?"}</strong><p>Marcarla no certifica el vehículo; registra que has terminado tu revisión actual.</p></div><button class="academy-button ${completed ? "academy-button--secondary" : "academy-button--primary"}" type="button" data-action="tool-complete" data-tool-id="${escapeAttribute(tool.slug)}">${completed ? "Volver a abrir" : "Marcar como revisada"}</button></section>` : ""}</div>`;
 }
 
 function renderBudgetTool() {
@@ -1832,17 +1827,16 @@ function buildSearchItems() {
   };
   app.program.stages.forEach((stage) => add("Etapas", stage.title, stage.description || stage.subtitle, stageHref(stage), stage.keywords));
   app.program.lessons.forEach((lesson) => add("Lecciones", lesson.title, lesson.summary || lesson.learningObjective, lessonHref(lesson), [...(lesson.keywords || []), ...(lesson.glossaryTerms || [])], { lessonId: lesson.id, sourcePages: lesson.sourcePages || [] }));
-  availableTools().forEach((tool) => add("Herramientas", tool.title, tool.description, toolHref(tool.slug), tool.keywords));
   app.program.concepts.forEach((concept) => {
     const lesson = findLesson(concept.lessonId);
     if (lesson) add("Conceptos", concept.title, concept.shortAnswer || concept.explanation, `${lessonHref(lesson)}#${encodeURIComponent(concept.anchor || concept.slug || concept.id)}`, [...(concept.aliases || []), ...(concept.glossaryTerms || [])], { conceptId: concept.id, lessonId: lesson.id, sourcePages: concept.sourcePages || lesson.sourcePages || [], sourceLabel: "Concepto trazado al material del programa" });
   });
-  app.program.answers.forEach((answer) => add("Respuestas", answer.question || answer.title, answer.answer || answer.summary || answer.body, `/respuestas#${slugify(answer.id || answer.question || answer.title)}`, answer.keywords, { answerId: answer.id || slugify(answer.question || answer.title), lessonId: answer.lessonId || "", sourcePages: answer.sourcePages || [], sourceLabel: "Respuesta editorial del programa" }));
-  app.program.glossary.forEach((term) => add("Términos", term.term || term.title, term.definition || term.description, `/respuestas#glosario-${slugify(term.id || term.term)}`, term.aliases));
-  app.program.resources.forEach((resource) => add("Recursos", resource.title, resource.description, "/recursos", resource.keywords));
-  app.program.officialSources.forEach((source) => { if (safeSourceUrl(source.url)) add("Fuentes", source.label || source.title, [source.authority, source.jurisdiction].filter(Boolean).join(" · "), "/respuestas#fuentes-oficiales"); });
-  app.program.contentFacts.forEach((fact) => add("Datos revisables", fact.label || fact.title, fact.notes, "/respuestas#fuentes-oficiales", [fact.status, fact.jurisdiction]));
+  app.program.answers.forEach((answer) => add("Respuestas", answer.question || answer.title, answer.answer || answer.summary || answer.body, `/recursos/respuestas/#${slugify(answer.id || answer.question || answer.title)}`, answer.keywords, { answerId: answer.id || slugify(answer.question || answer.title), lessonId: answer.lessonId || "", sourcePages: answer.sourcePages || [], sourceLabel: "Respuesta editorial del programa" }));
+  app.program.glossary.forEach((term) => add("Términos", term.term || term.title, term.definition || term.description, `/recursos/respuestas/#glosario-${slugify(term.id || term.term)}`, term.aliases));
+  app.program.officialSources.forEach((source) => { if (safeSourceUrl(source.url)) add("Fuentes", source.label || source.title, [source.authority, source.jurisdiction].filter(Boolean).join(" · "), "/recursos/respuestas/#fuentes-oficiales"); });
+  app.program.contentFacts.forEach((fact) => add("Datos revisables", fact.label || fact.title, fact.notes, "/recursos/respuestas/#fuentes-oficiales", [fact.status, fact.jurisdiction]));
   app.program.searchIndex.forEach((entry) => {
+    if (entry.kind === "tool") return;
     const lesson = findLesson(entry.lessonId);
     const href = lesson ? `${lessonHref(lesson)}${entry.anchor ? `#${encodeURIComponent(entry.anchor)}` : ""}` : typeof entry.href === "string" && entry.href.startsWith("/") ? safeInternalPath(entry.href) : "";
     const searchType = ({ lesson: "Lecciones", concept: "Conceptos", faq: "Respuestas", glossary: "Términos", tool: "Herramientas" })[entry.kind] || entry.type || "Contenido";
@@ -2228,6 +2222,12 @@ function handleClick(event) {
   const action = event.target.closest("[data-action]")?.dataset.action;
   if (!action) return;
   const target = event.target.closest("[data-action]");
+  if (action === "modules-toggle") {
+    app.modulesOpen = !app.modulesOpen;
+    document.querySelectorAll('[data-action="modules-toggle"]').forEach((button) => button.setAttribute("aria-expanded", String(app.modulesOpen)));
+    document.querySelectorAll(".academy-module-picker-panel").forEach((panel) => { panel.hidden = !app.modulesOpen; });
+    if (app.modulesOpen) window.requestAnimationFrame(() => target.closest(".academy-module-picker")?.querySelector(".academy-sidebar-module")?.focus());
+  }
   if (action === "vehicle-manual") { app.vehicleDraft = createEmptyVehicle(); app.vehicleMode = "manual"; app.vehicleSelectedId = null; app.vehicleImportMessage = ""; renderView(); window.requestAnimationFrame(() => document.querySelector('[data-vehicle-form] input:not([type="hidden"])')?.focus()); }
   if (action === "vehicle-open") { app.vehicleSelectedId = target.dataset.id; app.vehicleMode = "detail"; app.vehicleImportMessage = ""; app.vehicleDuplicateId = null; renderView(); window.requestAnimationFrame(() => document.querySelector("[data-vehicle-detail]")?.scrollIntoView({ block: "start" })); }
   if (action === "vehicle-edit") { const vehicle = ensureVehicleAnalyzer().vehicles.find((item) => item.id === target.dataset.id); if (vehicle) { app.vehicleDraft = clone(vehicle); app.vehicleSelectedId = vehicle.id; app.vehicleMode = "edit"; renderView(); window.requestAnimationFrame(() => document.querySelector('[data-vehicle-form] input:not([type="hidden"])')?.focus()); } }
@@ -2460,6 +2460,14 @@ function bindEvents() {
   window.addEventListener("beforeunload", () => { if (app.saveDirty) saveState(); });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
+      if (app.modulesOpen) {
+        event.preventDefault();
+        app.modulesOpen = false;
+        document.querySelectorAll('[data-action="modules-toggle"]').forEach((button) => button.setAttribute("aria-expanded", "false"));
+        document.querySelectorAll(".academy-module-picker-panel").forEach((panel) => { panel.hidden = true; });
+        document.querySelector('[data-action="modules-toggle"]')?.focus();
+        return;
+      }
       const searchDialog = document.querySelector("[data-search-dialog]");
       if (searchDialog?.open) { event.preventDefault(); closeSearch(); return; }
       const candidateDialog = document.querySelector("[data-candidate-dialog]");
@@ -2490,6 +2498,7 @@ async function boot() {
     try { statePayload = JSON.parse(localStorage.getItem(STATE_STORAGE_KEY) || "{}"); } catch { statePayload = {}; }
     app.session = { authenticated: false, public: true, user: { public: true } };
     app.program = normalizeProgram(programPayload);
+    validateToolCatalog(app.program.tools);
     let statePayloadForRender = statePayload;
     let migratedState = false;
     if (app.program.schemaVersion >= 2 && app.program.legacyLessonMap) {

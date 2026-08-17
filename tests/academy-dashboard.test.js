@@ -77,14 +77,15 @@ test("las herramientas destacadas salen del catálogo y priorizan el módulo rec
   assert.ok(selected.every((tool) => canonicalIds.has(tool.id)));
 });
 
-test("el frontend conecta dashboard, módulos, mapa, herramientas y buscador sin duplicar el catálogo", async () => {
+test("el frontend mantiene Academia educativa con módulos y buscador sin superficies operativas duplicadas", async () => {
   const source = await readFile(new URL("assets/academy/app.js", root), "utf8");
   const html = await readFile(new URL("academia/index.html", root), "utf8");
   assert.match(source, /academyDashboardModel\(app\.program, app\.state\)/);
   assert.match(source, /model\.stages\.map\(renderDashboardModule\)/);
-  assert.match(source, /selectDashboardTools\(app\.program/);
   assert.match(source, /data-action="search-open"/);
-  assert.match(source, /href="\/academia\/ruta"[^>]*data-nav>Abrir mapa/);
+  const dashboard = source.slice(source.indexOf("function renderDashboard()"), source.indexOf("function renderAcademyEntryChoices"));
+  assert.doesNotMatch(dashboard, /selectDashboardTools|academy-control-europe|academy-control-tools/);
+  assert.doesNotMatch(dashboard, /href="\/(?:herramientas|mi-operacion|recursos)/);
   assert.match(html, /<h1>Aprende a importar un coche desde Europa, paso a paso\.<\/h1>/);
   assert.match(html, /<main class="academy-noscript" id="academy-static-intro" hidden>/);
   assert.match(html, /<link rel="canonical" href="https:\/\/ivanimports\.es\/academia\/">/);
