@@ -6,7 +6,8 @@
     "api/acompanamiento.js": { "maxDuration": 30 },
     "api/importa-7-dias.js": { "maxDuration": 60 },
     "api/academy.js": { "maxDuration": 60 },
-    "api/vehicle.js": { "maxDuration": 15 }
+    "api/vehicle.js": { "maxDuration": 15 },
+    "api/flight-planner.js": { "maxDuration": 15 }
   },
   "redirects": [
     { "source": "/importa-en-7-dias", "destination": "/academia/", "permanent": true },

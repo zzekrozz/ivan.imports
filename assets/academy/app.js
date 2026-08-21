@@ -15,6 +15,12 @@ import {
   normalizeCostCalculatorState,
   sanitizeDecimalInput,
 } from "./private/cost-calculator.js";
+import {
+  POPULAR_ORIGIN_AIRPORTS,
+  buildFlightRedirectPath,
+  createFlightPlannerState,
+  iataFromAirportInput,
+} from "./private/flight-planner.js";
 import { ACADEMY_PATCH_NOTES, ACADEMY_VERSION } from "./patch-notes.js";
 import { TOOL_CATALOG, toolCatalogEntry, validateToolCatalog } from "./private/tool-catalog.js";
 import { PLATFORM_AREAS, navigationItem, platformAreaForRoute } from "./private/platform-navigation.js";
@@ -155,6 +161,8 @@ const app = {
   vehicleImportMessage: "",
   vehicleDuplicateId: null,
   modulesOpen: false,
+  flightPlanner: createFlightPlannerState(),
+  flightPlannerRequestId: 0,
 };
 
 function escapeHtml(value = "") {
@@ -215,7 +223,7 @@ function clone(value) {
 }
 
 function academyTrack(event, properties = {}) {
-  const allowed = ["programId", "stageId", "lessonId", "toolId", "conceptId", "answerId", "sectionId", "visualId", "mode", "contentType"];
+  const allowed = ["programId", "stageId", "lessonId", "toolId", "conceptId", "answerId", "sectionId", "visualId", "mode", "contentType", "originIata", "destinationIata", "country"];
   const safe = { viewport: innerWidth < 720 ? "mobile" : innerWidth < 1024 ? "tablet" : "desktop" };
   allowed.forEach((key) => { if (properties[key]) safe[key] = String(properties[key]).slice(0, 100); });
   window.dataLayer = window.dataLayer || [];
@@ -1644,7 +1652,72 @@ function renderCostInput(field) {
     <div class="academy-cost-line-copy"><label for="${inputId}">${escapeHtml(field.label)}</label>${field.help ? `<small id="${helpId}">${escapeHtml(field.help)}</small>` : ""}</div>
     <div class="academy-cost-input"><input id="${inputId}" type="text" inputmode="decimal" autocomplete="off" maxlength="20" placeholder="0 €" value="${escapeAttribute(data.expenses[field.id] || "")}" data-cost-field="${escapeAttribute(field.id)}"${helpId ? ` aria-describedby="${helpId}"` : ""}><span aria-hidden="true">€</span></div>
     ${field.fuelCalculator ? renderFuelCalculator(data) : ""}
+    ${field.id === "flight" ? renderFlightPlanner() : ""}
   </div>`;
+}
+
+function renderFlightPlannerStatus() {
+  const planner = app.flightPlanner;
+  if (planner.status === "searching") {
+    return `<div class="academy-flight-loading" role="status" aria-busy="true"><span></span><span></span><span></span><p>Buscando localidades y aeropuertos cercanos…</p></div>`;
+  }
+  if (planner.status === "error") {
+    return `<div class="academy-flight-message" data-tone="error" role="alert"><strong>No hemos podido completar la búsqueda</strong><p>${escapeHtml(planner.message || "Inténtalo de nuevo dentro de unos minutos.")}</p><small>El coste del vuelo sigue disponible para introducirlo manualmente.</small></div>`;
+  }
+  if (planner.status === "empty") {
+    return `<div class="academy-flight-message" data-tone="neutral" role="status"><strong>Sin resultados</strong><p>${escapeHtml(planner.message || "Prueba con la ciudad y el país, por ejemplo: Göttingen, Alemania.")}</p></div>`;
+  }
+  if (planner.status === "ambiguous") {
+    return `<div class="academy-flight-ambiguity" role="status"><strong>¿A qué localidad te refieres?</strong><p>Elige una opción antes de buscar aeropuertos.</p><div>${planner.candidates.map((candidate, index) => `<button type="button" data-action="flight-planner-select" data-index="${index}">${escapeHtml(candidate.displayName)}</button>`).join("")}</div>${renderFlightAttribution()}</div>`;
+  }
+  if (planner.status === "results" && planner.selectedCandidate) {
+    const candidate = planner.selectedCandidate;
+    const originIata = iataFromAirportInput(planner.origin);
+    if (!candidate.airports?.length) {
+      return `<div class="academy-flight-message" data-tone="neutral" role="status"><strong>No hay aeropuertos comerciales razonables a menos de 300 km</strong><p>Prueba otra localidad o planifica el vuelo directamente en Skyscanner.</p></div>${renderFlightAttribution()}`;
+    }
+    return `<div class="academy-flight-results" role="status"><div class="academy-flight-results-head"><span>Aeropuertos cercanos a</span><strong>${escapeHtml(candidate.displayName)}</strong></div><div class="academy-flight-airports">${candidate.airports.map((airport) => {
+      const href = buildFlightRedirectPath({ originIata, destinationIata: airport.iata, departureDate: planner.departureDate });
+      return `<article><div><strong><span>${escapeHtml(airport.iata)}</span>${escapeHtml(airport.name)}</strong><small>${escapeHtml(airport.city || airport.country)} · ~${escapeHtml(airport.distanceKm)} km del vehículo</small></div>${href ? `<a href="${escapeAttribute(href)}" target="_blank" rel="noopener noreferrer" data-action="flight-search-link" data-origin-iata="${escapeAttribute(originIata)}" data-destination-iata="${escapeAttribute(airport.iata)}" data-country="${escapeAttribute(airport.country)}" aria-label="Ver vuelos de ${escapeAttribute(originIata)} a ${escapeAttribute(airport.iata)} en Skyscanner; abre una pestaña nueva">Ver vuelos <span aria-hidden="true">↗</span></a>` : `<button type="button" disabled title="Indica un aeropuerto de salida válido">Indica salida</button>`}</article>`;
+    }).join("")}</div><p class="academy-flight-manual-note">Cuando encuentres un precio, vuelve y escríbelo en el campo Vuelo de la calculadora.</p></div>${renderFlightAttribution()}`;
+  }
+  return `<div class="academy-flight-message" data-tone="neutral"><p>Indica dónde está el vehículo y te mostraremos aeropuertos comerciales cercanos.</p></div>`;
+}
+
+function renderFlightAttribution() {
+  const planner = app.flightPlanner;
+  if (!planner.attribution || !planner.attributionUrl) return "";
+  return `<small class="academy-flight-attribution"><a href="${escapeAttribute(planner.attributionUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(planner.attribution)} <span aria-hidden="true">↗</span></a></small>`;
+}
+
+function renderFlightPlanner() {
+  const planner = app.flightPlanner;
+  return `<details class="academy-flight-planner" data-flight-planner>
+    <summary>✈️ Buscar vuelos para recoger el vehículo</summary>
+    <div class="academy-flight-planner-body">
+      <form class="academy-flight-form" data-flight-planner-form>
+        <div class="academy-field academy-flight-location"><label for="flight-vehicle-location">¿Dónde está el vehículo?</label><input id="flight-vehicle-location" name="query" type="search" autocomplete="off" maxlength="120" placeholder="Göttingen, Alemania" value="${escapeAttribute(planner.query)}" data-flight-planner-field="query" required><small>Escribe una ciudad y, si puedes, el país.</small></div>
+        <div class="academy-field"><label for="flight-origin">Salgo desde</label><input id="flight-origin" name="origin" list="flight-origin-options" maxlength="80" value="${escapeAttribute(planner.origin)}" data-flight-planner-field="origin" required><datalist id="flight-origin-options">${POPULAR_ORIGIN_AIRPORTS.map(([city, iata]) => `<option value="${escapeAttribute(`${city} (${iata})`)}"></option>`).join("")}</datalist><small>Elige una opción o escribe un código IATA.</small></div>
+        <div class="academy-field"><label for="flight-date">Fecha prevista <small>(opcional)</small></label><input id="flight-date" name="departureDate" type="date" value="${escapeAttribute(planner.departureDate)}" data-flight-planner-field="departureDate"></div>
+        <button class="academy-button academy-button--secondary" type="submit">Buscar aeropuertos</button>
+      </form>
+      <div class="academy-flight-status" data-flight-planner-status aria-live="polite">${renderFlightPlannerStatus()}</div>
+    </div>
+  </details>`;
+}
+
+function updateFlightPlannerPanel() {
+  const panel = document.querySelector("[data-flight-planner-status]");
+  if (panel) panel.innerHTML = renderFlightPlannerStatus();
+}
+
+function selectFlightLocation(index) {
+  const candidate = app.flightPlanner.candidates[Number(index)];
+  if (!candidate) return;
+  app.flightPlanner.selectedCandidate = candidate;
+  app.flightPlanner.status = "results";
+  updateFlightPlannerPanel();
+  academyTrack("nearby_airports_loaded", { toolId: "coste-total", country: candidate.countryCode || candidate.country, contentType: String(candidate.airports?.length || 0) });
 }
 
 function renderFuelCalculator(data) {
@@ -2221,6 +2294,7 @@ function handleClick(event) {
   if (openingDetails && !openingDetails.open) {
     if (openingDetails.dataset.conceptId) academyTrack("academy_concept_opened", { programId: app.program?.id, lessonId: app.route?.name === "lesson" ? findLesson(app.route.slug)?.id : "", conceptId: openingDetails.dataset.conceptId });
     if (openingDetails.dataset.answerId) academyTrack("academy_answer_opened", { programId: app.program?.id, answerId: openingDetails.dataset.answerId, contentType: openingDetails.dataset.answerType || "answer" });
+    if (openingDetails.dataset.flightPlanner !== undefined) academyTrack("flight_planner_opened", { toolId: "coste-total" });
   }
   const nav = event.target.closest("a[data-nav]");
   if (nav && !event.ctrlKey && !event.metaKey && !event.shiftKey && nav.origin === location.origin) { event.preventDefault(); navigate(`${nav.pathname}${nav.search}${nav.hash}`); return; }
@@ -2324,6 +2398,8 @@ function handleClick(event) {
       toast("El coste de combustible se ha añadido y puedes editarlo manualmente.", "success");
     }
   }
+  if (action === "flight-planner-select") selectFlightLocation(target.dataset.index);
+  if (action === "flight-search-link") academyTrack("skyscanner_search_clicked", { toolId: "coste-total", originIata: target.dataset.originIata, destinationIata: target.dataset.destinationIata, country: target.dataset.country });
   if (action === "market-add") { app.state.tools.market ||= { comparables: [] }; app.state.tools.market.comparables ||= []; if (app.state.tools.market.comparables.length >= 50) toast("Has alcanzado el máximo de 50 comparables.", "error"); else { app.state.tools.market.comparables.push({ id: uid("comparable") }); scheduleSave(); renderView(); const editor = document.querySelector("[data-market-editor]"); if (editor) editor.open = true; window.requestAnimationFrame(() => editor?.querySelector("input")?.focus()); } }
   if (action === "market-remove") { app.state.tools.market?.comparables?.splice(finite(target.dataset.index), 1); scheduleSave(); renderView(); }
   if (action === "question-add") { app.state.tools.questions ||= []; if (app.state.tools.questions.length >= 40) toast("Has alcanzado el máximo de 40 preguntas.", "error"); else { app.state.tools.questions.push({ id: uid("question"), category: "Estado general", text: "" }); scheduleSave(); renderView(); } }
@@ -2346,6 +2422,11 @@ function handleInput(event) {
   updateNumberValidity(target);
   trackToolStart(target);
   if (target.matches("[data-search-input]")) { renderSearchResultList(target.value); return; }
+  if (target.matches("[data-flight-planner-field]")) {
+    app.flightPlanner[target.dataset.flightPlannerField] = target.value;
+    if (["origin", "departureDate"].includes(target.dataset.flightPlannerField) && app.flightPlanner.status === "results") updateFlightPlannerPanel();
+    return;
+  }
   if (target.matches("[data-answer-filter]")) { document.querySelector("[data-answer-list]").innerHTML = renderAnswerSearch(target.value); return; }
   if (target.matches("[data-operation-field]")) { const created = !app.state.operation; app.state.operation ||= { id: uid("operation"), createdAt: new Date().toISOString() }; app.state.operation[target.dataset.operationField] = inputValue(target); app.state.operation.updatedAt = new Date().toISOString(); if (created) academyTrack("academy_operation_created", { programId: app.program.id }); scheduleSave(); return; }
   if (target.matches("[data-cost-field], [data-cost-meta-field], [data-fuel-field]")) {
@@ -2414,6 +2495,55 @@ function bindSectionTracking() {
 }
 
 async function handleSubmit(event) {
+  if (event.target.matches("[data-flight-planner-form]")) {
+    event.preventDefault();
+    const values = Object.fromEntries(new FormData(event.target));
+    const planner = app.flightPlanner;
+    planner.query = String(values.query || "").trim().slice(0, 120);
+    planner.origin = String(values.origin || "").trim().slice(0, 80);
+    planner.departureDate = String(values.departureDate || "").trim();
+    if (!planner.query) {
+      planner.status = "empty";
+      planner.message = "Escribe la localidad donde se encuentra el vehículo.";
+      updateFlightPlannerPanel();
+      return;
+    }
+    if (!iataFromAirportInput(planner.origin)) {
+      planner.status = "error";
+      planner.message = "Elige un aeropuerto de salida de la lista o escribe su código IATA de tres letras.";
+      updateFlightPlannerPanel();
+      return;
+    }
+    const requestId = ++app.flightPlannerRequestId;
+    planner.status = "searching";
+    planner.message = "";
+    planner.candidates = [];
+    planner.selectedCandidate = null;
+    updateFlightPlannerPanel();
+    academyTrack("vehicle_location_searched", { toolId: "coste-total" });
+    try {
+      const payload = await fetchJson("/api/flight-planner?action=location", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: planner.query }) });
+      if (requestId !== app.flightPlannerRequestId) return;
+      planner.candidates = Array.isArray(payload.candidates) ? payload.candidates : [];
+      planner.attribution = String(payload.attribution || "");
+      planner.attributionUrl = String(payload.attributionUrl || "");
+      if (!planner.candidates.length) {
+        planner.status = "empty";
+        planner.message = "No hemos encontrado esa localidad. Añade el país o revisa la escritura.";
+        updateFlightPlannerPanel();
+      } else if (planner.candidates.length === 1) selectFlightLocation(0);
+      else {
+        planner.status = "ambiguous";
+        updateFlightPlannerPanel();
+      }
+    } catch (error) {
+      if (requestId !== app.flightPlannerRequestId) return;
+      planner.status = "error";
+      planner.message = error?.message || "El servicio de localización no está disponible.";
+      updateFlightPlannerPanel();
+    }
+    return;
+  }
   if (event.target.matches("[data-vehicle-import-form]")) {
     event.preventDefault();
     const url = String(new FormData(event.target).get("url") || "").trim();
