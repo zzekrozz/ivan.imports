@@ -10,12 +10,13 @@ export function controlShell({ route = "/control/" } = {}) {
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="robots" content="noindex,nofollow,noarchive">
   <meta name="referrer" content="no-referrer">
-  <meta name="theme-color" content="#070b12">
+  <meta name="theme-color" content="#15140F">
   <meta name="application-name" content="Mission Control">
   <title>Mission Control</title>
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/control/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/control/icon.svg">
   <link rel="manifest" href="/assets/control/manifest.webmanifest">
-  <link rel="stylesheet" href="/assets/control/app.css?v=1.0.0">
+  <link rel="stylesheet" href="/assets/control/app.css?v=2.0.0">
 </head>
 <body data-control-route="${escapeAttribute(route)}">
   <a class="mc-skip-link" href="#mc-main">Saltar al panel</a>
@@ -23,7 +24,7 @@ export function controlShell({ route = "/control/" } = {}) {
     <main class="mc-loading" aria-label="Cargando Mission Control"><span></span><span></span><span></span></main>
   </div>
   <noscript>Necesitas activar JavaScript para utilizar Mission Control.</noscript>
-  <script type="module" src="/assets/control/app.js?v=1.0.0"></script>
+  <script type="module" src="/assets/control/app.js?v=2.0.0"></script>
 </body>
 </html>`;
 }

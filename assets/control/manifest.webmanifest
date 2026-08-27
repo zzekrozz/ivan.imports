@@ -1,13 +1,15 @@
 {
   "name": "Mission Control",
   "short_name": "Control",
-  "description": "Proyectos, objetivos y misiones en un solo mapa.",
+  "description": "Misiones, recordatorios y proyectos en un solo mapa diario.",
   "start_url": "/control/",
   "scope": "/control/",
   "display": "standalone",
-  "background_color": "#070b12",
-  "theme_color": "#070b12",
+  "background_color": "#15140F",
+  "theme_color": "#15140F",
+  "categories": ["productivity"],
+  "orientation": "any",
   "icons": [
-    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+    { "src": "/control/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
   ]
 }

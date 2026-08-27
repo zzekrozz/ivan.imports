@@ -1,13 +1,49 @@
-export const CONTROL_SCHEMA_VERSION = 1;
-export const CONTROL_TIME_ZONE = "Europe/Madrid";
+import {
+  CONTROL_TIME_ZONE,
+  DAY_MS,
+  dateKey,
+  getActionableReminders,
+  getTodaySummary,
+  monthKey,
+  normalizeTimeZone,
+  questCompletedForPeriod,
+  questIsDueOn,
+  questIsOverdue,
+  questOccurrence,
+  questPeriodKey,
+  reminderScheduleAt,
+  weekKey,
+  weekdayNumber,
+  zonedDateTimeToUtc,
+  buildReminderCandidates,
+} from "./mission-schedule.js";
+
+export {
+  CONTROL_TIME_ZONE,
+  buildReminderCandidates,
+  dateKey,
+  getActionableReminders,
+  getTodaySummary,
+  monthKey,
+  normalizeTimeZone,
+  questCompletedForPeriod,
+  questIsDueOn,
+  questIsOverdue,
+  questOccurrence,
+  questPeriodKey,
+  reminderScheduleAt,
+  weekKey,
+  weekdayNumber,
+  zonedDateTimeToUtc,
+};
+
+export const CONTROL_SCHEMA_VERSION = 2;
 export const PROJECT_STATUSES = Object.freeze(["ACTIVE", "PAUSED", "IDEA", "COMPLETED", "ARCHIVED"]);
 export const QUEST_CATEGORIES = Object.freeze(["MONEY", "GROWTH", "BUILD", "MAINTENANCE", "EXPERIMENT"]);
-export const QUEST_PRIORITIES = Object.freeze(["LOW", "NORMAL", "HIGH", "CRITICAL"]);
-export const RECURRENCE_TYPES = Object.freeze(["once", "daily", "weekly", "monthly"]);
+export const QUEST_PRIORITIES = Object.freeze(["LOW", "NORMAL", "HIGH"]);
+export const RECURRENCE_TYPES = Object.freeze(["once", "daily", "weekly", "monthly", "interval"]);
 export const IDEA_STATUSES = Object.freeze(["VAULT", "CANDIDATE", "CONVERTED", "DISCARDED"]);
 export const GOAL_PERIODS = Object.freeze(["DAILY", "WEEKLY", "MONTHLY"]);
-
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 function randomId(prefix = "item") {
   if (globalThis.crypto?.randomUUID) return `${prefix}_${globalThis.crypto.randomUUID()}`;
@@ -30,39 +66,6 @@ function cleanText(value, maximum = 500) {
 function iso(value = Date.now()) {
   const date = value instanceof Date ? value : new Date(value);
   return Number.isFinite(date.getTime()) ? date.toISOString() : new Date().toISOString();
-}
-
-function zonedParts(value = Date.now(), timeZone = CONTROL_TIME_ZONE) {
-  const date = value instanceof Date ? value : new Date(value);
-  const formatter = new Intl.DateTimeFormat("en-CA", {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    weekday: "short",
-  });
-  return Object.fromEntries(formatter.formatToParts(date).filter((part) => part.type !== "literal").map((part) => [part.type, part.value]));
-}
-
-export function dateKey(value = Date.now(), timeZone = CONTROL_TIME_ZONE) {
-  const parts = zonedParts(value, timeZone);
-  return `${parts.year}-${parts.month}-${parts.day}`;
-}
-
-export function monthKey(value = Date.now(), timeZone = CONTROL_TIME_ZONE) {
-  return dateKey(value, timeZone).slice(0, 7);
-}
-
-function weekdayNumber(value = Date.now(), timeZone = CONTROL_TIME_ZONE) {
-  const weekday = zonedParts(value, timeZone).weekday;
-  return ({ Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6, Sun: 7 })[weekday] || 1;
-}
-
-export function weekKey(value = Date.now(), timeZone = CONTROL_TIME_ZONE) {
-  const currentKey = dateKey(value, timeZone);
-  const noonUtc = new Date(`${currentKey}T12:00:00Z`);
-  noonUtc.setUTCDate(noonUtc.getUTCDate() - (weekdayNumber(value, timeZone) - 1));
-  return dateKey(noonUtc, "UTC");
 }
 
 export function xpRequiredForLevel(level) {
@@ -97,8 +100,20 @@ export function createEmptyControlState(userId, { now = Date.now() } = {}) {
     projects: [],
     quests: [],
     quest_completions: [],
+    reminder_deliveries: [],
     goals: [],
     ideas: [],
+    preferences: {
+      timezone: CONTROL_TIME_ZONE,
+      default_reminder_preset: "normal",
+      reminder_presets: {
+        normal: [60],
+        important: [1440, 120, 15],
+      },
+      notifications_enabled: false,
+      notification_prompt_dismissed: false,
+      push_subscriptions: [],
+    },
     user_game_stats: {
       user_id: cleanText(userId, 128),
       total_xp: 0,
@@ -125,47 +140,28 @@ export function normalizeControlState(value, userId, { now = Date.now() } = {}) 
     projects: Array.isArray(value.projects) ? value.projects : [],
     quests: Array.isArray(value.quests) ? value.quests : [],
     quest_completions: Array.isArray(value.quest_completions) ? value.quest_completions : [],
+    reminder_deliveries: Array.isArray(value.reminder_deliveries) ? value.reminder_deliveries.slice(-500) : [],
     goals: Array.isArray(value.goals) ? value.goals : [],
     ideas: Array.isArray(value.ideas) ? value.ideas : [],
     activity_log: Array.isArray(value.activity_log) ? value.activity_log.slice(0, 200) : [],
     operation_ids: Array.isArray(value.operation_ids) ? value.operation_ids.slice(-100) : [],
     user_game_stats: { ...empty.user_game_stats, ...(value.user_game_stats || {}), user_id: cleanText(userId, 128) },
+    preferences: {
+      ...empty.preferences,
+      ...(value.preferences || {}),
+      timezone: normalizeTimeZone(value.preferences?.timezone || CONTROL_TIME_ZONE),
+      reminder_presets: {
+        ...empty.preferences.reminder_presets,
+        ...(value.preferences?.reminder_presets || {}),
+      },
+      push_subscriptions: Array.isArray(value.preferences?.push_subscriptions) ? value.preferences.push_subscriptions.slice(-8) : [],
+    },
   };
-  for (const collection of [state.projects, state.quests, state.quest_completions, state.goals, state.ideas, state.activity_log]) {
+  state.quests = state.quests.map((quest) => questInput(state, quest, now, quest));
+  for (const collection of [state.projects, state.quests, state.quest_completions, state.reminder_deliveries, state.goals, state.ideas, state.activity_log]) {
     for (const item of collection) item.user_id = state.user_id;
   }
   return state;
-}
-
-export function questPeriodKey(quest, value = Date.now(), timeZone = CONTROL_TIME_ZONE) {
-  const recurrence = RECURRENCE_TYPES.includes(quest?.recurrence_type) ? quest.recurrence_type : "once";
-  if (recurrence === "daily") return `day:${dateKey(value, timeZone)}`;
-  if (recurrence === "weekly") {
-    const days = Array.isArray(quest?.recurrence_config?.days) ? quest.recurrence_config.days : [];
-    return days.length > 1 ? `day:${dateKey(value, timeZone)}` : `week:${weekKey(value, timeZone)}`;
-  }
-  if (recurrence === "monthly") return `month:${monthKey(value, timeZone)}`;
-  return `once:${quest?.id || "unknown"}`;
-}
-
-export function questIsDueOn(quest, value = Date.now(), timeZone = CONTROL_TIME_ZONE) {
-  if (!quest || ["ARCHIVED", "CANCELLED"].includes(quest.status)) return false;
-  if (quest.recurrence_type === "daily") return true;
-  if (quest.recurrence_type === "weekly") {
-    const days = Array.isArray(quest.recurrence_config?.days) ? quest.recurrence_config.days.map(Number) : [];
-    return !days.length || days.includes(weekdayNumber(value, timeZone));
-  }
-  if (quest.recurrence_type === "monthly") {
-    const day = Number(quest.recurrence_config?.day || 1);
-    return Number(dateKey(value, timeZone).slice(-2)) === day;
-  }
-  if (!quest.due_date) return false;
-  return dateKey(quest.due_date, timeZone) === dateKey(value, timeZone);
-}
-
-export function questCompletedForPeriod(state, quest, value = Date.now(), timeZone = CONTROL_TIME_ZONE) {
-  const periodKey = questPeriodKey(quest, value, timeZone);
-  return state.quest_completions.some((completion) => completion.quest_id === quest.id && completion.period_key === periodKey);
 }
 
 export function goalProgress(goal) {
@@ -232,7 +228,7 @@ function projectInput(state, payload, now, existing = null) {
     status,
     priority: QUEST_PRIORITIES.includes(payload.priority) ? payload.priority : existing?.priority || "NORMAL",
     icon: cleanText(payload.icon ?? existing?.icon ?? "◆", 8),
-    accent: /^#[0-9a-f]{6}$/i.test(payload.accent) ? payload.accent : existing?.accent || "#6ee7d8",
+    accent: /^#[0-9a-f]{6}$/i.test(payload.accent) ? payload.accent : existing?.accent || "#8fa68e",
     progress: clamp(payload.progress ?? existing?.progress, 0, 100),
     progress_method: payload.progress_method === "calculated" ? "calculated" : existing?.progress_method || "manual",
     main_goal: cleanText(payload.main_goal ?? existing?.main_goal, 240),
@@ -243,24 +239,82 @@ function projectInput(state, payload, now, existing = null) {
   };
 }
 
+function cleanDate(value) {
+  const text = cleanText(value, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : null;
+}
+
+function cleanTime(value) {
+  const text = cleanText(value, 5);
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(text) ? text : null;
+}
+
+function recurrenceConfig(value, recurrence, scheduledDate) {
+  const input = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  const days = Array.isArray(input.days) ? [...new Set(input.days.map(Number).filter((day) => day >= 1 && day <= 7))].sort() : [];
+  const interval = Math.min(365, Math.max(1, Math.round(finite(input.interval, 1))));
+  const unit = ["days", "weeks", "months"].includes(input.unit) ? input.unit : "days";
+  const day = Math.min(31, Math.max(1, Math.round(finite(input.day, Number(String(scheduledDate || "01").slice(-2)) || 1))));
+  if (recurrence === "weekly") return { days };
+  if (recurrence === "monthly") return { day };
+  if (recurrence === "interval") return { interval, unit };
+  return {};
+}
+
+function reminderDefinitions(state, value, now, existing = []) {
+  if (!Array.isArray(value)) return Array.isArray(existing) ? existing : [];
+  const seen = new Set();
+  return value.slice(0, 8).map((entry, index) => {
+    const input = typeof entry === "number" ? { offset_minutes: entry } : entry && typeof entry === "object" ? entry : {};
+    const offset = Math.min(60 * 24 * 30, Math.max(0, Math.round(finite(input.offset_minutes))));
+    const signature = String(offset);
+    if (seen.has(signature)) return null;
+    seen.add(signature);
+    return {
+      id: cleanText(input.id, 128) || randomId(`reminder${index + 1}`),
+      user_id: state.user_id,
+      offset_minutes: offset,
+      enabled: input.enabled !== false,
+      created_at: input.created_at ? iso(input.created_at) : iso(now),
+      updated_at: iso(now),
+    };
+  }).filter(Boolean).sort((left, right) => right.offset_minutes - left.offset_minutes);
+}
+
 function questInput(state, payload, now, existing = null) {
   const recurrence = RECURRENCE_TYPES.includes(payload.recurrence_type) ? payload.recurrence_type : existing?.recurrence_type || "once";
+  const timezone = normalizeTimeZone(payload.timezone ?? existing?.timezone ?? state.preferences?.timezone ?? CONTROL_TIME_ZONE);
+  const legacyDate = existing?.due_date ? dateKey(existing.due_date, timezone) : null;
+  const scheduledDate = payload.scheduled_date === null || payload.scheduled_date === "" ? null : cleanDate(payload.scheduled_date ?? existing?.scheduled_date ?? legacyDate);
+  const scheduledTime = payload.scheduled_time === null || payload.scheduled_time === "" ? null : cleanTime(payload.scheduled_time ?? existing?.scheduled_time);
+  const dueAt = scheduledDate && scheduledTime ? zonedDateTimeToUtc(scheduledDate, scheduledTime, timezone) : null;
+  const statusInput = cleanText(payload.status ?? existing?.status ?? "ACTIVE", 24).toUpperCase();
+  const status = ["ACTIVE", "IN_PROGRESS", "COMPLETED", "ARCHIVED", "CANCELLED"].includes(statusInput) ? statusInput : "ACTIVE";
+  const legacyPriority = existing?.priority === "CRITICAL" ? "HIGH" : existing?.priority;
   return {
     ...(existing || entityBase(state, "quest", now)),
     project_id: payload.project_id === null ? null : cleanText(payload.project_id ?? existing?.project_id, 128) || null,
     title: cleanText(payload.title ?? existing?.title, 180),
     description: cleanText(payload.description ?? existing?.description, 1200),
     category: QUEST_CATEGORIES.includes(payload.category) ? payload.category : existing?.category || "BUILD",
-    priority: QUEST_PRIORITIES.includes(payload.priority) ? payload.priority : existing?.priority || "NORMAL",
-    status: cleanText(payload.status ?? existing?.status ?? "ACTIVE", 24),
+    priority: QUEST_PRIORITIES.includes(payload.priority) ? payload.priority : QUEST_PRIORITIES.includes(legacyPriority) ? legacyPriority : "NORMAL",
+    status,
     xp_reward: Math.round(clamp(payload.xp_reward ?? existing?.xp_reward ?? 30, 0, 5000)),
     recurrence_type: recurrence,
-    recurrence_config: payload.recurrence_config && typeof payload.recurrence_config === "object" ? payload.recurrence_config : existing?.recurrence_config || {},
-    due_date: payload.due_date === null ? null : payload.due_date ? iso(payload.due_date) : existing?.due_date || null,
+    recurrence_config: recurrenceConfig(payload.recurrence_config ?? existing?.recurrence_config, recurrence, scheduledDate),
+    recurrence_end_date: payload.recurrence_end_date === null || payload.recurrence_end_date === "" ? null : cleanDate(payload.recurrence_end_date ?? existing?.recurrence_end_date),
+    scheduled_date: scheduledDate,
+    scheduled_time: scheduledTime,
+    timezone,
+    due_at: dueAt,
+    due_date: scheduledDate ? dueAt || `${scheduledDate}T12:00:00.000Z` : null,
+    reminders: reminderDefinitions(state, payload.reminders, now, existing?.reminders),
     is_main_quest: Boolean(payload.is_main_quest ?? existing?.is_main_quest),
     estimated_minutes: Math.round(clamp(payload.estimated_minutes ?? existing?.estimated_minutes, 0, 1440)) || null,
     money_impact: ["none", "low", "medium", "high", "direct"].includes(payload.money_impact) ? payload.money_impact : existing?.money_impact || "none",
     impact: Math.round(clamp(payload.impact ?? existing?.impact, 0, 10)) || null,
+    source: ["control", "quick-add", "mobile"].includes(payload.source) ? payload.source : existing?.source || "control",
+    completed_at: status === "COMPLETED" ? existing?.completed_at || iso(now) : null,
     updated_at: iso(now),
   };
 }
@@ -296,6 +350,34 @@ function awardGoalTransition(state, goal, wasComplete, now) {
     goal.completed_at = null;
     goal.xp_awarded = 0;
   }
+}
+
+function cancelQuestDeliveries(state, questId, now, { occurrenceKey = null, reason = "quest_changed" } = {}) {
+  for (const delivery of state.reminder_deliveries) {
+    if (delivery.quest_id !== questId || (occurrenceKey && delivery.occurrence_key !== occurrenceKey)) continue;
+    if (["CANCELLED", "DISMISSED"].includes(delivery.status)) continue;
+    delivery.status = "CANCELLED";
+    delivery.cancelled_at = iso(now);
+    delivery.cancel_reason = reason;
+    delivery.updated_at = iso(now);
+  }
+}
+
+function normalizePushSubscription(state, payload, now) {
+  const endpoint = cleanText(payload?.endpoint, 2000);
+  const p256dh = cleanText(payload?.keys?.p256dh, 500);
+  const auth = cleanText(payload?.keys?.auth, 500);
+  if (!/^https:\/\//i.test(endpoint) || !p256dh || !auth) throw mutationError("invalid_push_subscription");
+  return {
+    id: cleanText(payload.id, 128) || randomId("push"),
+    user_id: state.user_id,
+    endpoint,
+    expirationTime: Number.isFinite(Number(payload.expirationTime)) ? Number(payload.expirationTime) : null,
+    keys: { p256dh, auth },
+    user_agent: cleanText(payload.user_agent, 240),
+    created_at: payload.created_at ? iso(payload.created_at) : iso(now),
+    updated_at: iso(now),
+  };
 }
 
 export function applyControlMutation(inputState, mutation, { userId, now = Date.now() } = {}) {
@@ -345,10 +427,22 @@ export function applyControlMutation(inputState, mutation, { userId, now = Date.
     result = quest;
   } else if (action === "quest.update") {
     const existing = requireItem(state.quests, payload.id, "quest");
+    const previousSchedule = JSON.stringify([existing.scheduled_date, existing.scheduled_time, existing.timezone, existing.reminders, existing.recurrence_type, existing.recurrence_config, existing.recurrence_end_date]);
     const quest = questInput(state, payload, now, existing);
     if (quest.is_main_quest) state.quests.forEach((item) => { if (item.id !== existing.id) item.is_main_quest = false; });
     Object.assign(existing, quest);
+    const nextSchedule = JSON.stringify([existing.scheduled_date, existing.scheduled_time, existing.timezone, existing.reminders, existing.recurrence_type, existing.recurrence_config, existing.recurrence_end_date]);
+    if (previousSchedule !== nextSchedule) cancelQuestDeliveries(state, existing.id, now);
     result = existing;
+  } else if (action === "quest.delete") {
+    const quest = requireItem(state.quests, payload.id, "quest");
+    quest.status = "ARCHIVED";
+    quest.deleted_at = iso(now);
+    quest.is_main_quest = false;
+    quest.updated_at = iso(now);
+    cancelQuestDeliveries(state, quest.id, now, { reason: "quest_deleted" });
+    addActivity(state, "quest_archived", quest.title, now, { quest_id: quest.id });
+    result = quest;
   } else if (action === "quest.complete") {
     const quest = requireItem(state.quests, payload.id, "quest");
     const completionDate = payload.completed_at ? new Date(payload.completed_at) : new Date(now);
@@ -358,8 +452,12 @@ export function applyControlMutation(inputState, mutation, { userId, now = Date.
     const completion = { ...entityBase(state, "completion", now), quest_id: quest.id, completed_at: iso(completionDate), period_key: periodKey, xp_awarded: quest.xp_reward };
     state.quest_completions.push(completion);
     state.user_game_stats.total_xp += quest.xp_reward;
-    if (quest.recurrence_type === "once") quest.status = "COMPLETED";
+    if (quest.recurrence_type === "once") {
+      quest.status = "COMPLETED";
+      quest.completed_at = iso(completionDate);
+    }
     quest.updated_at = iso(now);
+    cancelQuestDeliveries(state, quest.id, now, { occurrenceKey: periodKey, reason: "quest_completed" });
     addActivity(state, "quest_completed", quest.title, now, { quest_id: quest.id, project_id: quest.project_id, xp_delta: quest.xp_reward });
     refreshStreak(state, now);
     result = completion;
@@ -370,7 +468,10 @@ export function applyControlMutation(inputState, mutation, { userId, now = Date.
     if (index < 0) return { state, result: null, idempotent: true };
     const [completion] = state.quest_completions.splice(index, 1);
     state.user_game_stats.total_xp = Math.max(0, state.user_game_stats.total_xp - finite(completion.xp_awarded));
-    if (quest.recurrence_type === "once") quest.status = "ACTIVE";
+    if (quest.recurrence_type === "once") {
+      quest.status = "ACTIVE";
+      quest.completed_at = null;
+    }
     quest.updated_at = iso(now);
     addActivity(state, "quest_reopened", quest.title, now, { quest_id: quest.id, xp_delta: -finite(completion.xp_awarded) });
     refreshStreak(state, now);
@@ -423,6 +524,62 @@ export function applyControlMutation(inputState, mutation, { userId, now = Date.
     idea.updated_at = iso(now);
     addActivity(state, "idea_converted", idea.title, now, { idea_id: idea.id, project_id: project.id });
     result = project;
+  } else if (action === "reminder.mark-delivered") {
+    const entries = Array.isArray(payload.deliveries) ? payload.deliveries.slice(0, 50) : [];
+    for (const entry of entries) {
+      const quest = requireItem(state.quests, entry.quest_id, "quest");
+      if (!quest.reminders.some((reminder) => reminder.id === entry.reminder_id)) continue;
+      let delivery = state.reminder_deliveries.find((item) => item.schedule_key === entry.schedule_key);
+      if (!delivery) {
+        delivery = {
+          ...entityBase(state, "delivery", now),
+          quest_id: quest.id,
+          reminder_id: cleanText(entry.reminder_id, 128),
+          occurrence_key: cleanText(entry.occurrence_key, 180),
+          schedule_key: cleanText(entry.schedule_key, 500),
+          scheduled_at: iso(entry.scheduled_at),
+          due_at: iso(entry.due_at),
+        };
+        state.reminder_deliveries.push(delivery);
+      }
+      delivery.status = "DELIVERED";
+      delivery.delivered_at = iso(now);
+      delivery.snoozed_until = null;
+      delivery.updated_at = iso(now);
+    }
+    state.reminder_deliveries = state.reminder_deliveries.slice(-500);
+    result = entries;
+  } else if (action === "reminder.snooze") {
+    const delivery = requireItem(state.reminder_deliveries, payload.id, "reminder_delivery");
+    const minutes = Math.min(7 * 24 * 60, Math.max(1, Math.round(finite(payload.minutes, 15))));
+    delivery.status = "SNOOZED";
+    delivery.snoozed_until = iso(new Date(now).getTime() + (minutes * 60 * 1000));
+    delivery.updated_at = iso(now);
+    result = delivery;
+  } else if (action === "reminder.dismiss") {
+    const delivery = requireItem(state.reminder_deliveries, payload.id, "reminder_delivery");
+    delivery.status = "DISMISSED";
+    delivery.dismissed_at = iso(now);
+    delivery.updated_at = iso(now);
+    result = delivery;
+  } else if (action === "preferences.update") {
+    if (payload.timezone !== undefined) state.preferences.timezone = normalizeTimeZone(payload.timezone, state.preferences.timezone);
+    if (["normal", "important", "custom"].includes(payload.default_reminder_preset)) state.preferences.default_reminder_preset = payload.default_reminder_preset;
+    if (payload.notifications_enabled !== undefined) state.preferences.notifications_enabled = Boolean(payload.notifications_enabled);
+    if (payload.notification_prompt_dismissed !== undefined) state.preferences.notification_prompt_dismissed = Boolean(payload.notification_prompt_dismissed);
+    result = state.preferences;
+  } else if (action === "push.subscribe") {
+    const subscription = normalizePushSubscription(state, payload, now);
+    state.preferences.push_subscriptions = state.preferences.push_subscriptions.filter((item) => item.endpoint !== subscription.endpoint);
+    state.preferences.push_subscriptions.push(subscription);
+    state.preferences.push_subscriptions = state.preferences.push_subscriptions.slice(-8);
+    state.preferences.notifications_enabled = true;
+    result = subscription;
+  } else if (action === "push.unsubscribe") {
+    const endpoint = cleanText(payload.endpoint, 2000);
+    state.preferences.push_subscriptions = state.preferences.push_subscriptions.filter((item) => item.endpoint !== endpoint);
+    if (!state.preferences.push_subscriptions.length) state.preferences.notifications_enabled = false;
+    result = { endpoint };
   } else if (action === "stats.update") {
     state.user_game_stats.max_active_projects = Math.round(clamp(payload.max_active_projects ?? state.user_game_stats.max_active_projects, 1, 12));
     result = state.user_game_stats;
@@ -442,15 +599,15 @@ export function createDemoControlState(userId = "demo", { now = Date.now() } = {
   state.user_game_stats.longest_streak = 11;
   state.user_game_stats.last_active_date = dateKey(now);
   const projectData = [
-    ["project_ivanimports", "IvanImports", "ACTIVE", 72, "#68e1fd", "◆", "Publicar, vender y mejorar el ecosistema IvanImports."],
-    ["project_removals", "Removals", "ACTIVE", 45, "#6ee7b7", "▰", "Cerrar trabajos rentables y afinar captación."],
-    ["project_ddtm", "DDTM", "ACTIVE", 20, "#a78bfa", "◈", "Convertir experimentos visuales en piezas publicadas."],
-    ["project_vehicles", "Venta de vehículos", "PAUSED", 60, "#fbbf77", "◇", "Operaciones y anuncios de vehículos."],
-    ["project_fynddo", "Fynddo", "PAUSED", 10, "#fb7185", "○", "Hipótesis aparcada hasta liberar foco."],
+    ["project_ivanimports", "IvanImports", "ACTIVE", 72, "#C9A227", "IV", "Publicar, vender y mejorar el ecosistema IvanImports."],
+    ["project_removals", "Removals", "ACTIVE", 45, "#8FA68E", "RM", "Cerrar trabajos rentables y afinar captación."],
+    ["project_ddtm", "DDTM", "ACTIVE", 20, "#C1673D", "DD", "Convertir experimentos visuales en piezas publicadas."],
+    ["project_vehicles", "Venta de vehículos", "PAUSED", 60, "#9B8B62", "VV", "Operaciones y anuncios de vehículos."],
+    ["project_fynddo", "Fynddo", "PAUSED", 10, "#8C8A7C", "FY", "Hipótesis aparcada hasta liberar foco."],
   ];
   state.projects = projectData.map(([id, title, status, progress, accent, icon, description], index) => ({
     ...entityBase(state, "project", new Date(now).getTime() - ((index + 2) * DAY_MS)), id, title, slug: title.toLocaleLowerCase("es").replace(/\s+/g, "-"), description, status, priority: index < 2 ? "HIGH" : "NORMAL", icon, accent, progress, progress_method: "manual", main_goal: index === 1 ? "Conseguir 10 trabajos este mes" : "", notes: "", links: [], completed_at: null, updated_at: iso(new Date(now).getTime() - (index * 3600000)) }));
-  const today = `${dateKey(now)}T10:00:00.000Z`;
+  const today = dateKey(now);
   const questData = [
     ["quest_reel", "Crear y publicar Reel del vaciado completo", "project_removals", "MONEY", 100, true, "once"],
     ["quest_tiktok", "Publicar TikTok IvanImports", "project_ivanimports", "GROWTH", 50, false, "daily"],
@@ -461,7 +618,29 @@ export function createDemoControlState(userId = "demo", { now = Date.now() } = {
     ["quest_scene", "Crear una escena IA", "project_ddtm", "EXPERIMENT", 30, false, "daily"],
     ["quest_cta", "Mejorar un CTA de la web", "project_ivanimports", "BUILD", 30, false, "daily"],
   ];
-  state.quests = questData.map(([id, title, project_id, category, xp_reward, is_main_quest, recurrence_type]) => ({ ...entityBase(state, "quest", now), id, project_id, title, description: "", category, priority: is_main_quest ? "CRITICAL" : "NORMAL", status: "ACTIVE", xp_reward, recurrence_type, recurrence_config: {}, due_date: recurrence_type === "once" ? today : null, is_main_quest, estimated_minutes: 30, money_impact: category === "MONEY" ? "high" : "none", impact: is_main_quest ? 10 : 6 }));
+  state.quests = questData.map(([id, title, project_id, category, xp_reward, is_main_quest, recurrence_type], index) => {
+    const quest = questInput(state, {
+    id,
+    project_id,
+    title,
+    description: "",
+    category,
+    priority: is_main_quest ? "HIGH" : "NORMAL",
+    status: "ACTIVE",
+    xp_reward,
+    recurrence_type,
+    recurrence_config: {},
+    scheduled_date: today,
+    scheduled_time: index < 4 ? ["09:30", "11:00", "12:30", "17:00"][index] : null,
+    reminders: index === 0 ? [{ offset_minutes: 60 }] : [],
+    is_main_quest,
+    estimated_minutes: 30,
+    money_impact: category === "MONEY" ? "high" : "none",
+      impact: is_main_quest ? 10 : 6,
+    }, now);
+    quest.id = id;
+    return quest;
+  });
   for (const quest of state.quests.slice(1, 4)) state.quest_completions.push({ ...entityBase(state, "completion", now), quest_id: quest.id, completed_at: iso(now), period_key: questPeriodKey(quest, now), xp_awarded: quest.xp_reward });
   const streakQuest = state.quests.find((quest) => quest.id === "quest_tiktok");
   for (let daysAgo = 1; daysAgo <= 5; daysAgo += 1) {
