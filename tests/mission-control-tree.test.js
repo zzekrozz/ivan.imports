@@ -28,13 +28,13 @@ function create(state, title, parentId = null, extra = {}) {
   return { state: result.state, quest: result.result };
 }
 
-test("schema V3 lazily migrates flat V2 quests to roots without losing data", () => {
+test("current schema lazily migrates flat V2 quests to roots without losing data", () => {
   const legacy = createEmptyControlState(USER, { now: NOW });
   legacy.version = 2;
   legacy.quests = [{ id: "legacy", user_id: USER, title: "Legacy", status: "ACTIVE", priority: "HIGH", recurrence_type: "once", created_at: new Date(NOW).toISOString() }];
   const migrated = normalizeControlState(legacy, USER, { now: NOW });
-  assert.equal(CONTROL_SCHEMA_VERSION, 3);
-  assert.equal(migrated.version, 3);
+  assert.equal(CONTROL_SCHEMA_VERSION, 4);
+  assert.equal(migrated.version, CONTROL_SCHEMA_VERSION);
   assert.equal(migrated.quests[0].parent_id, null);
   assert.equal(migrated.quests[0].title, "Legacy");
   assert.deepEqual(migrated.progress_logs, []);
