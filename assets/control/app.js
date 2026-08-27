@@ -16,8 +16,7 @@ const API = Object.freeze({
   state: "/api/control/state",
   mutate: "/api/control/mutate",
   demoReset: "/api/control/demo-reset",
-  authRequest: "/api/academy/auth/request",
-  authVerify: "/api/academy/auth/verify",
+  login: "/api/control/login",
 });
 
 const app = {
@@ -424,7 +423,7 @@ function render() {
 }
 
 function renderLogin() {
-  app.root.innerHTML = `<main class="mc-auth"><section class="mc-auth-card"><div class="mc-brand"><span class="mc-brand-mark">MC</span><span><strong>Mission Control</strong><small>Private access</small></span></div><span class="mc-kicker">Identificación requerida</span><h1>Vuelve a tu mapa.</h1><p>Utiliza el mismo acceso seguro de IvanImports. Recibirás un código de seis dígitos por email.</p><form class="mc-auth-form" data-auth-request><label><span>Email</span><input type="email" name="email" required autocomplete="email" autofocus placeholder="tu@email.com"></label><button class="mc-button mc-button--primary mc-button--wide">Enviar código</button></form><form class="mc-auth-form" data-auth-verify hidden><input type="hidden" name="email"><label><span>Código de acceso</span><input type="text" name="code" required inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="000000"></label><button class="mc-button mc-button--primary mc-button--wide">Entrar en Mission Control</button><button type="button" class="mc-text-button" data-auth-back>Cambiar email</button></form><p class="mc-auth-status" data-auth-status aria-live="polite"></p></section></main>`;
+  app.root.innerHTML = `<main class="mc-auth"><section class="mc-auth-card"><div class="mc-brand"><span class="mc-brand-mark">MC</span><span><strong>Mission Control</strong><small>Private access</small></span></div><span class="mc-kicker">Acceso privado</span><h1>Vuelve a tu mapa.</h1><p>Introduce tu código para entrar en Mission Control.</p><form class="mc-auth-form" data-control-login><label><span>Código de acceso</span><input type="password" name="code" required autocomplete="current-password" autofocus maxlength="128" placeholder="Código"></label><button class="mc-button mc-button--primary mc-button--wide">Entrar en Mission Control</button></form><p class="mc-auth-status" data-auth-status aria-live="polite"></p></section></main>`;
   app.root.removeAttribute("aria-busy");
 }
 
@@ -433,33 +432,22 @@ function formObject(form) {
 }
 
 async function handleSubmit(event) {
-  const authRequest = event.target.closest("[data-auth-request]");
-  if (authRequest) {
+  const loginForm = event.target.closest("[data-control-login]");
+  if (loginForm) {
     event.preventDefault();
-    const data = formObject(authRequest);
+    const data = formObject(loginForm);
     const status = document.querySelector("[data-auth-status]");
-    status.textContent = "Enviando código…";
+    const button = loginForm.querySelector("button");
+    status.textContent = "Comprobando código…";
+    button.disabled = true;
     try {
-      const response = await fetchJson(API.authRequest, { method: "POST", body: JSON.stringify({ email: data.email, returnTo: "/control/" }) });
-      const verify = document.querySelector("[data-auth-verify]");
-      verify.elements.email.value = data.email;
-      authRequest.hidden = true;
-      verify.hidden = false;
-      verify.elements.code.focus();
-      status.textContent = response.message || "Revisa tu email.";
-    } catch { status.textContent = "No se pudo solicitar el código. Comprueba la configuración."; }
-    return;
-  }
-  const authVerify = event.target.closest("[data-auth-verify]");
-  if (authVerify) {
-    event.preventDefault();
-    const data = formObject(authVerify);
-    const status = document.querySelector("[data-auth-status]");
-    status.textContent = "Verificando…";
-    try {
-      await fetchJson(API.authVerify, { method: "POST", body: JSON.stringify({ email: data.email, code: data.code }) });
+      await fetchJson(API.login, { method: "POST", body: JSON.stringify({ code: data.code }) });
       location.assign("/control/");
-    } catch { status.textContent = "Código no válido o caducado."; }
+    } catch {
+      status.textContent = "Código incorrecto.";
+      loginForm.elements.code.select();
+      button.disabled = false;
+    }
     return;
   }
   const filterForm = event.target.closest("[data-filters]");
@@ -544,7 +532,6 @@ async function handleClick(event) {
     toast("Demo restaurada");
     return;
   }
-  if (event.target.closest("[data-auth-back]")) { document.querySelector("[data-auth-request]").hidden = false; document.querySelector("[data-auth-verify]").hidden = true; }
 }
 
 function handleChange(event) {

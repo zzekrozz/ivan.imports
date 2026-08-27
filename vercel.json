@@ -210,6 +210,7 @@
     { "source": "/api/academy/logout", "destination": "/api/academy?action=logout" },
     { "source": "/api/academy/resource", "destination": "/api/academy?action=resource" },
     { "source": "/api/control/session", "destination": "/api/control?action=session" },
+    { "source": "/api/control/login", "destination": "/api/control?action=login" },
     { "source": "/api/control/state", "destination": "/api/control?action=state" },
     { "source": "/api/control/mutate", "destination": "/api/control?action=mutate" },
     { "source": "/api/control/demo-reset", "destination": "/api/control?action=demo-reset" },
