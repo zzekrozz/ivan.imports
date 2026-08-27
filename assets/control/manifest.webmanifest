@@ -1,0 +1,13 @@
+{
+  "name": "Mission Control",
+  "short_name": "Control",
+  "description": "Proyectos, objetivos y misiones en un solo mapa.",
+  "start_url": "/control/",
+  "scope": "/control/",
+  "display": "standalone",
+  "background_color": "#070b12",
+  "theme_color": "#070b12",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
