@@ -3,6 +3,8 @@ import { constantTimeEqual, hmacDigest, parseCookies, safeReturnTo } from "./_ac
 import { createHash } from "node:crypto";
 import { createControlRepository } from "./_control/repository.js";
 import { controlShell } from "./_control/shell.js";
+import { buildReminderCandidates, getTodaySummary } from "../assets/control/mission-schedule.js";
+import { controlPushPublicConfig, createControlPushSender } from "./_control/push.js";
 
 const JSON_LIMIT_BYTES = 96 * 1024;
 const DEFAULT_ACCESS_CODE_DIGEST = "48a93874fd02e9c67f5f205f1e6f8ef665a8ba3b05b901aeb0780605bb5f31f4";
@@ -125,13 +127,34 @@ function safeControlRoute(value) {
   return route.startsWith("/control") ? route : "/control/";
 }
 
+function requireCronAuthorization(request, env) {
+  const secret = String(env.CRON_SECRET || "");
+  const authorization = request.headers.get("authorization") || "";
+  if (secret.length < 24 || !constantTimeEqual(authorization, `Bearer ${secret}`)) {
+    throw Object.assign(new Error("unauthorized"), { status: 401 });
+  }
+}
+
+function notificationPayload(candidate) {
+  return {
+    type: "mission-reminder",
+    title: candidate.title,
+    body: "Tienes una misión pendiente.",
+    quest_id: candidate.quest_id,
+    delivery_id: candidate.id,
+    due_at: candidate.due_at,
+    url: `/control/?reminder=${encodeURIComponent(candidate.id)}`,
+  };
+}
+
 export function resolveControlAction(request) {
   return new URL(request.url).searchParams.get("action") || "";
 }
 
-export function createControlHandler({ env = process.env, fetchImpl = fetch, now = () => Date.now() } = {}) {
+export function createControlHandler({ env = process.env, fetchImpl = fetch, now = () => Date.now(), sendPush = null, repository = null } = {}) {
   const config = academyConfigFromEnv(env);
-  const controlRepository = createControlRepository(config, fetchImpl);
+  const controlRepository = repository || createControlRepository(config, fetchImpl);
+  const pushSender = sendPush || createControlPushSender(env);
   return async function handler(request) {
     const action = resolveControlAction(request);
     try {
@@ -168,6 +191,17 @@ export function createControlHandler({ env = process.env, fetchImpl = fetch, now
         const principal = requirePrincipal(request, config, now());
         return responseJson(await controlRepository.getRecord(principal.subject, { demo: principal.demo, now: now() }));
       }
+      if (action === "summary") {
+        if (request.method !== "GET") return responseJson({ error: "method_not_allowed" }, 405, { Allow: "GET" });
+        const principal = requirePrincipal(request, config, now());
+        const record = await controlRepository.getRecord(principal.subject, { demo: principal.demo, now: now() });
+        return responseJson({ summary: getTodaySummary(record.state, now()), revision: record.revision });
+      }
+      if (action === "push-config") {
+        if (request.method !== "GET") return responseJson({ error: "method_not_allowed" }, 405, { Allow: "GET" });
+        requirePrincipal(request, config, now());
+        return responseJson(controlPushPublicConfig(env));
+      }
       if (action === "mutate") {
         if (request.method !== "POST") return responseJson({ error: "method_not_allowed" }, 405, { Allow: "POST" });
         requireTrustedOrigin(request, config);
@@ -183,6 +217,51 @@ export function createControlHandler({ env = process.env, fetchImpl = fetch, now
         const principal = requirePrincipal(request, config, now());
         if (!principal.demo) return responseJson({ error: "demo_only" }, 403);
         return responseJson(await controlRepository.resetDemo(principal.subject, now()));
+      }
+      if (action === "reminders-dispatch") {
+        if (request.method !== "GET") return responseJson({ error: "method_not_allowed" }, 405, { Allow: "GET" });
+        requireControlConfigured(config);
+        requireCronAuthorization(request, env);
+        if (!sendPush && !controlPushPublicConfig(env).available) throw Object.assign(new Error("push_not_configured"), { status: 503 });
+        const subject = controlSubject(config);
+        const timestamp = now();
+        const record = await controlRepository.getRecord(subject, { now: timestamp });
+        const subscriptions = record.state.preferences?.push_subscriptions || [];
+        const candidates = buildReminderCandidates(record.state, timestamp).slice(0, 50);
+        if (!subscriptions.length || !candidates.length) {
+          return responseJson({ ok: true, candidates: candidates.length, sent: 0, subscriptions: subscriptions.length });
+        }
+        const delivered = [];
+        const expiredEndpoints = new Set();
+        let sent = 0;
+        for (const candidate of candidates) {
+          let candidateSent = false;
+          for (const subscription of subscriptions) {
+            try {
+              await pushSender(subscription, notificationPayload(candidate));
+              candidateSent = true;
+              sent += 1;
+            } catch (pushError) {
+              if ([404, 410].includes(Number(pushError?.statusCode || pushError?.status))) expiredEndpoints.add(subscription.endpoint);
+            }
+          }
+          if (candidateSent) delivered.push(candidate);
+        }
+        if (delivered.length) {
+          await controlRepository.mutate(subject, {
+            action: "reminder.mark-delivered",
+            operation_id: `dispatch:${new Date(timestamp).toISOString()}`,
+            payload: { deliveries: delivered },
+          }, { now: timestamp });
+        }
+        for (const endpoint of expiredEndpoints) {
+          await controlRepository.mutate(subject, {
+            action: "push.unsubscribe",
+            operation_id: `push-expired:${createHash("sha256").update(endpoint).digest("hex").slice(0, 32)}`,
+            payload: { endpoint },
+          }, { now: timestamp });
+        }
+        return responseJson({ ok: true, candidates: candidates.length, delivered: delivered.length, sent, removed_subscriptions: expiredEndpoints.size });
       }
       return responseJson({ error: "not_found" }, 404);
     } catch (error) {
