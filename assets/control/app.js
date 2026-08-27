@@ -2,7 +2,8 @@ import {
   applyControlMutation, buildReminderCandidates, createDemoControlState, dateKey,
   getActionableReminders, getDirectQuestProgress, getLevelProgress, getQuestChildren,
   getQuestDescendants, getQuestPath, getRecursiveQuestProgress, getTodaySummary,
-  projectProgress, questCompletedForPeriod, questIsOverdue, questPeriodKey,
+  getAttentionItems, getProjectQuestStats, getProjectSummary, projectProgress,
+  normalizeControlState, questCompletedForPeriod, questIsOverdue, questPeriodKey,
   buildQuestTreeIndex, canMoveQuest, sortSiblingQuests,
 } from "./domain.js";
 
@@ -16,7 +17,8 @@ const app = {
   localPreview: ["localhost", "127.0.0.1", "::1"].includes(location.hostname) && new URLSearchParams(location.search).get("demo") === "1",
   filters: { project: "", priority: "", status: "open", level: "roots" },
   timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "Europe/Madrid", checkingReminders: false,
-  tree: null, quickParentId: null, pendingArchiveId: null,
+  tree: null, projectIndex: null, quickParentId: null, quickProjectId: null, pendingArchiveId: null,
+  missionView: ["grid", "tree", "list"].includes(localStorage.getItem("ivanimports.mission-control.mission-view")) ? localStorage.getItem("ivanimports.mission-control.mission-view") : "grid",
 };
 
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
@@ -80,7 +82,9 @@ function levelBlock() {
 function appShell(content) {
   const route = app.route.name;
   const title = route === "dashboard" ? "Hoy" : route === "quests" ? "Misiones" : route === "quest" ? app.tree?.byId.get(app.route.id)?.title || "Misión" : route === "ideas" ? "Idea Vault" : projectFor(app.route.id)?.title || "Proyecto";
-  return `<div class="mc-app"><aside class="mc-sidebar"><a class="mc-brand" href="/control/" data-nav><span class="mc-brand-mark">MC</span><span><strong>Mission Control</strong><small>Studio Nocturno</small></span></a><nav class="mc-nav" aria-label="Navegación principal"><a href="/control/" data-nav class="${route === "dashboard" ? "is-active" : ""}">${icon("today")}<span>Hoy</span><kbd>1</kbd></a><a href="/control/quests/" data-nav class="${["quests", "quest"].includes(route) ? "is-active" : ""}">${icon("check")}<span>Misiones</span><kbd>2</kbd></a><a href="/control/ideas/" data-nav class="${route === "ideas" ? "is-active" : ""}">${icon("idea")}<span>Idea Vault</span><kbd>3</kbd></a></nav><div class="mc-sidebar-foot">${levelBlock()}${app.session?.user?.demo ? '<button class="mc-text-button" type="button" data-action="demo-reset">Restaurar demo</button>' : ""}</div></aside><section class="mc-workspace"><header class="mc-topbar"><div><span class="mc-eyebrow">${formatDate(Date.now(), { weekday: "long", day: "numeric", month: "long" })}</span><strong>${escapeHtml(title)}</strong></div><button class="mc-quick-button" type="button" data-action="quick-open">${icon("plus")}<span>${route === "quest" ? "Submisión" : "Añadir"}</span><kbd>Q</kbd></button></header><main id="mc-main" class="mc-main">${content}</main></section><button class="mc-fab" type="button" data-action="quick-open" aria-label="Añadir rápidamente">${icon("plus")}</button>${quickDialog()}${editorDialog()}${notificationDialog()}${limitDialog()}${archiveDialog()}<div class="mc-toasts" data-toasts aria-live="polite"></div></div>`;
+  const projects = app.state.projects.filter((project) => project.status !== "ARCHIVED");
+  const projectNav = `<div class="mc-nav-group"><div class="mc-nav-label"><span>Proyectos</span><button type="button" data-capture="project-new" aria-label="Crear proyecto">+</button></div>${projects.map((project) => { const stats = getProjectQuestStats(app.state, project.id); return `<a href="/control/projects/${encodeURIComponent(project.id)}/" data-nav class="mc-project-nav ${route === "project" && app.route.id === project.id ? "is-active" : ""}"><i style="--project:${escapeAttribute(project.accent)}"></i><span>${escapeHtml(project.title)}</span><b>${stats.pending}</b></a>`; }).join("")}</div>`;
+  return `<div class="mc-app"><aside class="mc-sidebar"><a class="mc-brand" href="/control/" data-nav><span class="mc-brand-mark">MC</span><span><strong>Mission Control</strong><small>Studio Nocturno</small></span></a><nav class="mc-nav" aria-label="Navegación principal"><a href="/control/" data-nav class="${route === "dashboard" ? "is-active" : ""}">${icon("today")}<span>Hoy</span><kbd>1</kbd></a><a href="/control/quests/" data-nav class="${["quests", "quest"].includes(route) ? "is-active" : ""}">${icon("check")}<span>Misiones</span><kbd>2</kbd></a>${projectNav}<a href="/control/ideas/" data-nav class="${route === "ideas" ? "is-active" : ""}">${icon("idea")}<span>Idea Vault</span><kbd>3</kbd></a></nav><div class="mc-sidebar-foot">${levelBlock()}${app.session?.user?.demo ? '<button class="mc-text-button" type="button" data-action="demo-reset">Restaurar demo</button>' : ""}</div></aside><section class="mc-workspace"><header class="mc-topbar"><div><span class="mc-eyebrow">${formatDate(Date.now(), { weekday: "long", day: "numeric", month: "long" })}</span><strong>${escapeHtml(title)}</strong></div><button class="mc-quick-button" type="button" data-action="quick-open">${icon("plus")}<span>${route === "quest" ? "Submisión" : "Añadir"}</span><kbd>Q</kbd></button></header><main id="mc-main" class="mc-main">${content}</main></section><button class="mc-fab" type="button" data-action="quick-open" aria-label="Añadir rápidamente">${icon("plus")}</button>${quickDialog()}${editorDialog()}${notificationDialog()}${limitDialog()}${archiveDialog()}<div class="mc-toasts" data-toasts aria-live="polite"></div></div>`;
 }
 
 function progressDots(summary) {
@@ -112,6 +116,48 @@ function questRow(quest, { overdue = false } = {}) {
   const schedule = quest.scheduled_time || (overdue ? formatDate(`${quest.scheduled_date}T12:00:00Z`, { day: "2-digit", month: "short" }) : "—");
   const direct = getDirectQuestProgress(app.tree, quest.id, questDone);
   return `<article class="mc-mission-row ${done ? "is-complete" : ""} ${overdue ? "is-overdue" : ""}"><button class="mc-check mc-check--${quest.priority.toLowerCase()}" type="button" data-quest-toggle="${escapeAttribute(quest.id)}" aria-label="${done ? "Reabrir" : "Completar"}"><span>${done ? "✓" : ""}</span></button><button class="mc-mission-copy" type="button" data-open-quest="${escapeAttribute(quest.id)}"><strong>${escapeHtml(quest.title)}</strong><small><span>${escapeHtml(questContext(quest))}</span><span>${quest.priority === "HIGH" ? "Alta" : quest.priority === "LOW" ? "Baja" : "Normal"}</span>${direct.total ? `<span>${direct.completed}/${direct.total} submisiones</span>` : ""}${quest.recurrence_type !== "once" ? `<span>${escapeHtml(recurrenceLabel(quest))}</span>` : ""}</small></button><div class="mc-mission-meta"><time>${escapeHtml(schedule)}</time>${reminderCount ? `<span>${icon("bell")}${reminderCount}</span>` : ""}<button class="mc-row-edit" type="button" data-edit-quest="${escapeAttribute(quest.id)}" aria-label="Editar ${escapeAttribute(quest.title)}">${icon("edit")}</button></div></article>`;
+}
+
+function missionCard(quest) {
+  const done = questDone(quest);
+  const direct = getDirectQuestProgress(app.tree, quest.id, questDone);
+  const reminderCount = quest.reminders?.filter((item) => item.enabled !== false).length || 0;
+  const schedule = quest.scheduled_time || (quest.scheduled_date ? formatDate(`${quest.scheduled_date}T12:00:00Z`, { day: "numeric", month: "short" }) : "Sin fecha");
+  const priority = quest.priority.toLowerCase();
+  return `<article class="mc-mission-card mc-mission-card--${priority} ${done ? "is-complete" : ""}"><button class="mc-card-open" type="button" data-open-quest="${escapeAttribute(quest.id)}" aria-label="Abrir misión ${escapeAttribute(quest.title)}"><span class="mc-card-priority" aria-label="Prioridad ${priority === "high" ? "alta" : priority === "low" ? "baja" : "normal"}"></span><small>${escapeHtml(questContext(quest))}</small><strong>${escapeHtml(quest.title)}</strong><div class="mc-card-stats">${direct.total ? `<span><b>${direct.completed}/${direct.total}</b> ${direct.total === 1 ? "submisión" : "submisiones"}</span>` : `<span>${done ? "Completada" : quest.status === "IN_PROGRESS" ? "En progreso" : "Pendiente"}</span>`}</div><footer><time>${escapeHtml(schedule)}</time>${reminderCount ? `<span>${icon("bell")}${reminderCount}</span>` : ""}</footer></button><button class="mc-card-check" type="button" data-quest-toggle="${escapeAttribute(quest.id)}" aria-label="${done ? "Reabrir" : "Completar"}">${done ? "✓" : "○"}</button></article>`;
+}
+
+function missionGrid(quests, empty = "No hay misiones en esta vista.") {
+  return quests.length ? `<div class="mc-mission-grid">${sortedQuests(quests).map(missionCard).join("")}</div>` : `<p class="mc-empty-inline">${escapeHtml(empty)}</p>`;
+}
+
+function missionTreeView(quests) {
+  if (!quests.length) return '<p class="mc-empty-inline">No hay misiones en esta vista.</p>';
+  const included = new Set(quests.map((quest) => quest.id));
+  const roots = quests.filter((quest) => !quest.parent_id || !included.has(quest.parent_id));
+  const rows = [];
+  const visited = new Set();
+  const stack = sortedQuests(roots).reverse().map((quest) => ({ quest, depth: 0 }));
+  while (stack.length) {
+    const { quest, depth } = stack.pop();
+    if (visited.has(quest.id)) continue;
+    visited.add(quest.id);
+    const direct = getDirectQuestProgress(app.tree, quest.id, questDone);
+    rows.push(`<article class="mc-tree-row" style="--depth:${Math.min(depth, 6)}"><span class="mc-tree-line"></span><button type="button" data-open-quest="${escapeAttribute(quest.id)}"><i class="mc-tree-priority mc-tree-priority--${quest.priority.toLowerCase()}"></i><span><strong>${escapeHtml(quest.title)}</strong><small>${escapeHtml(questContext(quest))}${direct.total ? ` · ${direct.completed}/${direct.total}` : ""}</small></span></button><button type="button" data-edit-quest="${escapeAttribute(quest.id)}" aria-label="Editar ${escapeAttribute(quest.title)}">${icon("edit")}</button></article>`);
+    const children = sortedQuests(getQuestChildren(app.tree, quest.id).filter((child) => included.has(child.id)));
+    for (let index = children.length - 1; index >= 0; index -= 1) stack.push({ quest: children[index], depth: depth + 1 });
+  }
+  return `<div class="mc-mission-tree">${rows.join("")}</div>`;
+}
+
+function missionRenderer(quests) {
+  if (app.missionView === "tree") return missionTreeView(quests);
+  if (app.missionView === "list") return `<section class="mc-panel"><div class="mc-mission-list">${sortedQuests(quests).map((quest) => questRow(quest)).join("")}</div></section>`;
+  return missionGrid(quests);
+}
+
+function missionViewSwitch() {
+  return `<div class="mc-view-switch" role="group" aria-label="Vista de misiones">${[["grid", "Cuadrícula"], ["tree", "Árbol"], ["list", "Lista"]].map(([value, label]) => `<button type="button" data-mission-view="${value}" class="${app.missionView === value ? "is-active" : ""}">${label}</button>`).join("")}</div>`;
 }
 
 function missionGroup(title, quests, options = {}) {
@@ -152,10 +198,22 @@ function calendarContext() {
   return `<section class="mc-calendar"><div class="mc-section-head"><h2>Esta semana</h2><span>${formatDate(Date.now(), { month: "short" })}</span></div><div class="mc-calendar-days">${days.map((day) => { const key = day.toISOString().slice(0, 10); return `<div class="${key === selectedKey ? "is-selected" : ""}"><span>${new Intl.DateTimeFormat("es-ES", { weekday: "narrow", timeZone: "UTC" }).format(day)}</span><strong>${day.getUTCDate()}</strong></div>`; }).join("")}</div></section>`;
 }
 
+function attentionPanel() {
+  const items = getAttentionItems(app.state).slice(0, 8);
+  if (!items.length) return "";
+  return `<section class="mc-attention"><div class="mc-section-head"><div><span class="mc-kicker">Señales claras</span><h2>Necesita tu atención</h2></div><span>${items.length}</span></div><div class="mc-attention-grid">${items.map((item) => { const project = projectFor(item.project_id); return `<a href="/control/projects/${encodeURIComponent(item.project_id)}/" data-nav><i class="mc-health-dot mc-health-dot--${item.severity === "HIGH" ? "red" : "yellow"}"></i><span><strong>${escapeHtml(project?.title || "Proyecto")}</strong><small>${escapeHtml(item.message)}</small></span>${icon("arrow")}</a>`; }).join("")}</div></section>`;
+}
+
+function projectCockpitCards() {
+  const projects = app.state.projects.filter((project) => project.status === "ACTIVE");
+  if (!projects.length) return "";
+  return `<section class="mc-project-cards-section"><div class="mc-section-head"><div><span class="mc-kicker">Focos activos</span><h2>Project Cockpits</h2></div></div><div class="mc-project-cards">${projects.map((project) => { const summary = getProjectSummary(app.state, project); return `<a href="/control/projects/${encodeURIComponent(project.id)}/" data-nav class="mc-project-card"><header><span class="mc-project-mark" style="--project:${escapeAttribute(project.accent)}">${escapeHtml(project.icon || "·")}</span><i class="mc-health-dot mc-health-dot--${project.health.toLowerCase()}"></i></header><strong>${escapeHtml(project.title)}</strong><small>Foco actual</small><p>${escapeHtml(project.current_focus || "Foco por definir")}</p><footer><span>${summary.quests.pending} pendientes</span><span>${summary.open_decisions.length} decisiones</span><span>${summary.open_blockers.length} bloqueos</span></footer></a>`; }).join("")}</div></section>`;
+}
+
 function renderDashboard() {
   const summary = getTodaySummary(app.state); const overdueIds = new Set(summary.overdue_missions.map((quest) => quest.id));
   const today = summary.missions.filter((quest) => !overdueIds.has(quest.id) && !questDone(quest));
-  return `${notificationBanner()}${reminderInbox()}<section class="mc-day-summary"><div><span class="mc-kicker">Ritmo del día</span><h1>${summary.completed}<span>/</span>${summary.total}</h1><p>${summary.total ? summary.pending ? `${summary.pending} por cerrar con calma.` : "Día despejado." : "Añade tu primera misión de hoy."}</p></div>${progressDots(summary)}<button class="mc-button mc-button--secondary" type="button" data-action="quick-open">${icon("plus")} Nueva misión</button></section>${mainQuestCard(summary)}<div class="mc-two-column"><div>${missionGroup("Misiones de hoy", today)}${missionGroup("Completadas", summary.completed_missions, { hideEmpty: true })}</div><div>${calendarContext()}${missionGroup("Atrasadas", summary.overdue_missions, { overdue: true, hideEmpty: true })}${projectStrip()}</div></div>`;
+  return `${notificationBanner()}${reminderInbox()}${attentionPanel()}<section class="mc-day-summary"><div><span class="mc-kicker">Ritmo del día</span><h1>${summary.completed}<span>/</span>${summary.total}</h1><p>${summary.total ? summary.pending ? `${summary.pending} por cerrar con calma.` : "Día despejado." : "Añade tu primera misión de hoy."}</p></div>${progressDots(summary)}<button class="mc-button mc-button--secondary" type="button" data-action="quick-open">${icon("plus")} Nueva misión</button></section>${mainQuestCard(summary)}${projectCockpitCards()}<div class="mc-two-column"><div>${missionGroup("Misiones de hoy", today)}${missionGroup("Completadas", summary.completed_missions, { hideEmpty: true })}</div><div>${calendarContext()}${missionGroup("Atrasadas", summary.overdue_missions, { overdue: true, hideEmpty: true })}${projectStrip()}</div></div>`;
 }
 
 function renderAllQuests() {
@@ -171,7 +229,7 @@ function renderAllQuests() {
     if (app.filters.level === "leaves" && children.length) return false;
     return true;
   });
-  return `<section class="mc-page-head"><div><span class="mc-kicker">Mission Tree</span><h1>Todas las misiones</h1><p>Entra en una misión para recorrer su rama.</p></div><button class="mc-button mc-button--gold" type="button" data-capture="quest">Nueva misión raíz</button></section><form class="mc-filters mc-filters--four" data-filters><label><span>Estado</span><select name="status"><option value="open"${app.filters.status === "open" ? " selected" : ""}>Pendientes</option><option value="done"${app.filters.status === "done" ? " selected" : ""}>Completadas</option><option value="all"${app.filters.status === "all" ? " selected" : ""}>Todas</option><option value="archived"${app.filters.status === "archived" ? " selected" : ""}>Archivadas</option></select></label><label><span>Proyecto</span><select name="project"><option value="">Todos</option>${app.state.projects.map((project) => `<option value="${escapeAttribute(project.id)}"${app.filters.project === project.id ? " selected" : ""}>${escapeHtml(project.title)}</option>`).join("")}</select></label><label><span>Prioridad</span><select name="priority"><option value="">Todas</option>${["HIGH", "NORMAL", "LOW"].map((priority) => `<option${app.filters.priority === priority ? " selected" : ""}>${priority}</option>`).join("")}</select></label><label><span>Nivel</span><select name="level"><option value="roots"${app.filters.level === "roots" ? " selected" : ""}>Solo raíces</option><option value="all"${app.filters.level === "all" ? " selected" : ""}>Todas</option><option value="branches"${app.filters.level === "branches" ? " selected" : ""}>Con submisiones</option><option value="leaves"${app.filters.level === "leaves" ? " selected" : ""}>Hojas</option></select></label></form>${missionGroup("Misiones", filtered)}`;
+  return `<section class="mc-page-head"><div><span class="mc-kicker">Mission Grid</span><h1>Todas las misiones</h1><p>Piezas de ejecución dentro de un único mapa.</p></div><div class="mc-page-actions">${missionViewSwitch()}<button class="mc-button mc-button--gold" type="button" data-capture="quest">Nueva misión raíz</button></div></section><form class="mc-filters mc-filters--four" data-filters><label><span>Estado</span><select name="status"><option value="open"${app.filters.status === "open" ? " selected" : ""}>Pendientes</option><option value="done"${app.filters.status === "done" ? " selected" : ""}>Completadas</option><option value="all"${app.filters.status === "all" ? " selected" : ""}>Todas</option><option value="archived"${app.filters.status === "archived" ? " selected" : ""}>Archivadas</option></select></label><label><span>Proyecto</span><select name="project"><option value="">Todos</option>${app.state.projects.map((project) => `<option value="${escapeAttribute(project.id)}"${app.filters.project === project.id ? " selected" : ""}>${escapeHtml(project.title)}</option>`).join("")}</select></label><label><span>Prioridad</span><select name="priority"><option value="">Todas</option>${["HIGH", "NORMAL", "LOW"].map((priority) => `<option${app.filters.priority === priority ? " selected" : ""}>${priority}</option>`).join("")}</select></label><label><span>Nivel</span><select name="level"><option value="roots"${app.filters.level === "roots" ? " selected" : ""}>Solo raíces</option><option value="all"${app.filters.level === "all" ? " selected" : ""}>Todas</option><option value="branches"${app.filters.level === "branches" ? " selected" : ""}>Con submisiones</option><option value="leaves"${app.filters.level === "leaves" ? " selected" : ""}>Hojas</option></select></label></form>${missionRenderer(filtered)}`;
 }
 
 function ideaCard(idea) {
@@ -184,15 +242,50 @@ function renderIdeas() {
   return `<section class="mc-page-head"><div><span class="mc-kicker">Aparcar sin olvidar</span><h1>Idea Vault</h1><p>Las ideas esperan 72 horas antes de convertirse en otro frente.</p></div><button class="mc-button mc-button--gold" type="button" data-capture="idea">Guardar idea</button></section><div class="mc-idea-grid">${ideas.length ? ideas.map(ideaCard).join("") : '<div class="mc-empty-card"><h2>El Vault está vacío.</h2><p>Captura una idea sin interrumpir tu día.</p></div>'}</div>`;
 }
 
+const projectStatusLabel = (status) => ({ ACTIVE: "Activo", PAUSED: "Pausado", COMPLETED: "Completado", ARCHIVED: "Archivado", IDEA: "Idea" })[status] || status;
+const healthLabel = (health) => ({ GREEN: "Salud verde", YELLOW: "Salud amarilla", RED: "Salud roja" })[health] || "Salud verde";
+
+function cockpitField(project, field, label, value, empty = "Pulsa para definir") {
+  return `<button class="mc-cockpit-field" type="button" data-project-field="${field}" data-project-id="${escapeAttribute(project.id)}"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value || empty)}</strong><small>Editar</small></button>`;
+}
+
+function projectEntityForm(projectId, kind, placeholder, fields = "") {
+  return `<form class="mc-entity-form" data-project-entity-form="${kind}"><input type="hidden" name="project_id" value="${escapeAttribute(projectId)}">${fields || `<label><span class="sr-only">${escapeAttribute(placeholder)}</span><input name="text" required maxlength="1200" placeholder="${escapeAttribute(placeholder)}"></label>`}<button type="submit" aria-label="Añadir">${icon("plus")}</button></form>`;
+}
+
+function projectLogsPanel(summary) {
+  return `<section class="mc-cockpit-panel"><div class="mc-section-head"><div><span class="mc-kicker">Cronología propia</span><h2>Avances</h2></div><span>${summary.logs.length}</span></div>${projectEntityForm(summary.project.id, "log", "Añadir avance del proyecto")}<div class="mc-cockpit-feed">${summary.logs.length ? summary.logs.map((item) => `<article><time>${formatDate(item.created_at, { day: "numeric", month: "short" })}</time><p>${escapeHtml(item.text)}</p><button type="button" data-project-entity-delete="log" data-entity-id="${escapeAttribute(item.id)}">Eliminar</button></article>`).join("") : '<p class="mc-empty-inline">Todavía no hay avances del proyecto.</p>'}</div></section>`;
+}
+
+function achievementsPanel(summary) {
+  return `<section class="mc-cockpit-panel"><div class="mc-section-head"><div><span class="mc-kicker">Hechos conseguidos</span><h2>Logros</h2></div><span>${summary.achievements.length}</span></div>${projectEntityForm(summary.project.id, "achievement", "Registrar un logro real")}<div class="mc-cockpit-feed">${summary.achievements.length ? summary.achievements.map((item) => `<article class="mc-achievement"><time>${formatDate(item.achieved_at || item.created_at, { day: "numeric", month: "short" })}</time><p>${escapeHtml(item.text)}</p><button type="button" data-project-entity-delete="achievement" data-entity-id="${escapeAttribute(item.id)}">Eliminar</button></article>`).join("") : '<p class="mc-empty-inline">Los hitos conseguidos quedarán aquí.</p>'}</div></section>`;
+}
+
+function decisionsPanel(summary) {
+  const open = summary.decisions.filter((item) => item.status !== "RESOLVED");
+  return `<section class="mc-cockpit-panel mc-signal-panel"><div class="mc-section-head"><div><span class="mc-kicker">Decision Queue</span><h2>Decisiones</h2></div><span>${open.length} abiertas</span></div>${projectEntityForm(summary.project.id, "decision", "¿Qué tienes que decidir?")}<div class="mc-signal-list">${summary.decisions.length ? summary.decisions.map((item) => `<article class="${item.status === "RESOLVED" ? "is-resolved" : ""}"><i></i><div><strong>${escapeHtml(item.text)}</strong>${item.resolution ? `<p><b>Decisión:</b> ${escapeHtml(item.resolution)}</p>` : ""}${item.resolution_notes ? `<small>${escapeHtml(item.resolution_notes)}</small>` : ""}</div><div>${item.status !== "RESOLVED" ? `<button type="button" data-resolve-decision="${escapeAttribute(item.id)}">Resolver</button>` : '<span>Resuelta</span>'}<button type="button" data-project-entity-delete="decision" data-entity-id="${escapeAttribute(item.id)}">×</button></div></article>`).join("") : '<p class="mc-empty-inline">No hay decisiones pendientes.</p>'}</div></section>`;
+}
+
+function blockersPanel(summary) {
+  const open = summary.blockers.filter((item) => item.status !== "RESOLVED");
+  return `<section class="mc-cockpit-panel mc-signal-panel"><div class="mc-section-head"><div><span class="mc-kicker">Fricción real</span><h2>Bloqueos</h2></div><span>${open.length} abiertos</span></div>${projectEntityForm(summary.project.id, "blocker", "Añadir bloqueo")}<div class="mc-signal-list">${summary.blockers.length ? summary.blockers.map((item) => `<article class="${item.status === "RESOLVED" ? "is-resolved" : ""}"><i></i><div><strong>${escapeHtml(item.text)}</strong><small>${item.status === "RESOLVED" ? "Resuelto" : formatDate(item.created_at, { day: "numeric", month: "short" })}</small></div><div>${item.status !== "RESOLVED" ? `<button type="button" data-resolve-blocker="${escapeAttribute(item.id)}">Resolver</button>` : ""}<button type="button" data-project-entity-delete="blocker" data-entity-id="${escapeAttribute(item.id)}">×</button></div></article>`).join("") : '<p class="mc-empty-inline">Sin bloqueos registrados.</p>'}</div></section>`;
+}
+
+function metricsPanel(summary) {
+  const fields = `<label><span class="sr-only">Métrica</span><input name="name" required maxlength="120" placeholder="Métrica"></label><label><span class="sr-only">Valor</span><input name="value" maxlength="120" placeholder="Valor"></label><label><span class="sr-only">Objetivo</span><input name="target" maxlength="120" placeholder="Objetivo"></label><label><span class="sr-only">Unidad</span><input name="unit" maxlength="30" placeholder="Unidad"></label>`;
+  return `<section class="mc-cockpit-panel"><div class="mc-section-head"><div><span class="mc-kicker">Medir, no ejecutar</span><h2>Métricas</h2></div><span>${summary.metrics.length}</span></div>${projectEntityForm(summary.project.id, "metric", "Métrica", fields)}<div class="mc-metrics-grid">${summary.metrics.length ? summary.metrics.map((metric) => `<article><span>${escapeHtml(metric.name)}</span><strong>${escapeHtml(metric.value || "—")}${metric.unit ? ` <small>${escapeHtml(metric.unit)}</small>` : ""}</strong>${metric.target !== null ? `<p>${escapeHtml(metric.value || "0")} / ${escapeHtml(metric.target)} ${escapeHtml(metric.unit || "")}</p>` : ""}<footer><button type="button" data-edit-metric="${escapeAttribute(metric.id)}">Actualizar</button><button type="button" data-project-entity-delete="metric" data-entity-id="${escapeAttribute(metric.id)}">Eliminar</button></footer></article>`).join("") : '<p class="mc-empty-inline">Añade la primera métrica.</p>'}</div></section>`;
+}
+
 function renderProjectDetail(project) {
   if (!project) return `<section class="mc-empty-card"><h1>Proyecto no encontrado</h1><a href="/control/" data-nav>Volver</a></section>`;
-  const quests = app.state.quests.filter((quest) => quest.project_id === project.id && !quest.parent_id && quest.status !== "ARCHIVED"); const progress = projectProgress(app.state, project);
-  return `<section class="mc-page-head"><div><span class="mc-kicker">${escapeHtml(project.status)}</span><h1>${escapeHtml(project.title)}</h1><p>${escapeHtml(project.description || project.main_goal || "Sin descripción.")}</p></div><button class="mc-button mc-button--secondary" type="button" data-edit-project="${escapeAttribute(project.id)}">Editar proyecto</button></section><section class="mc-project-overview"><div><span>Progreso</span><strong>${progress}%</strong><div class="mc-line-progress"><i style="width:${progress}%"></i></div></div><div><span>Objetivo principal</span><strong>${escapeHtml(project.main_goal || "Por definir")}</strong></div></section>${missionGroup("Misiones del proyecto", quests)}<button class="mc-button mc-button--gold" type="button" data-capture="quest" data-project="${escapeAttribute(project.id)}">Añadir misión</button>`;
+  const summary = getProjectSummary(app.state, project); const quests = app.state.quests.filter((quest) => quest.project_id === project.id && !quest.parent_id && !["ARCHIVED", "CANCELLED"].includes(quest.status));
+  return `<section class="mc-cockpit-hero"><div><span class="mc-kicker">Project Cockpit</span><h1>${escapeHtml(project.title)}</h1><p>${escapeHtml(project.description || project.general_objective || "Centro de mando del proyecto.")}</p><div class="mc-cockpit-badges"><span>${escapeHtml(projectStatusLabel(project.status))}</span><span><i class="mc-health-dot mc-health-dot--${project.health.toLowerCase()}"></i>${escapeHtml(healthLabel(project.health))}</span><span>${summary.quests.completed}/${summary.quests.total} misiones completadas</span>${summary.quests.overdue ? `<span>${summary.quests.overdue} vencidas</span>` : ""}</div></div><button class="mc-button mc-button--secondary" type="button" data-edit-project="${escapeAttribute(project.id)}">Editar proyecto</button></section><section class="mc-focus-grid">${cockpitField(project, "current_focus", "Foco actual", project.current_focus)}${cockpitField(project, "weekly_objective", "Objetivo de esta semana", project.weekly_objective)}</section><section class="mc-project-missions"><div class="mc-section-head"><div><span class="mc-kicker">Ejecución</span><h2>Misiones del proyecto</h2></div><div><span>${summary.quests.pending} pendientes</span><button class="mc-button mc-button--gold" type="button" data-capture="quest" data-project="${escapeAttribute(project.id)}">${icon("plus")} Misión</button></div></div>${missionGrid(quests, "Este proyecto aún no tiene misiones raíz.")}</section><div class="mc-cockpit-signals">${decisionsPanel(summary)}${blockersPanel(summary)}</div><div class="mc-cockpit-lower">${projectLogsPanel(summary)}${achievementsPanel(summary)}${metricsPanel(summary)}</div><section class="mc-project-direction"><div class="mc-section-head"><div><span class="mc-kicker">Dirección</span><h2>Contexto estratégico</h2></div></div><div>${cockpitField(project, "general_objective", "Objetivo general", project.general_objective)}${cockpitField(project, "next_milestone", "Próximo hito", project.next_milestone)}</div></section>`;
 }
 
 function breadcrumbMarkup(quest) {
   const path = getQuestPath(app.tree, quest.id);
-  return `<nav class="mc-breadcrumbs" aria-label="Ruta de la misión"><a href="/control/quests/" data-nav>Misiones</a>${path.map((item) => `<span aria-hidden="true">›</span><a href="/control/quests/${encodeURIComponent(item.id)}/" data-nav${item.id === quest.id ? ' aria-current="page"' : ""}>${escapeHtml(item.title)}</a>`).join("")}</nav>`;
+  const project = projectFor(quest.project_id);
+  return `<nav class="mc-breadcrumbs" aria-label="Ruta de la misión"><a href="/control/quests/" data-nav>Misiones</a>${project ? `<span aria-hidden="true">›</span><a class="mc-breadcrumb-project" href="/control/projects/${encodeURIComponent(project.id)}/" data-nav>${escapeHtml(project.title)}</a>` : ""}${path.map((item) => `<span aria-hidden="true">›</span><a href="/control/quests/${encodeURIComponent(item.id)}/" data-nav${item.id === quest.id ? ' aria-current="page"' : ""}>${escapeHtml(item.title)}</a>`).join("")}</nav>`;
 }
 
 function progressLogMarkup(quest) {
@@ -207,7 +300,7 @@ function renderQuestDetail(quest) {
   const direct = getDirectQuestProgress(app.tree, quest.id, questDone);
   const recursive = getRecursiveQuestProgress(app.tree, quest.id, questDone);
   const done = questDone(quest);
-  return `${breadcrumbMarkup(quest)}<a class="mc-up-link" href="${parent ? `/control/quests/${encodeURIComponent(parent.id)}/` : "/control/quests/"}" data-nav>← Subir</a><section class="mc-branch-head"><div><span class="mc-kicker">${escapeHtml(projectLabel(quest.project_id))}</span><h1>${escapeHtml(quest.title)}</h1><div class="mc-branch-meta"><span class="mc-priority-label mc-priority-label--${quest.priority.toLowerCase()}">${quest.priority === "HIGH" ? "Alta" : quest.priority === "LOW" ? "Baja" : "Normal"}</span><span>${quest.status === "IN_PROGRESS" ? "En progreso" : done ? "Completada" : "Pendiente"}</span>${quest.scheduled_date ? `<span>${formatDate(`${quest.scheduled_date}T12:00:00Z`, { day: "numeric", month: "short" })}${quest.scheduled_time ? ` · ${quest.scheduled_time}` : ""}</span>` : ""}</div></div><div class="mc-branch-actions"><button class="mc-button mc-button--secondary" type="button" data-edit-quest="${escapeAttribute(quest.id)}">Editar</button><button class="mc-button mc-button--gold" type="button" data-quest-toggle="${escapeAttribute(quest.id)}">${done ? "Reabrir" : "Completar misión"}</button></div></section><div class="mc-branch-layout"><div class="mc-branch-primary"><section class="mc-branch-card"><div class="mc-section-head"><div><h2>Submisiones</h2>${direct.ready_to_complete && !done ? '<small>Lista para cerrar</small>' : ""}</div><span>${direct.completed}/${direct.total}</span></div>${children.length ? `<div class="mc-mission-list">${children.map((child) => questRow(child)).join("")}</div>` : '<p class="mc-empty-inline">Esta misión todavía no tiene submisiones.</p>'}<div class="mc-card-action"><button class="mc-button mc-button--gold" type="button" data-quick-parent="${escapeAttribute(quest.id)}">${icon("plus")} Añadir submisión</button></div></section>${progressLogMarkup(quest)}</div><aside class="mc-branch-side"><section class="mc-branch-card mc-branch-progress"><span class="mc-kicker">Progreso de la rama</span><strong>${recursive.completed}<i>/</i>${recursive.total}</strong><p>${recursive.pending ? `${recursive.pending} descendientes pendientes.` : recursive.total ? "Toda la rama ejecutada." : "Sin descendientes."}</p></section><section class="mc-branch-card mc-description"><div class="mc-section-head"><h2>Descripción</h2></div><p>${escapeHtml(quest.description || "Sin descripción. Edita la misión para añadir contexto estable.")}</p></section></aside></div>`;
+  return `${breadcrumbMarkup(quest)}<a class="mc-up-link" href="${parent ? `/control/quests/${encodeURIComponent(parent.id)}/` : quest.project_id ? `/control/projects/${encodeURIComponent(quest.project_id)}/` : "/control/quests/"}" data-nav>← Subir</a><section class="mc-branch-head"><div><span class="mc-kicker">${escapeHtml(projectLabel(quest.project_id))}</span><h1>${escapeHtml(quest.title)}</h1><div class="mc-branch-meta"><span class="mc-priority-label mc-priority-label--${quest.priority.toLowerCase()}">${quest.priority === "HIGH" ? "Alta" : quest.priority === "LOW" ? "Baja" : "Normal"}</span><span>${quest.status === "IN_PROGRESS" ? "En progreso" : done ? "Completada" : "Pendiente"}</span>${quest.scheduled_date ? `<span>${formatDate(`${quest.scheduled_date}T12:00:00Z`, { day: "numeric", month: "short" })}${quest.scheduled_time ? ` · ${quest.scheduled_time}` : ""}</span>` : ""}</div></div><div class="mc-branch-actions"><button class="mc-button mc-button--secondary" type="button" data-edit-quest="${escapeAttribute(quest.id)}">Editar</button><button class="mc-button mc-button--gold" type="button" data-quest-toggle="${escapeAttribute(quest.id)}">${done ? "Reabrir" : "Completar misión"}</button></div></section><div class="mc-branch-layout"><div class="mc-branch-primary"><section class="mc-branch-card"><div class="mc-section-head"><div><h2>Submisiones</h2>${direct.ready_to_complete && !done ? '<small>Lista para cerrar</small>' : ""}</div><span>${direct.completed}/${direct.total}</span></div><div class="mc-branch-grid-wrap">${missionGrid(children, "Esta misión todavía no tiene submisiones.")}</div><div class="mc-card-action"><button class="mc-button mc-button--gold" type="button" data-quick-parent="${escapeAttribute(quest.id)}">${icon("plus")} Añadir submisión</button></div></section>${progressLogMarkup(quest)}</div><aside class="mc-branch-side"><section class="mc-branch-card mc-branch-progress"><span class="mc-kicker">Progreso de la rama</span><strong>${recursive.completed}<i>/</i>${recursive.total}</strong><p>${recursive.pending ? `${recursive.pending} descendientes pendientes.` : recursive.total ? "Toda la rama ejecutada." : "Sin descendientes."}</p></section><section class="mc-branch-card mc-description"><div class="mc-section-head"><h2>Descripción</h2></div><p>${escapeHtml(quest.description || "Sin descripción. Edita la misión para añadir contexto estable.")}</p></section></aside></div>`;
 }
 
 function quickDialog() {
@@ -239,7 +332,9 @@ function questEditor(quest = null, context = {}) {
 }
 
 function ideaEditor() { return `${editorHeader("Idea Vault", "Captura sin abrir otro frente")}<form class="mc-editor-form" data-editor-form="idea"><label class="mc-field"><span>Título</span><input name="title" required autofocus></label><label class="mc-field"><span>Notas</span><textarea name="description" rows="4"></textarea></label><label class="mc-field"><span>Etiquetas</span><input name="tags" placeholder="ventas, contenido"></label><button class="mc-button mc-button--gold mc-button--wide" type="submit">Guardar en el Vault</button></form>`; }
-function projectEditor(project) { return `${editorHeader("Proyecto", project.title)}<form class="mc-editor-form" data-editor-form="project"><input type="hidden" name="id" value="${escapeAttribute(project.id)}"><label class="mc-field"><span>Nombre</span><input name="title" required value="${escapeAttribute(project.title)}"></label><label class="mc-field"><span>Descripción</span><textarea name="description" rows="3">${escapeHtml(project.description || "")}</textarea></label><div class="mc-form-grid"><label class="mc-field"><span>Estado</span><select name="status">${["ACTIVE", "PAUSED", "IDEA", "COMPLETED", "ARCHIVED"].map((item) => `<option${selected(project.status, item)}>${item}</option>`).join("")}</select></label><label class="mc-field"><span>Progreso</span><input name="progress" type="number" min="0" max="100" value="${project.progress || 0}"></label></div><label class="mc-field"><span>Objetivo principal</span><input name="main_goal" value="${escapeAttribute(project.main_goal || "")}"></label><button class="mc-button mc-button--gold mc-button--wide" type="submit">Guardar proyecto</button></form>`; }
+function projectEditor(project = null) {
+  return `${editorHeader(project ? "Editar proyecto" : "Nuevo proyecto", project?.title || "Abre un nuevo frente")}<form class="mc-editor-form" data-editor-form="project"><input type="hidden" name="id" value="${escapeAttribute(project?.id || "")}"><label class="mc-field"><span>Nombre</span><input name="title" required autofocus value="${escapeAttribute(project?.title || "")}"></label><label class="mc-field"><span>Descripción</span><textarea name="description" rows="2">${escapeHtml(project?.description || "")}</textarea></label><div class="mc-form-grid"><label class="mc-field"><span>Estado</span><select name="status">${["ACTIVE", "PAUSED", "COMPLETED", "ARCHIVED"].map((item) => `<option${selected(project?.status || "PAUSED", item)}>${item}</option>`).join("")}</select></label><label class="mc-field"><span>Salud</span><select name="health">${["GREEN", "YELLOW", "RED"].map((item) => `<option${selected(project?.health || "GREEN", item)}>${item}</option>`).join("")}</select></label></div><label class="mc-field"><span>Objetivo general</span><textarea name="general_objective" rows="2">${escapeHtml(project?.general_objective || project?.main_goal || "")}</textarea></label><label class="mc-field"><span>Objetivo de esta semana</span><textarea name="weekly_objective" rows="2">${escapeHtml(project?.weekly_objective || "")}</textarea></label><label class="mc-field"><span>Foco actual</span><input name="current_focus" value="${escapeAttribute(project?.current_focus || "")}"></label><div class="mc-form-grid"><label class="mc-field"><span>Próximo hito</span><input name="next_milestone" value="${escapeAttribute(project?.next_milestone || "")}"></label><label class="mc-field"><span>Fecha del hito</span><input name="next_milestone_date" type="date" value="${escapeAttribute(project?.next_milestone_date || "")}"></label></div><button class="mc-button mc-button--gold mc-button--wide" type="submit">${project ? "Guardar proyecto" : "Crear proyecto"}</button></form>`;
+}
 
 function syncRecurrencePanels(scope = document) { const recurrence = scope.querySelector("[data-recurrence]")?.value; scope.querySelectorAll("[data-recurrence-panel]").forEach((panel) => { panel.hidden = panel.dataset.recurrencePanel !== recurrence; }); const picker = scope.querySelector("[data-reminder-picker]"); if (picker) picker.hidden = !scope.querySelector('[name="scheduled_time"]')?.value; }
 function movePickerMarkup(quest) {
@@ -260,24 +355,29 @@ function openEditor(type, context = {}) {
     if (advanced && quest) advanced.insertAdjacentHTML("beforeend", movePickerMarkup(quest));
   }
   if (type === "idea") dialog.querySelector("[data-editor-content]").innerHTML = ideaEditor();
-  if (type === "project") dialog.querySelector("[data-editor-content]").innerHTML = projectEditor(projectFor(context.editId));
+  if (type === "project") dialog.querySelector("[data-editor-content]").innerHTML = projectEditor(context.editId ? projectFor(context.editId) : null);
   dialog.showModal(); syncRecurrencePanels(dialog);
 }
 
-function openQuick(parentId = null) {
+function openQuick(parentId = null, projectId = null) {
   const dialog = document.querySelector("[data-quick-dialog]");
   const form = dialog?.querySelector("[data-quick-form]");
   if (!dialog || !form) return;
   app.quickParentId = parentId && app.tree.byId.has(parentId) ? parentId : null;
+  app.quickProjectId = projectId && projectFor(projectId) ? projectId : null;
   form.reset();
   form.elements.parent_id.value = app.quickParentId || "";
   form.elements.scheduled_date.value = dateKey();
   form.elements.quick_type.value = "quest";
+  if (app.quickProjectId) form.elements.project_id.value = app.quickProjectId;
   const context = form.querySelector("[data-quick-context]");
   if (app.quickParentId) {
     const parent = app.tree.byId.get(app.quickParentId);
     context.hidden = false;
     context.textContent = `Nueva submisión dentro de ${parent.title}`;
+  } else if (app.quickProjectId) {
+    context.hidden = false;
+    context.textContent = `Nueva misión dentro de ${projectFor(app.quickProjectId).title}`;
   } else {
     context.hidden = true;
     context.textContent = "";
@@ -299,7 +399,7 @@ async function mutate(action, payload, { success = "Guardado", optimistic = fals
     let response;
     if (app.localPreview) {
       if (!optimistic) app.state = applyControlMutation(app.state, request, { userId: "demo", now: Date.now() }).state;
-      app.revision += 1; response = { state: app.state, revision: app.revision }; localStorage.setItem("ivanimports.mission-control.local-demo.v3", JSON.stringify(response));
+      app.revision += 1; response = { state: app.state, revision: app.revision }; localStorage.setItem("ivanimports.mission-control.local-demo.v4", JSON.stringify(response));
     } else response = await fetchJson(API.mutate, { method: "POST", body: JSON.stringify(request) });
     app.state = response.state; app.revision = response.revision; render(); if (success && !quiet) toast(success); return response;
   } catch (error) {
@@ -349,6 +449,12 @@ async function handleSubmit(event) {
   }
   const progress = event.target.closest("[data-progress-form]");
   if (progress) { event.preventDefault(); const data = formObject(progress); await mutate("progress.create", data, { success: "Avance añadido" }); return; }
+  const projectEntity = event.target.closest("[data-project-entity-form]");
+  if (projectEntity) {
+    event.preventDefault(); const data = formObject(projectEntity); const kind = projectEntity.dataset.projectEntityForm;
+    const actions = { log: "project.log.add", achievement: "project.achievement.add", decision: "project.decision.add", blocker: "project.blocker.add", metric: "project.metric.add" };
+    await mutate(actions[kind], data, { success: kind === "decision" ? "Decisión añadida" : kind === "blocker" ? "Bloqueo añadido" : kind === "achievement" ? "Logro registrado" : kind === "metric" ? "Métrica añadida" : "Avance añadido" }); return;
+  }
   const editor = event.target.closest("[data-editor-form]"); if (!editor) return; event.preventDefault(); const data = formObject(editor);
   if (editor.dataset.editorForm === "quest") {
     const original = data.id ? app.state.quests.find((quest) => quest.id === data.id) : null;
@@ -362,7 +468,7 @@ async function handleSubmit(event) {
     if (data.reminders.length) maybeOfferNotifications();
   }
   if (editor.dataset.editorForm === "idea") { data.tags = String(data.tags || "").split(",").map((item) => item.trim()).filter(Boolean); await mutate("idea.create", data, { success: "Idea guardada en el Vault" }); }
-  if (editor.dataset.editorForm === "project") { data.progress = Number(data.progress) || 0; await mutate("project.update", data, { success: "Proyecto actualizado" }); }
+  if (editor.dataset.editorForm === "project") { const creating = !data.id; await mutate(creating ? "project.create" : "project.update", data, { success: creating ? "Proyecto creado" : "Proyecto actualizado" }); }
   document.querySelector("[data-editor-dialog]")?.close();
 }
 
@@ -382,15 +488,21 @@ async function enableNotifications() {
 async function handleClick(event) {
   const nav = event.target.closest("[data-nav]"); if (nav && nav.origin === location.origin && !event.metaKey && !event.ctrlKey && !event.shiftKey) { event.preventDefault(); navigate(`${nav.pathname}${nav.search}`); return; }
   if (event.target.closest("[data-dialog-close]")) { event.target.closest("dialog")?.close(); return; }
-  if (event.target.closest("[data-action='quick-open']")) { openQuick(app.route.name === "quest" ? app.route.id : null); return; }
+  if (event.target.closest("[data-action='quick-open']")) { openQuick(app.route.name === "quest" ? app.route.id : null, app.route.name === "project" ? app.route.id : null); return; }
   if (event.target.closest("[data-action='notification-open']")) { document.querySelector("[data-notification-dialog]")?.showModal(); return; }
   if (event.target.closest("[data-action='notification-later']")) { document.querySelector("[data-notification-dialog]")?.close(); await mutate("preferences.update", { notification_prompt_dismissed: true }, { quiet: true }); return; }
   if (event.target.closest("[data-action='notification-enable']")) { const button = event.target.closest("button"); button.disabled = true; try { await enableNotifications(); document.querySelector("[data-notification-dialog]")?.close(); } catch (error) { toast(error.message === "push_not_configured" ? "El envío programado aún no está configurado." : "No se pudieron activar los avisos.", "warning"); button.disabled = false; } return; }
-  const capture = event.target.closest("[data-capture]"); if (capture) { openEditor(capture.dataset.capture, { main: capture.dataset.main === "true", projectId: capture.dataset.project || "" }); return; }
+  const view = event.target.closest("[data-mission-view]"); if (view) { app.missionView = view.dataset.missionView; if (app.missionView === "tree" && app.filters.level === "roots") app.filters.level = "all"; localStorage.setItem("ivanimports.mission-control.mission-view", app.missionView); render(); return; }
+  const capture = event.target.closest("[data-capture]"); if (capture) { const type = capture.dataset.capture === "project-new" ? "project" : capture.dataset.capture; openEditor(type, { main: capture.dataset.main === "true", projectId: capture.dataset.project || "" }); return; }
   const quickParent = event.target.closest("[data-quick-parent]"); if (quickParent) { openQuick(quickParent.dataset.quickParent); return; }
   const openQuest = event.target.closest("[data-open-quest]"); if (openQuest) { navigate(`/control/quests/${encodeURIComponent(openQuest.dataset.openQuest)}/`); return; }
   const editQuest = event.target.closest("[data-edit-quest]"); if (editQuest) { openEditor("quest", { editId: editQuest.dataset.editQuest }); return; }
   const editProject = event.target.closest("[data-edit-project]"); if (editProject) { openEditor("project", { editId: editProject.dataset.editProject }); return; }
+  const projectField = event.target.closest("[data-project-field]"); if (projectField) { const project = projectFor(projectField.dataset.projectId); const labels = { current_focus: "Foco actual", weekly_objective: "Objetivo de esta semana", general_objective: "Objetivo general", next_milestone: "Próximo hito" }; const value = prompt(labels[projectField.dataset.projectField], project?.[projectField.dataset.projectField] || ""); if (value === null) return; await mutate("project.update", { id: project.id, [projectField.dataset.projectField]: value }, { success: "Proyecto actualizado" }); return; }
+  const resolveDecision = event.target.closest("[data-resolve-decision]"); if (resolveDecision) { const resolution = prompt("Decisión tomada", ""); if (resolution === null) return; const notes = prompt("Motivo o notas (opcional)", "") || ""; await mutate("project.decision.resolve", { id: resolveDecision.dataset.resolveDecision, resolution, resolution_notes: notes }, { success: "Decisión resuelta" }); return; }
+  const resolveBlocker = event.target.closest("[data-resolve-blocker]"); if (resolveBlocker) { await mutate("project.blocker.resolve", { id: resolveBlocker.dataset.resolveBlocker }, { success: "Bloqueo resuelto" }); return; }
+  const editMetric = event.target.closest("[data-edit-metric]"); if (editMetric) { const metric = app.state.project_metrics.find((item) => item.id === editMetric.dataset.editMetric); const value = prompt(`Nuevo valor para ${metric.name}`, metric.value || ""); if (value === null) return; await mutate("project.metric.update", { id: metric.id, value }, { success: "Métrica actualizada" }); return; }
+  const entityDelete = event.target.closest("[data-project-entity-delete]"); if (entityDelete) { if (!confirm("¿Eliminar este elemento?")) return; const actions = { log: "project.log.delete", achievement: "project.achievement.delete", decision: "project.decision.delete", blocker: "project.blocker.delete", metric: "project.metric.delete" }; await mutate(actions[entityDelete.dataset.projectEntityDelete], { id: entityDelete.dataset.entityId }, { success: "Elemento eliminado" }); return; }
   const toggle = event.target.closest("[data-quest-toggle]"); if (toggle) { const quest = app.state.quests.find((item) => item.id === toggle.dataset.questToggle); const done = questDone(quest); const branch = getRecursiveQuestProgress(app.tree, quest.id, questDone); if (!done && branch.pending && !confirm(`Esta misión tiene ${branch.pending} submisiones pendientes. ¿Completar solo esta misión?`)) return; await mutate(done ? "quest.undo" : "quest.complete", { id: quest.id, period_key: questPeriodKey(quest) }, { success: done ? "Misión reabierta" : `Misión completada · +${quest.xp_reward} XP`, optimistic: true }); return; }
   const deletion = event.target.closest("[data-delete-quest]"); if (deletion) { const children = getQuestChildren(app.tree, deletion.dataset.deleteQuest); if (children.length) { app.pendingArchiveId = deletion.dataset.deleteQuest; document.querySelector("[data-archive-dialog]")?.showModal(); return; } if (!confirm("¿Archivar esta misión? Sus recordatorios se cancelarán.")) return; const quest = app.tree.byId.get(deletion.dataset.deleteQuest); await mutate("quest.delete", { id: deletion.dataset.deleteQuest }, { success: "Misión archivada" }); document.querySelector("[data-editor-dialog]")?.close(); if (app.route.name === "quest" && app.route.id === quest.id) navigate(quest.parent_id ? `/control/quests/${encodeURIComponent(quest.parent_id)}/` : "/control/quests/"); return; }
   const archiveMode = event.target.closest("[data-archive-mode]"); if (archiveMode && app.pendingArchiveId) { const quest = app.tree.byId.get(app.pendingArchiveId); const destination = quest?.parent_id ? `/control/quests/${encodeURIComponent(quest.parent_id)}/` : "/control/quests/"; await mutate("quest.delete", { id: app.pendingArchiveId, mode: archiveMode.dataset.archiveMode }, { success: archiveMode.dataset.archiveMode === "branch" ? "Rama archivada" : "Misión archivada; hijos promovidos" }); app.pendingArchiveId = null; document.querySelector("[data-archive-dialog]")?.close(); document.querySelector("[data-editor-dialog]")?.close(); if (app.route.name === "quest") navigate(destination); return; }
@@ -399,7 +511,7 @@ async function handleClick(event) {
   const dismiss = event.target.closest("[data-reminder-dismiss]"); if (dismiss) { await mutate("reminder.dismiss", { id: dismiss.dataset.reminderDismiss }, { success: "Recordatorio cerrado" }); return; }
   const convert = event.target.closest("[data-idea-convert]"); if (convert) { await mutate("idea.convert", { id: convert.dataset.ideaConvert }, { success: "Idea convertida en proyecto" }); return; }
   const ideaStatus = event.target.closest("[data-idea-status]"); if (ideaStatus) { await mutate("idea.update", { id: ideaStatus.dataset.ideaStatus, status: ideaStatus.dataset.status }, { success: "Idea actualizada" }); return; }
-  if (event.target.closest("[data-action='demo-reset']")) { if (!confirm("¿Restaurar la demo?")) return; if (app.localPreview) { app.state = createDemoControlState("demo"); app.revision += 1; localStorage.removeItem("ivanimports.mission-control.local-demo.v3"); render(); } else { const response = await fetchJson(API.demoReset, { method: "POST", body: "{}" }); app.state = response.state; app.revision = response.revision; render(); } toast("Demo restaurada"); }
+  if (event.target.closest("[data-action='demo-reset']")) { if (!confirm("¿Restaurar la demo?")) return; if (app.localPreview) { app.state = createDemoControlState("demo"); app.revision += 1; localStorage.removeItem("ivanimports.mission-control.local-demo.v4"); render(); } else { const response = await fetchJson(API.demoReset, { method: "POST", body: "{}" }); app.state = response.state; app.revision = response.revision; render(); } toast("Demo restaurada"); }
 }
 
 function handleChange(event) {
@@ -419,7 +531,7 @@ async function refreshState() {
 async function boot() {
   app.route = parseRoute(document.body.dataset.controlRoute || location.pathname);
   try {
-    if (app.localPreview) { const saved = JSON.parse(localStorage.getItem("ivanimports.mission-control.local-demo.v3") || localStorage.getItem("ivanimports.mission-control.local-demo.v2") || "null"); app.session = { authenticated: true, user: { demo: true } }; app.state = saved?.state || createDemoControlState("demo"); app.revision = saved?.revision || 0; render(); return; }
+    if (app.localPreview) { const saved = JSON.parse(localStorage.getItem("ivanimports.mission-control.local-demo.v4") || localStorage.getItem("ivanimports.mission-control.local-demo.v3") || localStorage.getItem("ivanimports.mission-control.local-demo.v2") || "null"); app.session = { authenticated: true, user: { demo: true } }; app.state = normalizeControlState(saved?.state || createDemoControlState("demo"), "demo", { now: Date.now() }); app.revision = saved?.revision || 0; render(); return; }
     app.session = await fetchJson(API.session); if (!app.session.authenticated) { renderLogin(); return; }
     const payload = await fetchJson(API.state); app.state = payload.state; app.revision = payload.revision; render(); registerServiceWorker().catch(() => {});
     if (app.state.preferences?.timezone !== app.timezone) await mutate("preferences.update", { timezone: app.timezone }, { quiet: true });
@@ -435,8 +547,8 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden) refr
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") document.querySelectorAll("dialog[open]").forEach((dialog) => dialog.close());
   const editing = ["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName);
-  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") { event.preventDefault(); openQuick(app.route.name === "quest" ? app.route.id : null); return; }
-  if (!editing) { if (event.key === "1") navigate("/control/"); if (event.key === "2") navigate("/control/quests/"); if (event.key === "3") navigate("/control/ideas/"); if (event.key.toLowerCase() === "q") openQuick(app.route.name === "quest" ? app.route.id : null); }
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") { event.preventDefault(); openQuick(app.route.name === "quest" ? app.route.id : null, app.route.name === "project" ? app.route.id : null); return; }
+  if (!editing) { if (event.key === "1") navigate("/control/"); if (event.key === "2") navigate("/control/quests/"); if (event.key === "3") navigate("/control/ideas/"); if (event.key.toLowerCase() === "q") openQuick(app.route.name === "quest" ? app.route.id : null, app.route.name === "project" ? app.route.id : null); }
 });
 setInterval(refreshState, 5 * 60 * 1000); setInterval(checkInAppReminders, 60 * 1000);
 boot();

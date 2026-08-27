@@ -1,9 +1,10 @@
-const CACHE_NAME = "mission-control-studio-v3";
+const CACHE_NAME = "mission-control-studio-v4";
 const STATIC_ASSETS = [
-  "/assets/control/app.css?v=3.0.0",
-  "/assets/control/app.js?v=3.0.0",
+  "/assets/control/app.css?v=4.0.0",
+  "/assets/control/app.js?v=4.0.0",
   "/assets/control/domain.js",
   "/assets/control/mission-tree.js",
+  "/assets/control/project-cockpit.js",
   "/assets/control/mission-schedule.js",
   "/assets/control/manifest.webmanifest",
   "/control/icon.svg",

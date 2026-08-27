@@ -5,6 +5,7 @@ import { createControlRepository } from "./_control/repository.js";
 import { controlShell } from "./_control/shell.js";
 import { buildReminderCandidates, getTodaySummary, questCompletedForPeriod, questIsOverdue } from "../assets/control/mission-schedule.js";
 import { buildQuestTreeIndex, getDirectQuestProgress, getQuestChildren, getQuestPath, sortSiblingQuests } from "../assets/control/mission-tree.js";
+import { buildProjectIndex, getAttentionItems, getProjectSummary } from "../assets/control/project-cockpit.js";
 import { controlPushPublicConfig, createControlPushSender } from "./_control/push.js";
 
 const JSON_LIMIT_BYTES = 96 * 1024;
@@ -162,12 +163,18 @@ function mobileQuestView(state, index, quest, timestamp) {
 function hierarchicalTodaySummary(state, timestamp) {
   const summary = getTodaySummary(state, timestamp);
   const index = buildQuestTreeIndex(state.quests);
+  const projectIndex = buildProjectIndex(state);
   const decorate = (quest) => mobileQuestView(state, index, quest, timestamp);
   return {
     ...summary,
     missions: summary.missions.map(decorate),
     completed_missions: summary.completed_missions.map(decorate),
     overdue_missions: summary.overdue_missions.map(decorate),
+    attention_items: getAttentionItems(state, timestamp),
+    project_summaries: state.projects.filter((project) => project.status !== "ARCHIVED").map((project) => {
+      const projectSummary = getProjectSummary(state, project, timestamp, projectIndex);
+      return { id: project.id, title: project.title, status: project.status, health: project.health, current_focus: project.current_focus, weekly_objective: project.weekly_objective, quest_stats: projectSummary.quests, open_decisions: projectSummary.open_decisions.length, open_blockers: projectSummary.open_blockers.length };
+    }),
   };
 }
 

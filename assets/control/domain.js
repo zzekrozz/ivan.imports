@@ -30,6 +30,15 @@ import {
   repairQuestHierarchy,
   sortSiblingQuests,
 } from "./mission-tree.js";
+import {
+  buildProjectIndex,
+  getAttentionItems,
+  getProjectOpenBlockers,
+  getProjectOpenDecisions,
+  getProjectQuestStats,
+  getProjectRecentActivity,
+  getProjectSummary,
+} from "./project-cockpit.js";
 
 export {
   CONTROL_TIME_ZONE,
@@ -58,15 +67,23 @@ export {
   getQuestPath,
   getRecursiveQuestProgress,
   sortSiblingQuests,
+  buildProjectIndex,
+  getAttentionItems,
+  getProjectOpenBlockers,
+  getProjectOpenDecisions,
+  getProjectQuestStats,
+  getProjectRecentActivity,
+  getProjectSummary,
 };
 
-export const CONTROL_SCHEMA_VERSION = 3;
+export const CONTROL_SCHEMA_VERSION = 4;
 export const PROJECT_STATUSES = Object.freeze(["ACTIVE", "PAUSED", "IDEA", "COMPLETED", "ARCHIVED"]);
 export const QUEST_CATEGORIES = Object.freeze(["MONEY", "GROWTH", "BUILD", "MAINTENANCE", "EXPERIMENT"]);
 export const QUEST_PRIORITIES = Object.freeze(["LOW", "NORMAL", "HIGH"]);
 export const RECURRENCE_TYPES = Object.freeze(["once", "daily", "weekly", "monthly", "interval"]);
 export const IDEA_STATUSES = Object.freeze(["VAULT", "CANDIDATE", "CONVERTED", "DISCARDED"]);
 export const GOAL_PERIODS = Object.freeze(["DAILY", "WEEKLY", "MONTHLY"]);
+export const PROJECT_HEALTH = Object.freeze(["GREEN", "YELLOW", "RED"]);
 
 function randomId(prefix = "item") {
   if (globalThis.crypto?.randomUUID) return `${prefix}_${globalThis.crypto.randomUUID()}`;
@@ -124,6 +141,11 @@ export function createEmptyControlState(userId, { now = Date.now() } = {}) {
     quests: [],
     quest_completions: [],
     progress_logs: [],
+    project_logs: [],
+    project_achievements: [],
+    project_decisions: [],
+    project_blockers: [],
+    project_metrics: [],
     reminder_deliveries: [],
     goals: [],
     ideas: [],
@@ -165,6 +187,11 @@ export function normalizeControlState(value, userId, { now = Date.now() } = {}) 
     quests: Array.isArray(value.quests) ? value.quests : [],
     quest_completions: Array.isArray(value.quest_completions) ? value.quest_completions : [],
     progress_logs: Array.isArray(value.progress_logs) ? value.progress_logs.slice(-1000) : [],
+    project_logs: Array.isArray(value.project_logs) ? value.project_logs.slice(-1000) : [],
+    project_achievements: Array.isArray(value.project_achievements) ? value.project_achievements.slice(-1000) : [],
+    project_decisions: Array.isArray(value.project_decisions) ? value.project_decisions.slice(-1000) : [],
+    project_blockers: Array.isArray(value.project_blockers) ? value.project_blockers.slice(-1000) : [],
+    project_metrics: Array.isArray(value.project_metrics) ? value.project_metrics.slice(-500) : [],
     reminder_deliveries: Array.isArray(value.reminder_deliveries) ? value.reminder_deliveries.slice(-500) : [],
     goals: Array.isArray(value.goals) ? value.goals : [],
     ideas: Array.isArray(value.ideas) ? value.ideas : [],
@@ -182,8 +209,9 @@ export function normalizeControlState(value, userId, { now = Date.now() } = {}) 
       push_subscriptions: Array.isArray(value.preferences?.push_subscriptions) ? value.preferences.push_subscriptions.slice(-8) : [],
     },
   };
+  state.projects = state.projects.map((project) => projectInput(state, project, now, project));
   state.quests = repairQuestHierarchy(state.quests.map((quest) => questInput(state, quest, now, quest)));
-  for (const collection of [state.projects, state.quests, state.quest_completions, state.progress_logs, state.reminder_deliveries, state.goals, state.ideas, state.activity_log]) {
+  for (const collection of [state.projects, state.quests, state.quest_completions, state.progress_logs, state.project_logs, state.project_achievements, state.project_decisions, state.project_blockers, state.project_metrics, state.reminder_deliveries, state.goals, state.ideas, state.activity_log]) {
     for (const item of collection) item.user_id = state.user_id;
   }
   return state;
@@ -257,6 +285,12 @@ function projectInput(state, payload, now, existing = null) {
     progress: clamp(payload.progress ?? existing?.progress, 0, 100),
     progress_method: payload.progress_method === "calculated" ? "calculated" : existing?.progress_method || "manual",
     main_goal: cleanText(payload.main_goal ?? existing?.main_goal, 240),
+    general_objective: cleanText(payload.general_objective ?? existing?.general_objective ?? existing?.main_goal, 800),
+    weekly_objective: cleanText(payload.weekly_objective ?? existing?.weekly_objective, 800),
+    current_focus: cleanText(payload.current_focus ?? existing?.current_focus, 500),
+    health: PROJECT_HEALTH.includes(payload.health) ? payload.health : PROJECT_HEALTH.includes(existing?.health) ? existing.health : "GREEN",
+    next_milestone: cleanText(payload.next_milestone ?? existing?.next_milestone, 500),
+    next_milestone_date: payload.next_milestone_date === null || payload.next_milestone_date === "" ? null : cleanDate(payload.next_milestone_date ?? existing?.next_milestone_date),
     notes: cleanText(payload.notes ?? existing?.notes, 5000),
     links: Array.isArray(payload.links) ? payload.links.slice(0, 20).map((link) => ({ label: cleanText(link.label, 80), url: cleanText(link.url, 500) })) : existing?.links || [],
     completed_at: status === "COMPLETED" ? existing?.completed_at || iso(now) : null,
@@ -420,6 +454,17 @@ function archiveQuestEntity(state, quest, now, reason) {
   cancelQuestDeliveries(state, quest.id, now, { reason });
 }
 
+function requireProject(state, projectId) {
+  return requireItem(state.projects, cleanText(projectId, 128), "project");
+}
+
+function projectTextEntity(state, payload, now, prefix, maximum = 3000) {
+  const project = requireProject(state, payload.project_id);
+  const item = { ...entityBase(state, prefix, now), project_id: project.id, text: cleanText(payload.text, maximum) };
+  if (!item.text) throw mutationError(`${prefix}_text_required`);
+  return { project, item };
+}
+
 export function applyControlMutation(inputState, mutation, { userId, now = Date.now() } = {}) {
   const state = structuredClone(normalizeControlState(inputState, userId, { now }));
   const action = cleanText(mutation?.action, 80);
@@ -458,6 +503,84 @@ export function applyControlMutation(inputState, mutation, { userId, now = Date.
     activate.updated_at = iso(now);
     addActivity(state, "project_paused", pause.title, now, { project_id: pause.id });
     result = activate;
+  } else if (action === "project.log.add") {
+    const { project, item } = projectTextEntity(state, payload, now, "project_log");
+    state.project_logs.push(item);
+    addActivity(state, "project_progress_added", project.title, now, { project_id: project.id, project_log_id: item.id });
+    result = item;
+  } else if (action === "project.log.delete") {
+    const index = state.project_logs.findIndex((item) => item.id === payload.id);
+    if (index < 0) throw mutationError("project_log_not_found");
+    [result] = state.project_logs.splice(index, 1);
+  } else if (action === "project.achievement.add") {
+    const { project, item } = projectTextEntity(state, payload, now, "achievement", 1000);
+    item.achieved_at = payload.achieved_at ? iso(payload.achieved_at) : iso(now);
+    state.project_achievements.push(item);
+    addActivity(state, "project_achievement_added", item.text, now, { project_id: project.id, achievement_id: item.id });
+    result = item;
+  } else if (action === "project.achievement.delete") {
+    const index = state.project_achievements.findIndex((item) => item.id === payload.id);
+    if (index < 0) throw mutationError("achievement_not_found");
+    [result] = state.project_achievements.splice(index, 1);
+  } else if (action === "project.decision.add") {
+    const { project, item } = projectTextEntity(state, payload, now, "decision", 1200);
+    Object.assign(item, { status: "OPEN", resolved_at: null, resolution: "", resolution_notes: "" });
+    state.project_decisions.push(item);
+    addActivity(state, "project_decision_added", item.text, now, { project_id: project.id, decision_id: item.id });
+    result = item;
+  } else if (action === "project.decision.resolve") {
+    const item = requireItem(state.project_decisions, payload.id, "decision");
+    item.status = "RESOLVED";
+    item.resolution = cleanText(payload.resolution, 1200);
+    item.resolution_notes = cleanText(payload.resolution_notes, 3000);
+    item.resolved_at = iso(now);
+    item.updated_at = iso(now);
+    result = item;
+  } else if (action === "project.decision.delete") {
+    const index = state.project_decisions.findIndex((item) => item.id === payload.id);
+    if (index < 0) throw mutationError("decision_not_found");
+    [result] = state.project_decisions.splice(index, 1);
+  } else if (action === "project.blocker.add") {
+    const { project, item } = projectTextEntity(state, payload, now, "blocker", 1200);
+    Object.assign(item, { status: "OPEN", resolved_at: null });
+    state.project_blockers.push(item);
+    addActivity(state, "project_blocker_added", item.text, now, { project_id: project.id, blocker_id: item.id });
+    result = item;
+  } else if (action === "project.blocker.resolve") {
+    const item = requireItem(state.project_blockers, payload.id, "blocker");
+    item.status = "RESOLVED";
+    item.resolved_at = iso(now);
+    item.updated_at = iso(now);
+    result = item;
+  } else if (action === "project.blocker.delete") {
+    const index = state.project_blockers.findIndex((item) => item.id === payload.id);
+    if (index < 0) throw mutationError("blocker_not_found");
+    [result] = state.project_blockers.splice(index, 1);
+  } else if (action === "project.metric.add") {
+    const project = requireProject(state, payload.project_id);
+    const siblings = state.project_metrics.filter((item) => item.project_id === project.id);
+    const item = {
+      ...entityBase(state, "metric", now), project_id: project.id,
+      name: cleanText(payload.name, 120), value: cleanText(payload.value, 120), unit: cleanText(payload.unit, 30),
+      target: payload.target === null || payload.target === "" || payload.target === undefined ? null : cleanText(payload.target, 120),
+      sort_order: payload.sort_order === undefined ? siblings.reduce((maximum, metric) => Math.max(maximum, finite(metric.sort_order)), 0) + 1000 : Math.round(clamp(payload.sort_order, -1_000_000, 1_000_000)),
+    };
+    if (!item.name) throw mutationError("metric_name_required");
+    state.project_metrics.push(item);
+    result = item;
+  } else if (action === "project.metric.update") {
+    const item = requireItem(state.project_metrics, payload.id, "metric");
+    if (payload.name !== undefined) item.name = cleanText(payload.name, 120);
+    if (payload.value !== undefined) item.value = cleanText(payload.value, 120);
+    if (payload.unit !== undefined) item.unit = cleanText(payload.unit, 30);
+    if (payload.target !== undefined) item.target = payload.target === null || payload.target === "" ? null : cleanText(payload.target, 120);
+    if (payload.sort_order !== undefined) item.sort_order = Math.round(clamp(payload.sort_order, -1_000_000, 1_000_000));
+    item.updated_at = iso(now);
+    result = item;
+  } else if (action === "project.metric.delete") {
+    const index = state.project_metrics.findIndex((item) => item.id === payload.id);
+    if (index < 0) throw mutationError("metric_not_found");
+    [result] = state.project_metrics.splice(index, 1);
   } else if (action === "quest.create") {
     const parent = payload.parent_id ? requireItem(state.quests, payload.parent_id, "parent_quest") : null;
     const input = { ...payload };
@@ -684,7 +807,7 @@ export function createDemoControlState(userId = "demo", { now = Date.now() } = {
     ["project_fynddo", "Fynddo", "PAUSED", 10, "#8C8A7C", "FY", "Hipótesis aparcada hasta liberar foco."],
   ];
   state.projects = projectData.map(([id, title, status, progress, accent, icon, description], index) => ({
-    ...entityBase(state, "project", new Date(now).getTime() - ((index + 2) * DAY_MS)), id, title, slug: title.toLocaleLowerCase("es").replace(/\s+/g, "-"), description, status, priority: index < 2 ? "HIGH" : "NORMAL", icon, accent, progress, progress_method: "manual", main_goal: index === 1 ? "Conseguir 10 trabajos este mes" : "", notes: "", links: [], completed_at: null, updated_at: iso(new Date(now).getTime() - (index * 3600000)) }));
+    ...entityBase(state, "project", new Date(now).getTime() - ((index + 2) * DAY_MS)), id, title, slug: title.toLocaleLowerCase("es").replace(/\s+/g, "-"), description, status, priority: index < 2 ? "HIGH" : "NORMAL", icon, accent, progress, progress_method: "manual", main_goal: index === 1 ? "Conseguir 10 trabajos este mes" : "", general_objective: description, weekly_objective: index === 0 ? "Publicar dos mejoras visibles y cerrar una venta." : index === 2 ? "Terminar el sistema del próximo vídeo." : "", current_focus: index === 0 ? "Terminar Mission Control V4." : index === 1 ? "Cerrar la campaña de captación." : index === 2 ? "Terminar vídeo 30 días sin Internet." : "Foco por definir", health: index === 2 ? "YELLOW" : index === 3 ? "RED" : "GREEN", next_milestone: index === 2 ? "Publicar primer vídeo terminado." : "Cerrar el siguiente entregable.", next_milestone_date: null, notes: "", links: [], completed_at: null, updated_at: iso(new Date(now).getTime() - (index * 3600000)) }));
   const today = dateKey(now);
   const questData = [
     ["quest_reel", "Crear y publicar Reel del vaciado completo", "project_removals", "MONEY", 100, true, "once"],
@@ -732,6 +855,17 @@ export function createDemoControlState(userId = "demo", { now = Date.now() } = {
     ["goal_revenue", "Facturación", null, "MONTHLY", 2450, 5000, "€", 400, false],
     ["goal_ddtm", "Publicar 10 vídeos DDTM", "project_ddtm", "MONTHLY", 3, 10, "count", 250, false],
   ].map(([id, title, project_id, period, current_value, target_value, unit, xp_reward, is_boss]) => ({ ...entityBase(state, "goal", now), id, project_id, parent_goal_id: null, title, period, metric_type: "number", unit, current_value, target_value, xp_reward, is_boss, start_date: iso(now), end_date: null, completed_at: null, xp_awarded: 0 }));
+  state.project_logs = [
+    { ...entityBase(state, "project_log", new Date(now).getTime() - DAY_MS), id: "project_log_ddtm", project_id: "project_ddtm", text: "Definida la estructura principal del vídeo." },
+    { ...entityBase(state, "project_log", new Date(now).getTime() - (2 * DAY_MS)), id: "project_log_ivan", project_id: "project_ivanimports", text: "Mission Tree V3 desplegado y verificado." },
+  ];
+  state.project_achievements = [{ ...entityBase(state, "achievement", new Date(now).getTime() - (3 * DAY_MS)), id: "achievement_ivan_v3", project_id: "project_ivanimports", text: "Mission Control V3 publicado.", achieved_at: iso(new Date(now).getTime() - (3 * DAY_MS)) }];
+  state.project_decisions = [{ ...entityBase(state, "decision", new Date(now).getTime() - DAY_MS), id: "decision_ddtm_length", project_id: "project_ddtm", text: "¿Vídeo de 4:30 o 8 minutos?", status: "OPEN", resolved_at: null, resolution: "", resolution_notes: "" }];
+  state.project_blockers = [{ ...entityBase(state, "blocker", new Date(now).getTime() - DAY_MS), id: "blocker_removals_api", project_id: "project_removals", text: "Falta acceso a la API de captación.", status: "OPEN", resolved_at: null }];
+  state.project_metrics = [
+    { ...entityBase(state, "metric", now), id: "metric_ddtm_videos", project_id: "project_ddtm", name: "Vídeos publicados", value: "4", unit: "vídeos", target: "10", sort_order: 1000 },
+    { ...entityBase(state, "metric", now), id: "metric_ivan_leads", project_id: "project_ivanimports", name: "Leads", value: "14", unit: "", target: "25", sort_order: 1000 },
+  ];
   const ideaCreated = new Date(now).getTime() - (20 * 60 * 60 * 1000);
   state.ideas = [
     { ...entityBase(state, "idea", ideaCreated), id: "idea_automation", related_project_id: null, title: "Automatizar resumen de leads", description: "Agrupar origen, importe y siguiente acción sin abrir otro proyecto todavía.", tags: ["automatización", "ventas"], status: "VAULT", cooldown_until: iso(ideaCreated + (72 * 60 * 60 * 1000)) },
