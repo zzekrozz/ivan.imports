@@ -90,6 +90,8 @@ function memoryRepository(initialState) {
 test("authenticated summary exposes the centralized daily contract for a future mobile client", async () => {
   let state = createEmptyControlState("owner", { now: NOW });
   state = applyControlMutation(state, { action: "quest.create", operation_id: "create-summary", payload: { title: "Llamar", scheduled_date: "2026-08-18" } }, { userId: "owner", now: NOW }).state;
+  const root = state.quests[0];
+  state = applyControlMutation(state, { action: "quest.create", operation_id: "create-summary-child", payload: { title: "Preparar guion", parent_id: root.id, scheduled_date: null } }, { userId: "owner", now: NOW }).state;
   const repository = memoryRepository(state);
   const handler = createControlHandler({ env, repository, now: () => NOW });
   const loginResponse = await login(handler);
@@ -100,6 +102,16 @@ test("authenticated summary exposes the centralized daily contract for a future 
   assert.equal(body.summary.total, 1);
   assert.equal(body.summary.pending, 1);
   assert.equal(body.summary.timezone, "Europe/Madrid");
+  assert.equal(body.summary.missions[0].child_count, 1);
+  assert.deepEqual(body.summary.missions[0].path, [{ id: root.id, title: "Llamar" }]);
+
+  const childrenResponse = await handler(new Request(`https://ivanimports.es/api/control?action=quests&parent_id=${encodeURIComponent(root.id)}`, { headers: { cookie } }));
+  assert.equal(childrenResponse.status, 200);
+  const childrenBody = await childrenResponse.json();
+  assert.equal(childrenBody.parent_id, root.id);
+  assert.equal(childrenBody.quests.length, 1);
+  assert.equal(childrenBody.quests[0].title, "Preparar guion");
+  assert.deepEqual(childrenBody.quests[0].path.map((item) => item.title), ["Llamar", "Preparar guion"]);
 });
 
 test("reminder dispatcher requires the cron secret, sends push and records delivery", async () => {

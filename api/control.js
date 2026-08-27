@@ -3,7 +3,8 @@ import { constantTimeEqual, hmacDigest, parseCookies, safeReturnTo } from "./_ac
 import { createHash } from "node:crypto";
 import { createControlRepository } from "./_control/repository.js";
 import { controlShell } from "./_control/shell.js";
-import { buildReminderCandidates, getTodaySummary } from "../assets/control/mission-schedule.js";
+import { buildReminderCandidates, getTodaySummary, questCompletedForPeriod, questIsOverdue } from "../assets/control/mission-schedule.js";
+import { buildQuestTreeIndex, getDirectQuestProgress, getQuestChildren, getQuestPath, sortSiblingQuests } from "../assets/control/mission-tree.js";
 import { controlPushPublicConfig, createControlPushSender } from "./_control/push.js";
 
 const JSON_LIMIT_BYTES = 96 * 1024;
@@ -147,6 +148,29 @@ function notificationPayload(candidate) {
   };
 }
 
+function mobileQuestView(state, index, quest, timestamp) {
+  const direct = getDirectQuestProgress(index, quest.id, (item) => questCompletedForPeriod(state, item, timestamp) || (item.recurrence_type === "once" && item.status === "COMPLETED"));
+  return {
+    ...quest,
+    child_count: direct.total,
+    completed_child_count: direct.completed,
+    ready_to_complete: direct.ready_to_complete && quest.status !== "COMPLETED",
+    path: getQuestPath(index, quest.id).map((item) => ({ id: item.id, title: item.title })),
+  };
+}
+
+function hierarchicalTodaySummary(state, timestamp) {
+  const summary = getTodaySummary(state, timestamp);
+  const index = buildQuestTreeIndex(state.quests);
+  const decorate = (quest) => mobileQuestView(state, index, quest, timestamp);
+  return {
+    ...summary,
+    missions: summary.missions.map(decorate),
+    completed_missions: summary.completed_missions.map(decorate),
+    overdue_missions: summary.overdue_missions.map(decorate),
+  };
+}
+
 export function resolveControlAction(request) {
   return new URL(request.url).searchParams.get("action") || "";
 }
@@ -195,7 +219,17 @@ export function createControlHandler({ env = process.env, fetchImpl = fetch, now
         if (request.method !== "GET") return responseJson({ error: "method_not_allowed" }, 405, { Allow: "GET" });
         const principal = requirePrincipal(request, config, now());
         const record = await controlRepository.getRecord(principal.subject, { demo: principal.demo, now: now() });
-        return responseJson({ summary: getTodaySummary(record.state, now()), revision: record.revision });
+        return responseJson({ summary: hierarchicalTodaySummary(record.state, now()), revision: record.revision });
+      }
+      if (action === "quests") {
+        if (request.method !== "GET") return responseJson({ error: "method_not_allowed" }, 405, { Allow: "GET" });
+        const principal = requirePrincipal(request, config, now());
+        const record = await controlRepository.getRecord(principal.subject, { demo: principal.demo, now: now() });
+        const parentId = new URL(request.url).searchParams.get("parent_id") || null;
+        const index = buildQuestTreeIndex(record.state.quests);
+        if (parentId && !index.byId.has(parentId)) return responseJson({ error: "quest_not_found" }, 404);
+        const children = sortSiblingQuests(getQuestChildren(index, parentId), { isOverdue: (quest) => questIsOverdue(record.state, quest, now()) });
+        return responseJson({ parent_id: parentId, quests: children.map((quest) => mobileQuestView(record.state, index, quest, now())), revision: record.revision });
       }
       if (action === "push-config") {
         if (request.method !== "GET") return responseJson({ error: "method_not_allowed" }, 405, { Allow: "GET" });
