@@ -6,6 +6,8 @@ IvanImports es una aplicación web estática con JavaScript ESM, generada a `dis
 
 Mission Control permanece encapsulado en `assets/control/`, `api/_control/`, `api/control.js` y la ruta `/control`. No aparece en la navegación pública, no entra en el sitemap y se marca `noindex` tanto en HTML como en cabeceras y `robots.txt`.
 
+El acceso usa un único código privado. Puede rotarse mediante `MISSION_CONTROL_ACCESS_CODE`; el valor solicitado para esta instalación se conserva únicamente como digest de fallback. La comparación se realiza en servidor y, tras validarla, se emite una cookie `HttpOnly`, `SameSite=Strict` y `Secure` en producción. No se solicita email ni se envían códigos temporales.
+
 ## Modelo durable y migración
 
 No se necesita una migración SQL. Cada cuenta tiene un agregado versionado en la clave:
