@@ -106,6 +106,7 @@ export function questIsDueOn(quest, value = Date.now(), timeZone = CONTROL_TIME_
   const end = /^\d{4}-\d{2}-\d{2}$/.test(quest.recurrence_end_date || "") ? quest.recurrence_end_date : null;
   if (target < start || (end && target > end)) return false;
   const recurrence = quest.recurrence_type || "once";
+  if (recurrence === "once" && !quest.scheduled_date && !quest.due_date) return false;
   if (recurrence === "daily") return true;
   if (recurrence === "weekly") {
     const configured = Array.isArray(quest.recurrence_config?.days) ? quest.recurrence_config.days.map(Number).filter((day) => day >= 1 && day <= 7) : [];

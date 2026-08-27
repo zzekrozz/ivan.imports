@@ -17,6 +17,19 @@ import {
   zonedDateTimeToUtc,
   buildReminderCandidates,
 } from "./mission-schedule.js";
+import {
+  buildQuestTreeIndex,
+  canMoveQuest,
+  getDirectQuestProgress,
+  getQuestAncestors,
+  getQuestChildren,
+  getQuestDescendants,
+  getQuestParent,
+  getQuestPath,
+  getRecursiveQuestProgress,
+  repairQuestHierarchy,
+  sortSiblingQuests,
+} from "./mission-tree.js";
 
 export {
   CONTROL_TIME_ZONE,
@@ -35,9 +48,19 @@ export {
   weekKey,
   weekdayNumber,
   zonedDateTimeToUtc,
+  buildQuestTreeIndex,
+  canMoveQuest,
+  getDirectQuestProgress,
+  getQuestAncestors,
+  getQuestChildren,
+  getQuestDescendants,
+  getQuestParent,
+  getQuestPath,
+  getRecursiveQuestProgress,
+  sortSiblingQuests,
 };
 
-export const CONTROL_SCHEMA_VERSION = 2;
+export const CONTROL_SCHEMA_VERSION = 3;
 export const PROJECT_STATUSES = Object.freeze(["ACTIVE", "PAUSED", "IDEA", "COMPLETED", "ARCHIVED"]);
 export const QUEST_CATEGORIES = Object.freeze(["MONEY", "GROWTH", "BUILD", "MAINTENANCE", "EXPERIMENT"]);
 export const QUEST_PRIORITIES = Object.freeze(["LOW", "NORMAL", "HIGH"]);
@@ -100,6 +123,7 @@ export function createEmptyControlState(userId, { now = Date.now() } = {}) {
     projects: [],
     quests: [],
     quest_completions: [],
+    progress_logs: [],
     reminder_deliveries: [],
     goals: [],
     ideas: [],
@@ -140,6 +164,7 @@ export function normalizeControlState(value, userId, { now = Date.now() } = {}) 
     projects: Array.isArray(value.projects) ? value.projects : [],
     quests: Array.isArray(value.quests) ? value.quests : [],
     quest_completions: Array.isArray(value.quest_completions) ? value.quest_completions : [],
+    progress_logs: Array.isArray(value.progress_logs) ? value.progress_logs.slice(-1000) : [],
     reminder_deliveries: Array.isArray(value.reminder_deliveries) ? value.reminder_deliveries.slice(-500) : [],
     goals: Array.isArray(value.goals) ? value.goals : [],
     ideas: Array.isArray(value.ideas) ? value.ideas : [],
@@ -157,8 +182,8 @@ export function normalizeControlState(value, userId, { now = Date.now() } = {}) 
       push_subscriptions: Array.isArray(value.preferences?.push_subscriptions) ? value.preferences.push_subscriptions.slice(-8) : [],
     },
   };
-  state.quests = state.quests.map((quest) => questInput(state, quest, now, quest));
-  for (const collection of [state.projects, state.quests, state.quest_completions, state.reminder_deliveries, state.goals, state.ideas, state.activity_log]) {
+  state.quests = repairQuestHierarchy(state.quests.map((quest) => questInput(state, quest, now, quest)));
+  for (const collection of [state.projects, state.quests, state.quest_completions, state.progress_logs, state.reminder_deliveries, state.goals, state.ideas, state.activity_log]) {
     for (const item of collection) item.user_id = state.user_id;
   }
   return state;
@@ -293,6 +318,8 @@ function questInput(state, payload, now, existing = null) {
   const legacyPriority = existing?.priority === "CRITICAL" ? "HIGH" : existing?.priority;
   return {
     ...(existing || entityBase(state, "quest", now)),
+    parent_id: payload.parent_id === null || payload.parent_id === "" ? null : cleanText(payload.parent_id ?? existing?.parent_id, 128) || null,
+    sort_order: Math.round(clamp(payload.sort_order ?? existing?.sort_order, -1_000_000_000, 1_000_000_000)),
     project_id: payload.project_id === null ? null : cleanText(payload.project_id ?? existing?.project_id, 128) || null,
     title: cleanText(payload.title ?? existing?.title, 180),
     description: cleanText(payload.description ?? existing?.description, 1200),
@@ -380,6 +407,19 @@ function normalizePushSubscription(state, payload, now) {
   };
 }
 
+function nextQuestSortOrder(state, parentId) {
+  const siblings = state.quests.filter((quest) => (quest.parent_id || null) === (parentId || null));
+  return siblings.reduce((maximum, quest) => Math.max(maximum, finite(quest.sort_order)), 0) + 1000;
+}
+
+function archiveQuestEntity(state, quest, now, reason) {
+  quest.status = "ARCHIVED";
+  quest.deleted_at = iso(now);
+  quest.is_main_quest = false;
+  quest.updated_at = iso(now);
+  cancelQuestDeliveries(state, quest.id, now, { reason });
+}
+
 export function applyControlMutation(inputState, mutation, { userId, now = Date.now() } = {}) {
   const state = structuredClone(normalizeControlState(inputState, userId, { now }));
   const action = cleanText(mutation?.action, 80);
@@ -419,7 +459,11 @@ export function applyControlMutation(inputState, mutation, { userId, now = Date.
     addActivity(state, "project_paused", pause.title, now, { project_id: pause.id });
     result = activate;
   } else if (action === "quest.create") {
-    const quest = questInput(state, payload, now);
+    const parent = payload.parent_id ? requireItem(state.quests, payload.parent_id, "parent_quest") : null;
+    const input = { ...payload };
+    if (parent && payload.project_id === undefined) input.project_id = parent.project_id;
+    if (payload.sort_order === undefined) input.sort_order = nextQuestSortOrder(state, parent?.id || null);
+    const quest = questInput(state, input, now);
     if (!quest.title) throw mutationError("quest_title_required");
     if (quest.project_id && !state.projects.some((item) => item.id === quest.project_id)) throw mutationError("project_not_found");
     if (quest.is_main_quest) state.quests.forEach((item) => { item.is_main_quest = false; });
@@ -427,6 +471,10 @@ export function applyControlMutation(inputState, mutation, { userId, now = Date.
     result = quest;
   } else if (action === "quest.update") {
     const existing = requireItem(state.quests, payload.id, "quest");
+    if (payload.parent_id !== undefined) {
+      const movement = canMoveQuest(buildQuestTreeIndex(state.quests), existing.id, payload.parent_id || null);
+      if (!movement.allowed) throw mutationError(movement.reason);
+    }
     const previousSchedule = JSON.stringify([existing.scheduled_date, existing.scheduled_time, existing.timezone, existing.reminders, existing.recurrence_type, existing.recurrence_config, existing.recurrence_end_date]);
     const quest = questInput(state, payload, now, existing);
     if (quest.is_main_quest) state.quests.forEach((item) => { if (item.id !== existing.id) item.is_main_quest = false; });
@@ -434,15 +482,32 @@ export function applyControlMutation(inputState, mutation, { userId, now = Date.
     const nextSchedule = JSON.stringify([existing.scheduled_date, existing.scheduled_time, existing.timezone, existing.reminders, existing.recurrence_type, existing.recurrence_config, existing.recurrence_end_date]);
     if (previousSchedule !== nextSchedule) cancelQuestDeliveries(state, existing.id, now);
     result = existing;
+  } else if (action === "quest.move") {
+    const quest = requireItem(state.quests, payload.id, "quest");
+    const parentId = cleanText(payload.parent_id, 128) || null;
+    const movement = canMoveQuest(buildQuestTreeIndex(state.quests), quest.id, parentId);
+    if (!movement.allowed) throw mutationError(movement.reason);
+    quest.parent_id = parentId;
+    quest.sort_order = payload.sort_order === undefined ? nextQuestSortOrder(state, parentId) : Math.round(clamp(payload.sort_order, -1_000_000_000, 1_000_000_000));
+    quest.updated_at = iso(now);
+    addActivity(state, "quest_moved", quest.title, now, { quest_id: quest.id, parent_id: parentId });
+    result = quest;
   } else if (action === "quest.delete") {
     const quest = requireItem(state.quests, payload.id, "quest");
-    quest.status = "ARCHIVED";
-    quest.deleted_at = iso(now);
-    quest.is_main_quest = false;
-    quest.updated_at = iso(now);
-    cancelQuestDeliveries(state, quest.id, now, { reason: "quest_deleted" });
-    addActivity(state, "quest_archived", quest.title, now, { quest_id: quest.id });
-    result = quest;
+    const index = buildQuestTreeIndex(state.quests);
+    const children = getQuestChildren(index, quest.id);
+    if (children.length && !["branch", "promote_children"].includes(payload.mode)) throw mutationError("quest_has_children", { child_count: children.length });
+    if (payload.mode === "branch") {
+      const branch = [quest, ...getQuestDescendants(index, quest.id)];
+      for (const item of branch) archiveQuestEntity(state, item, now, "quest_branch_archived");
+      addActivity(state, "quest_branch_archived", quest.title, now, { quest_id: quest.id, archived_count: branch.length });
+      result = { quest, archived_count: branch.length };
+    } else {
+      if (payload.mode === "promote_children") for (const child of children) { child.parent_id = quest.parent_id || null; child.updated_at = iso(now); }
+      archiveQuestEntity(state, quest, now, "quest_archived");
+      addActivity(state, "quest_archived", quest.title, now, { quest_id: quest.id, promoted_children: payload.mode === "promote_children" ? children.length : 0 });
+      result = quest;
+    }
   } else if (action === "quest.complete") {
     const quest = requireItem(state.quests, payload.id, "quest");
     const completionDate = payload.completed_at ? new Date(payload.completed_at) : new Date(now);
@@ -506,6 +571,19 @@ export function applyControlMutation(inputState, mutation, { userId, now = Date.
     state.ideas.push(idea);
     addActivity(state, "idea_created", idea.title, now, { idea_id: idea.id });
     result = idea;
+  } else if (action === "progress.create") {
+    const quest = requireItem(state.quests, payload.quest_id, "quest");
+    const entry = { ...entityBase(state, "progress", now), quest_id: quest.id, text: cleanText(payload.text, 3000) };
+    if (!entry.text) throw mutationError("progress_text_required");
+    state.progress_logs.push(entry);
+    state.progress_logs = state.progress_logs.slice(-1000);
+    addActivity(state, "quest_progress_added", quest.title, now, { quest_id: quest.id, progress_id: entry.id });
+    result = entry;
+  } else if (action === "progress.delete") {
+    const index = state.progress_logs.findIndex((entry) => entry.id === payload.id);
+    if (index < 0) throw mutationError("progress_not_found");
+    const [entry] = state.progress_logs.splice(index, 1);
+    result = entry;
   } else if (action === "idea.update") {
     const idea = requireItem(state.ideas, payload.id, "idea");
     if (payload.title !== undefined) idea.title = cleanText(payload.title, 180);

@@ -213,6 +213,7 @@
     { "source": "/api/control/login", "destination": "/api/control?action=login" },
     { "source": "/api/control/state", "destination": "/api/control?action=state" },
     { "source": "/api/control/summary", "destination": "/api/control?action=summary" },
+    { "source": "/api/control/quests", "destination": "/api/control?action=quests" },
     { "source": "/api/control/push-config", "destination": "/api/control?action=push-config" },
     { "source": "/api/control/reminders/dispatch", "destination": "/api/control?action=reminders-dispatch" },
     { "source": "/api/control/mutate", "destination": "/api/control?action=mutate" },
