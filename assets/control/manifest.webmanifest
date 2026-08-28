@@ -5,8 +5,8 @@
   "start_url": "/control/",
   "scope": "/control/",
   "display": "standalone",
-  "background_color": "#15140F",
-  "theme_color": "#15140F",
+  "background_color": "#F6F8FB",
+  "theme_color": "#F6F8FB",
   "categories": ["productivity"],
   "orientation": "any",
   "icons": [

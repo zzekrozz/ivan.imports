@@ -58,7 +58,7 @@ test("project stats count active, completed, pending and overdue quests transpar
   const completed = state.quests.find((quest) => quest.title === "Terminada");
   state = mutate(state, "quest.complete", { id: completed.id, period_key: questPeriodKey(completed, NOW) });
   const stats = getProjectQuestStats(state, project.id, NOW);
-  assert.deepEqual(stats, { total: 2, active: 1, in_progress: 0, completed: 1, pending: 1, overdue: 1, high_overdue: 1 });
+  assert.deepEqual(stats, { total: 2, active: 1, in_progress: 0, completed: 1, pending: 1, overdue: 1, high_overdue: 1, scheduled: 2, unscheduled: 0 });
 });
 
 test("achievements and project logs create, persist and delete independently", () => {

@@ -3,7 +3,11 @@ import {
   DAY_MS,
   dateKey,
   getActionableReminders,
+  getMissionBuckets,
+  getProjectUnscheduledMissions,
+  getScheduledMissions,
   getTodaySummary,
+  getUnscheduledMissions,
   monthKey,
   normalizeTimeZone,
   questCompletedForPeriod,
@@ -45,7 +49,11 @@ export {
   buildReminderCandidates,
   dateKey,
   getActionableReminders,
+  getMissionBuckets,
+  getProjectUnscheduledMissions,
+  getScheduledMissions,
   getTodaySummary,
+  getUnscheduledMissions,
   monthKey,
   normalizeTimeZone,
   questCompletedForPeriod,
@@ -800,11 +808,11 @@ export function createDemoControlState(userId = "demo", { now = Date.now() } = {
   state.user_game_stats.longest_streak = 11;
   state.user_game_stats.last_active_date = dateKey(now);
   const projectData = [
-    ["project_ivanimports", "IvanImports", "ACTIVE", 72, "#C9A227", "IV", "Publicar, vender y mejorar el ecosistema IvanImports."],
-    ["project_removals", "Removals", "ACTIVE", 45, "#8FA68E", "RM", "Cerrar trabajos rentables y afinar captación."],
-    ["project_ddtm", "DDTM", "ACTIVE", 20, "#C1673D", "DD", "Convertir experimentos visuales en piezas publicadas."],
-    ["project_vehicles", "Venta de vehículos", "PAUSED", 60, "#9B8B62", "VV", "Operaciones y anuncios de vehículos."],
-    ["project_fynddo", "Fynddo", "PAUSED", 10, "#8C8A7C", "FY", "Hipótesis aparcada hasta liberar foco."],
+    ["project_ivanimports", "IvanImports", "ACTIVE", 72, "#5B8DEF", "IV", "Publicar, vender y mejorar el ecosistema IvanImports."],
+    ["project_removals", "Removals", "ACTIVE", 45, "#69A680", "RM", "Cerrar trabajos rentables y afinar captación."],
+    ["project_ddtm", "DDTM", "ACTIVE", 20, "#D96B62", "DD", "Convertir experimentos visuales en piezas publicadas."],
+    ["project_vehicles", "Venta de vehículos", "PAUSED", 60, "#8AA4C2", "VV", "Operaciones y anuncios de vehículos."],
+    ["project_fynddo", "Fynddo", "PAUSED", 10, "#8794A3", "FY", "Hipótesis aparcada hasta liberar foco."],
   ];
   state.projects = projectData.map(([id, title, status, progress, accent, icon, description], index) => ({
     ...entityBase(state, "project", new Date(now).getTime() - ((index + 2) * DAY_MS)), id, title, slug: title.toLocaleLowerCase("es").replace(/\s+/g, "-"), description, status, priority: index < 2 ? "HIGH" : "NORMAL", icon, accent, progress, progress_method: "manual", main_goal: index === 1 ? "Conseguir 10 trabajos este mes" : "", general_objective: description, weekly_objective: index === 0 ? "Publicar dos mejoras visibles y cerrar una venta." : index === 2 ? "Terminar el sistema del próximo vídeo." : "", current_focus: index === 0 ? "Terminar Mission Control V4." : index === 1 ? "Cerrar la campaña de captación." : index === 2 ? "Terminar vídeo 30 días sin Internet." : "Foco por definir", health: index === 2 ? "YELLOW" : index === 3 ? "RED" : "GREEN", next_milestone: index === 2 ? "Publicar primer vídeo terminado." : "Cerrar el siguiente entregable.", next_milestone_date: null, notes: "", links: [], completed_at: null, updated_at: iso(new Date(now).getTime() - (index * 3600000)) }));
@@ -818,6 +826,9 @@ export function createDemoControlState(userId = "demo", { now = Date.now() } = {
     ["quest_meta", "Revisar campaña Meta", "project_removals", "GROWTH", 20, false, "daily"],
     ["quest_scene", "Crear una escena IA", "project_ddtm", "EXPERIMENT", 30, false, "daily"],
     ["quest_cta", "Mejorar un CTA de la web", "project_ivanimports", "BUILD", 30, false, "daily"],
+    ["quest_oil", "Comprar aceite", null, "MAINTENANCE", 10, false, "once"],
+    ["quest_ad_idea", "Revisar idea de anuncio", "project_ivanimports", "GROWTH", 20, false, "once"],
+    ["quest_sofa", "Pensar cómo vender el sofá", "project_removals", "MONEY", 20, false, "once"],
   ];
   state.quests = questData.map(([id, title, project_id, category, xp_reward, is_main_quest, recurrence_type], index) => {
     const quest = questInput(state, {
@@ -831,7 +842,7 @@ export function createDemoControlState(userId = "demo", { now = Date.now() } = {
     xp_reward,
     recurrence_type,
     recurrence_config: {},
-    scheduled_date: today,
+    scheduled_date: index < 8 ? today : null,
     scheduled_time: index < 4 ? ["09:30", "11:00", "12:30", "17:00"][index] : null,
     reminders: index === 0 ? [{ offset_minutes: 60 }] : [],
     is_main_quest,
