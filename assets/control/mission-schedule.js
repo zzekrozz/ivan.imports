@@ -106,7 +106,7 @@ export function questIsDueOn(quest, value = Date.now(), timeZone = CONTROL_TIME_
   const end = /^\d{4}-\d{2}-\d{2}$/.test(quest.recurrence_end_date || "") ? quest.recurrence_end_date : null;
   if (target < start || (end && target > end)) return false;
   const recurrence = quest.recurrence_type || "once";
-  if (recurrence === "once" && !quest.scheduled_date && !quest.due_date) return false;
+  if (!quest.scheduled_date && !quest.due_date) return false;
   if (recurrence === "daily") return true;
   if (recurrence === "weekly") {
     const configured = Array.isArray(quest.recurrence_config?.days) ? quest.recurrence_config.days.map(Number).filter((day) => day >= 1 && day <= 7) : [];
@@ -183,6 +183,51 @@ export function getTodaySummary(state, now = Date.now(), timeZone = CONTROL_TIME
     missions,
     completed_missions: completed,
     overdue_missions: overdue,
+  };
+}
+
+function planningMissions(state, { includeCompleted = false } = {}) {
+  return (state?.quests || []).filter((quest) => {
+    if (!quest || quest.deleted_at || ["ARCHIVED", "CANCELLED"].includes(quest.status)) return false;
+    if (!includeCompleted && quest.status === "COMPLETED") return false;
+    return true;
+  });
+}
+
+export function getUnscheduledMissions(state, options = {}) {
+  const { projectId, rootsOnly = false } = options;
+  return planningMissions(state, options).filter((quest) => {
+    if (projectId !== undefined && (quest.project_id || null) !== (projectId || null)) return false;
+    if (rootsOnly && quest.parent_id) return false;
+    return !quest.scheduled_date && !quest.due_date;
+  });
+}
+
+export function getProjectUnscheduledMissions(state, projectId, options = {}) {
+  return getUnscheduledMissions(state, { ...options, projectId });
+}
+
+export function getScheduledMissions(state, options = {}) {
+  const { projectId, rootsOnly = false } = options;
+  return planningMissions(state, options).filter((quest) => {
+    if (projectId !== undefined && (quest.project_id || null) !== (projectId || null)) return false;
+    if (rootsOnly && quest.parent_id) return false;
+    return Boolean(quest.scheduled_date || quest.due_date);
+  });
+}
+
+export function getMissionBuckets(state, now = Date.now(), timeZone = CONTROL_TIME_ZONE) {
+  const zone = normalizeTimeZone(state?.preferences?.timezone || timeZone);
+  const todaySummary = getTodaySummary(state, now, zone);
+  const todayIds = new Set(todaySummary.missions.map((quest) => quest.id));
+  const overdueIds = new Set(todaySummary.overdue_missions.map((quest) => quest.id));
+  const scheduled = getScheduledMissions(state);
+  return {
+    today: todaySummary.missions,
+    upcoming: scheduled.filter((quest) => !todayIds.has(quest.id) && !overdueIds.has(quest.id)),
+    unscheduled: getUnscheduledMissions(state),
+    scheduled,
+    overdue: todaySummary.overdue_missions,
   };
 }
 

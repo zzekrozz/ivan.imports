@@ -1,4 +1,4 @@
-import { questCompletedForPeriod, questIsOverdue } from "./mission-schedule.js";
+import { getProjectUnscheduledMissions, questCompletedForPeriod, questIsOverdue } from "./mission-schedule.js";
 
 const CLOSED_PROJECTS = new Set(["COMPLETED", "ARCHIVED"]);
 const CLOSED_QUESTS = new Set(["ARCHIVED", "CANCELLED"]);
@@ -44,6 +44,8 @@ export function getProjectQuestStats(state, projectOrId, now = Date.now(), index
     pending: pending.length,
     overdue: overdue.length,
     high_overdue: overdue.filter((quest) => quest.priority === "HIGH").length,
+    scheduled: quests.filter((quest) => quest.scheduled_date || quest.due_date).length,
+    unscheduled: getProjectUnscheduledMissions(state, projectId, { includeCompleted: true }).filter((quest) => !isCompleted(quest)).length,
   };
 }
 

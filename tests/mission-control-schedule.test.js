@@ -4,7 +4,11 @@ import {
   applyControlMutation,
   buildReminderCandidates,
   createEmptyControlState,
+  getMissionBuckets,
+  getProjectUnscheduledMissions,
+  getScheduledMissions,
   getTodaySummary,
+  getUnscheduledMissions,
   questIsDueOn,
   zonedDateTimeToUtc,
 } from "../assets/control/domain.js";
@@ -43,6 +47,57 @@ test("summary centralizes pending, completed and overdue counts without duplicat
   assert.equal(summary.pending, 1);
   assert.equal(summary.overdue, 1);
   assert.equal(new Set(summary.missions.map((quest) => quest.id)).size, summary.missions.length);
+});
+
+test("missions without a date remain normal open work and stay outside Today", () => {
+  let state = createEmptyControlState(USER, { now: NOW });
+  state = mutate(state, "quest.create", { title: "Comprar aceite", scheduled_date: null, priority: "LOW" });
+  const mission = state.quests[0];
+  assert.equal(mission.scheduled_date, null);
+  assert.equal(mission.scheduled_time, null);
+  assert.equal(getUnscheduledMissions(state)[0].id, mission.id);
+  assert.equal(getScheduledMissions(state).length, 0);
+  assert.equal(getTodaySummary(state, NOW).missions.length, 0);
+  assert.equal(getMissionBuckets(state, NOW).unscheduled.length, 1);
+});
+
+test("recurrence without a start date remains unscheduled until it is planned", () => {
+  let state = createEmptyControlState(USER, { now: NOW });
+  state = mutate(state, "quest.create", { title: "Revisar campaña", recurrence_type: "daily", scheduled_date: null });
+  assert.equal(questIsDueOn(state.quests[0], NOW), false);
+  assert.equal(getTodaySummary(state, NOW).total, 0);
+  assert.equal(getUnscheduledMissions(state).length, 1);
+});
+
+test("project unscheduled missions include children and preserve project ownership", () => {
+  let state = createEmptyControlState(USER, { now: NOW });
+  state.user_game_stats.max_active_projects = 12;
+  state = mutate(state, "project.create", { title: "Casa", status: "ACTIVE" });
+  const project = state.projects[0];
+  state = mutate(state, "quest.create", { title: "Vender sofá", project_id: project.id, scheduled_date: null });
+  const parent = state.quests[0];
+  state = mutate(state, "quest.create", { title: "Mirar precio", project_id: project.id, parent_id: parent.id, scheduled_date: null });
+  state = mutate(state, "quest.create", { title: "Publicar", project_id: project.id, scheduled_date: "2026-08-20" });
+  assert.deepEqual(getProjectUnscheduledMissions(state, project.id).map((quest) => quest.title), ["Vender sofá", "Mirar precio"]);
+  assert.ok(getProjectUnscheduledMissions(state, project.id).every((quest) => quest.project_id === project.id));
+});
+
+test("an unscheduled mission can be scheduled later without losing its planning data", () => {
+  let state = createEmptyControlState(USER, { now: NOW });
+  state = mutate(state, "quest.create", { title: "Mejorar landing", description: "Revisar el hero", priority: "HIGH", scheduled_date: null });
+  const mission = state.quests[0];
+  state = mutate(state, "progress.create", { quest_id: mission.id, text: "Analizada la conversión" });
+  state = mutate(state, "quest.create", { title: "Preparar copy", parent_id: mission.id, scheduled_date: null });
+  state = mutate(state, "quest.update", { id: mission.id, scheduled_date: "2026-08-21", scheduled_time: "10:30" });
+  const updated = state.quests.find((quest) => quest.id === mission.id);
+  assert.equal(updated.scheduled_date, "2026-08-21");
+  assert.equal(updated.scheduled_time, "10:30");
+  assert.equal(updated.description, "Revisar el hero");
+  assert.equal(updated.priority, "HIGH");
+  assert.equal(state.quests.find((quest) => quest.parent_id === mission.id).title, "Preparar copy");
+  assert.equal(state.progress_logs[0].text, "Analizada la conversión");
+  assert.equal(getUnscheduledMissions(state).some((quest) => quest.id === mission.id), false);
+  assert.equal(getScheduledMissions(state).some((quest) => quest.id === mission.id), true);
 });
 
 test("multiple reminders become candidates once and snooze reschedules the same delivery", () => {
