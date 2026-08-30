@@ -96,7 +96,7 @@ const notFound = read("404.html");
 if (!/noindex,follow/.test(notFound) || !/Volver al inicio/.test(notFound) || !/Abrir la Academia/.test(notFound) || !/Ver servicios/.test(notFound)) failures.push("La ruta 404 no ofrece recuperación útil o no está marcada noindex");
 if (!/Encuentra, analiza e importa vehículos desde Europa/.test(home) || !/Entrar en la Academia gratis/.test(home) || !/Ver oportunidades/.test(home)) failures.push("La home no funciona como Control Center");
 if (/AGOSTO50|3\/10|50\s*%|14 días WhatsApp|179\s*€/i.test(home + go + read("assets/site-config.js"))) failures.push("La experiencia conserva promoción o formación caducada");
-for (const label of ["Academia", "IVI", "Oportunidades", "Directos", "Herramientas", "Servicios PRO", "Actualizaciones"]) if (!read("assets/site.js").includes(label)) failures.push(`Falta navegación global: ${label}`);
+for (const label of ["Academia", "Oportunidades", "Directos", "Herramientas", "Servicios PRO", "Actualizaciones"]) if (!read("assets/site.js").includes(label)) failures.push(`Falta navegación global: ${label}`);
 
 const vercel = json("vercel.json");
 if (vercel.outputDirectory !== "dist") failures.push("El output público debe limitarse a dist/");

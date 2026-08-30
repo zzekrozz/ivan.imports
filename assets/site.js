@@ -30,7 +30,6 @@ function headerMarkup() {
       <div class="nav-panel" id="main-navigation">
         <ul class="nav-links">
           ${navLink(ROUTES.academy || "/academia/", "Academia")}
-          ${navLink(ROUTES.ivi || "/ivi/", "IVI")}
           ${navLink(ROUTES.opportunities || "/oportunidades/", "Oportunidades")}
           ${navLink(ROUTES.directos || "/directos/", "Directos")}
           ${navLink(ROUTES.tools || "/academia/herramientas/", "Herramientas")}
@@ -50,14 +49,14 @@ function footerMarkup() {
   ].filter(Boolean).join("");
   return `<footer class="site-footer hub-footer"><div class="footer-inner">
     <div class="footer-brand"><a class="logo" href="/"><img class="brand-wordmark" src="/assets/brand/ivan-imports-wordmark-dark.svg" alt="IvanImports" width="430" height="88"></a><p>Tu centro de control para encontrar, analizar, comprar, traer y matricular vehículos desde Europa.</p></div>
-    <div class="footer-links"><strong>Explorar</strong><a href="/academia/">Academia gratuita</a><a href="/ivi/">IVI · Análisis por VIN</a><a href="/oportunidades/">Oportunidades</a><a href="/directos/">Directos</a><a href="/herramientas/">Herramientas</a></div>
+    <div class="footer-links"><strong>Explorar</strong><a href="/academia/">Academia gratuita</a><a href="/oportunidades/">Oportunidades</a><a href="/directos/">Directos</a><a href="/herramientas/">Herramientas</a></div>
     <div class="footer-links"><strong>Pasar a la acción</strong><a href="/servicios/">Servicios PRO</a><a href="/servicios/consultoria/">Consultoría</a><a href="/servicios/primera-importacion-contigo/">Primera Importación Contigo</a>${social}</div>
   </div><div class="footer-bottom"><span>© <span data-current-year></span> IvanImports</span><span>Información educativa. Comprueba siempre los requisitos oficiales aplicables a tu operación.</span></div></footer>`;
 }
 
 function mobileNavMarkup() {
   return `<nav class="hub-mobile-nav" aria-label="Navegación móvil">
-    <a href="/">Inicio</a><a href="/academia/">Academia</a><a href="/ivi/">IVI</a><a href="/oportunidades/">Oportunidades</a><a href="/servicios/">Servicios</a>
+    <a href="/">Inicio</a><a href="/academia/">Academia</a><a href="/oportunidades/">Oportunidades</a><a href="/servicios/">Servicios</a>
   </nav>`;
 }
 
