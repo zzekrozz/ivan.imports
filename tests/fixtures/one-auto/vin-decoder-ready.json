@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "result": {
+    "manufacturer_desc": "Volkswagen",
+    "model_range_desc": "Golf",
+    "model_desc": "Golf VIII",
+    "derivative_desc": "2.0 TDI 110 kW DSG",
+    "body_type_desc": "Hatchback",
+    "fuel_type_desc": "Diesel",
+    "transmission_desc": "Automatic",
+    "manufactured_year": "2021"
+  }
+}

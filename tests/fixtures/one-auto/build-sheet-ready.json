@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "result": {
+    "manufacturer": "Audi",
+    "model": "A4 Avant",
+    "variant": "40 TFSI quattro",
+    "model_year": 2021,
+    "manufactured_date": "2020-11-18",
+    "oem_colour_desc": "Mythos Black Metallic",
+    "oem_interior_trim_desc": "Soul black leather",
+    "oem_engine_desc": "DMSA 2.0 TFSI 150 kW",
+    "power_kw": 150,
+    "fuel_type": "Petrol",
+    "oem_transmission_type_desc": "7-speed S tronic",
+    "oem_drivetrain_desc": "All-wheel drive",
+    "oem_wheel_desc": "19 Inch Wheel",
+    "options": [
+      { "factory_code": "1D0", "factory_desc": "TRAILER HITCH", "additional_desc": "Without trailer hitch" },
+      { "factory_code": "KA6", "factory_desc": "CAMERA SYSTEMS", "additional_desc": "Area view camera 360" },
+      { "factory_code": "9VD", "factory_desc": "SOUND SYSTEM", "additional_desc": "Premium audio system" },
+      { "factory_code": "8G4", "factory_desc": "LIGHTING", "additional_desc": "Adaptive matrix headlamps" }
+    ]
+  }
+}

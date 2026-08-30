@@ -313,6 +313,7 @@ await writeFile(join(root, "404.html"), `${basePage({
 })}\n`, "utf8");
 
 const sitemapRoutes = ["/", "/academia/", "/herramientas/", "/mi-operacion/", "/mi-operacion/candidatos/", "/recursos/", "/recursos/respuestas/", "/academia/ayuda/", "/academia/edicion-pdf/", "/oportunidades/", "/directos/", "/servicios/", "/recomendaciones/", "/go/", "/actualizaciones/", "/placasverdes/", ...program.stages.map((stage) => `/academia/etapa/${stage.slug}/`), ...program.lessons.map((lesson) => `/academia/paso/${lesson.slug}/`), ...program.concepts.filter((concept) => standaloneConceptIds.has(concept.id)).map((concept) => `/academia/conceptos/${slugify(concept.title)}/`), placasPath, ...publicTools.map((tool) => tool.publicPath), ...opportunitiesData.opportunities.filter((item) => item.published).map((item) => `/oportunidades/${item.slug}/`), ...servicesData.services.filter((item) => item.active).map(servicePath)];
+sitemapRoutes.splice(2, 0, "/ivi/");
 const uniqueRoutes = [...new Set(sitemapRoutes.filter((route) => !route.startsWith("/mi-operacion/") && !route.startsWith("/mis-vehiculos/")))];
 await writeFile(join(root, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${uniqueRoutes.map((route) => `  <url><loc>${siteUrl}${route}</loc><lastmod>2026-08-13</lastmod></url>`).join("\n")}\n</urlset>\n`, "utf8");
 

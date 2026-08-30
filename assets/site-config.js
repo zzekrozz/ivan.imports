@@ -22,6 +22,7 @@ window.IVAN_IMPORTS_CONFIG = Object.freeze({
   },
   routes: {
     academy: "/academia/",
+    ivi: "/ivi/",
     opportunities: "/oportunidades/",
     directos: "/directos/",
     tools: "/herramientas/",
