@@ -7,13 +7,19 @@ const root = resolve(import.meta.dirname, "..");
 const read = (path) => readFileSync(resolve(root, path), "utf8");
 const json = (path) => JSON.parse(read(path));
 
-test("el Control Center publica las dos rutas y la navegación global", () => {
+test("el Control Center mantiene una navegación global simplificada", () => {
   const home = read("index.html");
   const site = read("assets/site.js");
   assert.match(home, /Encuentra, analiza e importa vehículos desde Europa/);
   assert.match(home, /IvanImports Academy/);
   assert.match(home, /Primera Importación Contigo/);
-  for (const label of ["Academia", "Oportunidades", "Directos", "Herramientas", "Servicios PRO", "Actualizaciones"]) assert.match(site, new RegExp(label));
+  for (const label of ["Academia", "Herramientas", "Mis Servicios", "Entrar gratis"]) assert.match(site, new RegExp(label));
+  const header = site.match(/function headerMarkup\(\)[\s\S]*?function footerMarkup/)?.[0] || "";
+  const mobile = site.match(/function mobileNavMarkup\(\)[\s\S]*?function renderChrome/)?.[0] || "";
+  for (const label of ["Oportunidades", "Directos", "Actualizaciones", "Servicios PRO"]) {
+    assert.doesNotMatch(header, new RegExp(label));
+    assert.doesNotMatch(mobile, new RegExp(label));
+  }
   assert.match(site, /hub_path_selected/);
 });
 
@@ -42,15 +48,27 @@ test("la Academia gratuita conserva exactamente 13, 72, 317 y 17", () => {
   assert.equal(readdirSync(resolve(root, "academia/paso"), { withFileTypes: true }).filter((entry) => entry.isDirectory()).length, 72);
 });
 
-test("los cinco servicios y sus precios son la única oferta activa", () => {
+test("los cuatro servicios definidos son la única oferta activa", () => {
   const active = json("assets/data/services.json").services.filter((service) => service.active);
   assert.deepEqual(active.map(({ id, priceLabel }) => [id, priceLabel]), [
     ["consultoria", "60 € / 90 € IVA incluido"],
-    ["subastaspro", "99 € + IVA"],
-    ["puesta-en-marcha-subastas", "149 € + IVA"],
+    ["busqueda-vehiculo-europa", undefined],
     ["primera-compra-subasta", "397 € IVA incluido"],
     ["primera-importacion-contigo", "997 € IVA incluido"]
   ]);
+});
+
+test("Mis Servicios publica búsqueda europea y compra acompañada sin la oferta retirada", () => {
+  const services = read("servicios/index.html");
+  const search = read("servicios/busqueda-vehiculo-europa/index.html");
+  const copart = read("servicios/primera-compra-subasta/index.html");
+  assert.match(services, /Búsqueda de vehículo en Europa/);
+  assert.match(services, /Compra acompañada en Copart/);
+  assert.doesNotMatch(services, /SubastasPRO|Puesta en marcha de subastas|Primera compra en subasta contigo/);
+  for (const copy of ["mercado europeo", "Filtrado de anuncios", "Comparación de diferentes unidades", "contactar después con el vendedor"]) assert.match(search, new RegExp(copy, "i"));
+  for (const copy of ["en remoto", "pantalla compartida", "60–120 minutos", "plataforma Copart", "Tú realizas la operación desde tu ordenador", "guía/PDF"]) assert.match(copart, new RegExp(copy, "i"));
+  assert.match(search, /https:\/\/wa\.me\/34674252436\?text=/);
+  for (const page of [search, copart, read("servicios/consultoria/index.html"), read("servicios/primera-importacion-contigo/index.html")]) assert.match(page, /WhatsApp/);
 });
 
 test("las funciones no configuradas permanecen apagadas y los directos no inventan agenda", () => {
@@ -85,7 +103,7 @@ test("la analítica requerida no incorpora datos personales", () => {
   const app = read("assets/academy/app.js");
   assert.match(site, /!\/name\|email\|phone\|message\|url\|vin\|document\|budget\/i/);
   for (const event of ["academy_lesson_opened", "academy_tool_opened", "academy_search_used"]) assert.match(app, new RegExp(event));
-  for (const event of ["consultation_clicked", "auction_setup_clicked", "auction_first_purchase_clicked", "first_import_application_started"]) assert.match(read("assets/data/services.json"), new RegExp(event));
+  for (const event of ["consultation_clicked", "vehicle_search_clicked", "auction_first_purchase_clicked", "first_import_application_started"]) assert.match(read("assets/data/services.json"), new RegExp(event));
 });
 
 test("las rutas antiguas conservan equivalencia mediante redirecciones permanentes", () => {

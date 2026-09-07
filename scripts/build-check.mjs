@@ -9,7 +9,7 @@ const read = (path) => readFileSync(join(root, path), "utf8");
 const json = (path) => JSON.parse(read(path));
 
 const requiredRoutes = [
-  "index.html", "404.html", "academia/index.html", "control/index.html", "herramientas/index.html", "mis-vehiculos/index.html", "mis-vehiculos/candidatos/index.html", "recursos/index.html", "recursos/respuestas/index.html", "go/index.html", "placasverdes/index.html", "oportunidades/index.html", "directos/index.html", "servicios/index.html", "subastaspro/index.html", "recomendaciones/index.html", "actualizaciones/index.html", "academia/ayuda/index.html", "academia/edicion-pdf/index.html", "importa-en-7-dias/gracias/index.html", "gracias-acompanamiento/index.html"
+  "index.html", "404.html", "academia/index.html", "control/index.html", "herramientas/index.html", "mis-vehiculos/index.html", "mis-vehiculos/candidatos/index.html", "recursos/index.html", "recursos/respuestas/index.html", "go/index.html", "placasverdes/index.html", "oportunidades/index.html", "directos/index.html", "servicios/index.html", "servicios/busqueda-vehiculo-europa/index.html", "subastaspro/index.html", "recomendaciones/index.html", "actualizaciones/index.html", "academia/ayuda/index.html", "academia/edicion-pdf/index.html", "importa-en-7-dias/gracias/index.html", "gracias-acompanamiento/index.html"
 ];
 for (const route of requiredRoutes) if (!existsSync(join(root, route))) failures.push(`Falta la ruta pública: ${route}`);
 
@@ -56,8 +56,8 @@ for (const file of seoPages) {
 }
 
 const activeServices = services.services.filter((service) => service.active);
-if (activeServices.length !== 5) failures.push("Deben publicarse exactamente cinco servicios activos");
-const expectedServices = new Map([["consultoria", "60 € / 90 € IVA incluido"], ["subastaspro", "99 € + IVA"], ["puesta-en-marcha-subastas", "149 € + IVA"], ["primera-compra-subasta", "397 € IVA incluido"], ["primera-importacion-contigo", "997 € IVA incluido"]]);
+if (activeServices.length !== 4) failures.push("Deben publicarse exactamente cuatro servicios activos");
+const expectedServices = new Map([["consultoria", "60 € / 90 € IVA incluido"], ["busqueda-vehiculo-europa", undefined], ["primera-compra-subasta", "397 € IVA incluido"], ["primera-importacion-contigo", "997 € IVA incluido"]]);
 for (const [id, price] of expectedServices) if (activeServices.find((service) => service.id === id)?.priceLabel !== price) failures.push(`Precio o servicio incorrecto: ${id}`);
 const accompanimentService = activeServices.find((service) => service.id === "primera-importacion-contigo");
 const accompanimentPage = read("servicios/primera-importacion-contigo/index.html");
@@ -96,7 +96,11 @@ const notFound = read("404.html");
 if (!/noindex,follow/.test(notFound) || !/Volver al inicio/.test(notFound) || !/Abrir la Academia/.test(notFound) || !/Ver servicios/.test(notFound)) failures.push("La ruta 404 no ofrece recuperación útil o no está marcada noindex");
 if (!/Encuentra, analiza e importa vehículos desde Europa/.test(home) || !/Entrar en la Academia gratis/.test(home) || !/Ver oportunidades/.test(home)) failures.push("La home no funciona como Control Center");
 if (/AGOSTO50|3\/10|50\s*%|14 días WhatsApp|179\s*€/i.test(home + go + read("assets/site-config.js"))) failures.push("La experiencia conserva promoción o formación caducada");
-for (const label of ["Academia", "Oportunidades", "Directos", "Herramientas", "Servicios PRO", "Actualizaciones"]) if (!read("assets/site.js").includes(label)) failures.push(`Falta navegación global: ${label}`);
+const siteSource = read("assets/site.js");
+const headerSource = siteSource.match(/function headerMarkup\(\)[\s\S]*?function footerMarkup/)?.[0] || "";
+const mobileSource = siteSource.match(/function mobileNavMarkup\(\)[\s\S]*?function renderChrome/)?.[0] || "";
+for (const label of ["Academia", "Herramientas", "Mis Servicios", "Entrar gratis"]) if (!headerSource.includes(label)) failures.push(`Falta navegación global: ${label}`);
+for (const label of ["Oportunidades", "Directos", "Actualizaciones", "Servicios PRO"]) if (headerSource.includes(label) || mobileSource.includes(label)) failures.push(`La navegación todavía muestra: ${label}`);
 
 const vercel = json("vercel.json");
 if (vercel.outputDirectory !== "dist") failures.push("El output público debe limitarse a dist/");

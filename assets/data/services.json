@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-08-13",
+  "updatedAt": "2026-09-07",
   "services": [
     {
       "id": "consultoria",
@@ -18,6 +18,7 @@
       "excludes": ["Acompañamiento ilimitado", "Búsqueda durante semanas", "Gestiones o compra en nombre del cliente"],
       "cta": "Reservar consultoría",
       "ctaType": "whatsapp",
+      "whatsappMessage": "Hola Iván, quiero información sobre la Consultoría",
       "analyticsEvent": "consultation_clicked",
       "active": true,
       "featured": false
@@ -38,7 +39,7 @@
       "ctaType": "external",
       "ctaUrl": "https://subastaspro.ivanimports.es",
       "analyticsEvent": "service_opened",
-      "active": true,
+      "active": false,
       "featured": false
     },
     {
@@ -56,23 +57,56 @@
       "cta": "Reservar puesta en marcha",
       "ctaType": "whatsapp",
       "analyticsEvent": "auction_setup_clicked",
+      "active": false,
+      "featured": false
+    },
+    {
+      "id": "busqueda-vehiculo-europa",
+      "slug": "busqueda-vehiculo-europa",
+      "title": "Búsqueda de vehículo en Europa",
+      "eyebrow": "Búsqueda personalizada",
+      "summary": "Busco vehículos que encajen con tus criterios y presupuesto en el mercado europeo.",
+      "audience": "Para quien sabe qué vehículo busca y necesita ayuda para encontrar, filtrar y comparar unidades antes de avanzar.",
+      "includes": [
+        "Búsqueda de vehículos en el mercado europeo",
+        "Filtrado de anuncios según tus criterios y presupuesto",
+        "Comparación de diferentes unidades",
+        "Detección de opciones interesantes",
+        "Revisión de que el vehículo tenga sentido antes de avanzar",
+        "Posibilidad de contactar después con el vendedor si necesitas ese servicio"
+      ],
+      "excludes": [],
+      "cta": "Cuéntame qué coche buscas",
+      "ctaType": "whatsapp-direct",
+      "whatsappMessage": "Hola Iván, quiero que me ayudes a buscar un vehículo en Europa",
+      "analyticsEvent": "vehicle_search_clicked",
       "active": true,
       "featured": false
     },
     {
       "id": "primera-compra-subasta",
       "slug": "primera-compra-subasta",
-      "title": "Primera compra en subasta contigo",
-      "eyebrow": "AUTO1 o Copart",
-      "summary": "Elegimos la plataforma que tenga más sentido para tu objetivo y hacemos juntos tu primera operación.",
-      "audience": "Para quien quiere ejecutar una primera compra o puja con un caso y presupuesto reales.",
+      "title": "Compra acompañada en Copart",
+      "eyebrow": "Acompañamiento remoto · 60–120 min",
+      "summary": "Haz tu primera compra en Copart conmigo a tu lado, en remoto. Tú realizas la operación desde tu ordenador y yo te guío paso a paso, en tiempo real.",
+      "audience": "Para quien quiere aprender y realizar su primera compra en Copart con acompañamiento personalizado por videollamada o llamada y pantalla compartida.",
       "priceLabel": "397 € IVA incluido",
       "amount": 397,
       "vatIncluded": true,
-      "includes": ["Llamada inicial y objetivo", "Una plataforma y una primera operación", "Hasta cinco candidatos razonables", "Costes, mercado y precio o puja máxima", "Revisión de documentación disponible", "Acompañamiento de la primera compra o puja", "Orientación de pago y recogida"],
-      "excludes": ["Garantía de adjudicación", "Búsqueda ilimitada", "Transporte, reparación y matriculación"],
-      "cta": "Solicitar primera compra",
+      "includes": [
+        "Sesión personalizada en remoto de 60–120 minutos",
+        "Revisamos el funcionamiento completo de la plataforma Copart",
+        "Te explico cómo moverte por la plataforma",
+        "Revisamos juntos el vehículo y los datos importantes antes de comprar",
+        "Te explico cómo funcionan las pujas y los costes",
+        "Tú realizas la operación desde tu ordenador mientras te guío paso a paso",
+        "Resolvemos las dudas que vayan apareciendo durante la sesión",
+        "Después recibes una guía/PDF para repetir el proceso sin olvidar ningún paso"
+      ],
+      "excludes": ["Garantía de adjudicación", "Compra o puja en nombre del cliente", "Transporte, reparación y matriculación"],
+      "cta": "Quiero información sobre Compra Acompañada",
       "ctaType": "application",
+      "whatsappMessage": "Hola Iván, quiero información sobre la Compra Acompañada en Copart",
       "analyticsEvent": "auction_first_purchase_clicked",
       "active": true,
       "featured": true
@@ -92,6 +126,7 @@
       "excludes": ["Garantía de encontrar una unidad", "Compra sin límites de tiempo o candidatos", "Costes del vehículo, viaje, transporte, impuestos o tasas"],
       "cta": "Solicitar plaza",
       "ctaType": "application",
+      "whatsappMessage": "Hola Iván, quiero información sobre Primera Importación Contigo",
       "analyticsEvent": "first_import_application_started",
       "active": true,
       "featured": true
