@@ -71,6 +71,42 @@ test("Mis Servicios publica búsqueda europea y compra acompañada sin la oferta
   for (const page of [search, copart, read("servicios/consultoria/index.html"), read("servicios/primera-importacion-contigo/index.html")]) assert.match(page, /WhatsApp/);
 });
 
+test("Primera Importación Contigo explica el servicio remoto completo y abre WhatsApp sin formulario", () => {
+  const services = read("servicios/index.html");
+  const page = read("servicios/primera-importacion-contigo/index.html");
+  const message = "Hola Iván, estoy interesado en Primera Importación Contigo de 997 €. Es mi primera importación y quiero que me acompañes desde la búsqueda del vehículo hasta matricularlo en España. Te cuento lo que estoy buscando.";
+  const whatsappUrl = `https://wa.me/34674252436?text=${encodeURIComponent(message)}`;
+
+  for (const copy of [
+    "Tu primera importación, acompañada de principio a fin",
+    "Tú compras el coche. Yo preparo, reviso y superviso contigo toda la operación en remoto",
+    "Desde que decidimos qué vehículo buscar hasta que tienes la matrícula española.",
+    "Quiero hacer mi primera importación contigo",
+  ]) assert.match(services, new RegExp(copy.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+
+  for (const heading of [
+    "Definimos qué tiene sentido comprar",
+    "Busco vehículos que encajen contigo",
+    "Hablo con el vendedor y negocio la operación",
+    "Compruebo la documentación antes de que avances",
+    "Te preparo la recogida",
+    "Tú estás allí. Yo sigo contigo en remoto.",
+    "Te ayudo a preparar la salida de Alemania",
+    "Te preparo la ruta de vuelta",
+    "Mi trabajo no termina cuando compras el coche",
+  ]) assert.match(page, new RegExp(heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+
+  assert.equal((page.match(/class="hub-first-import-step"/g) || []).length, 9);
+  assert.equal((page.match(/<details>/g) || []).length, 5);
+  assert.match(page, /El acompañamiento es 100 % remoto/);
+  assert.match(page, /acceso prioritario a mí/);
+  assert.match(page, /Vehículo con matrícula española 🇪🇸/);
+  assert.match(page, new RegExp(whatsappUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  assert.match(page, /target="_blank" rel="noopener noreferrer">Hablar con Iván por WhatsApp/);
+  assert.doesNotMatch(page, /<form\b|data-whatsapp-form/);
+  assert.doesNotMatch(page, /24\s*\/\s*7/i);
+});
+
 test("las funciones no configuradas permanecen apagadas y los directos no inventan agenda", () => {
   const features = json("assets/data/features.json");
   for (const key of ["newsletter", "academyPdf", "supervisedSearch", "radarCopart", "affiliateLinks", "accounts"]) assert.equal(features[key], false);
