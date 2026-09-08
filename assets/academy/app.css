@@ -4855,6 +4855,14 @@
   .academy-tool-advanced[open] > summary { border-bottom: 1px solid var(--academy-border); }
   .academy-cost-calculator { display: grid; gap: 1.25rem; }
   .academy-cost-layout { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(300px, .6fr); gap: 1.25rem; align-items: start; }
+  .academy-cost-vehicle { margin-bottom: 1.25rem; overflow: hidden; }
+  .academy-cost-vehicle > summary { min-height: 72px; display: grid; grid-template-columns: 42px 1fr; align-items: center; gap: .85rem; padding: 1rem 1.1rem; cursor: pointer; list-style: none; }
+  .academy-cost-vehicle > summary > span { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px; background: #e8f2ff; color: var(--academy-blue); font-size: .72rem; font-weight: 900; letter-spacing: .05em; }
+  .academy-cost-vehicle h2 { margin: 0; font-size: 1.05rem; }
+  .academy-cost-vehicle summary p { margin: .2rem 0 0; color: #60778f; font-size: .78rem; }
+  .academy-cost-vehicle-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .8rem; padding: 1rem 1.1rem; border-top: 1px solid var(--academy-border); }
+  .academy-cost-vehicle-notes { grid-column: 1 / -1; }
+  .academy-cost-vehicle textarea { min-height: 84px; resize: vertical; }
   .academy-cost-form { display: grid; gap: 1rem; min-width: 0; }
   .academy-cost-section,
   .academy-cost-market,
@@ -4870,6 +4878,9 @@
   .academy-cost-market header p { margin: .2rem 0 0; color: #60778f; font-size: .78rem; }
   .academy-cost-lines { display: grid; }
   .academy-cost-line { display: grid; grid-template-columns: minmax(0, 1fr) minmax(150px, 190px); gap: .8rem 1rem; align-items: center; padding: .85rem 1.1rem; border-top: 1px solid #e7eef5; }
+  .academy-cost-vat { justify-self: end; display: inline-flex; align-items: center; gap: .35rem; color: #52708b; font-size: .68rem; font-weight: 800; white-space: nowrap; }
+  .academy-cost-vat input { accent-color: var(--academy-primary); }
+  .academy-cost-reference { justify-self: end; color: #6d8295; font-size: .65rem; font-weight: 800; }
   .academy-cost-line:first-child { border-top: 0; }
   .academy-cost-line--featured { padding-block: 1rem; background: linear-gradient(100deg, #f0f7ff, #fff); }
   .academy-cost-line-copy { min-width: 0; }
@@ -4915,6 +4926,29 @@
   .academy-cost-negotiation label small { color: #6a8196; font-weight: 650; }
   .academy-cost-negotiation p { margin: .2rem 0 0; color: #60778f; font-size: .68rem; }
   .academy-cost-analysis { padding: 1.15rem; overflow-anchor: none; }
+  .academy-cost-vat-card > header { display: grid; grid-template-columns: 42px 1fr auto; }
+  .academy-switch { display: inline-flex; align-items: center; gap: .45rem; color: #365570; font-size: .72rem; font-weight: 850; white-space: nowrap; }
+  .academy-switch input { width: 18px; height: 18px; accent-color: var(--academy-primary); }
+  .academy-cost-vat-summary { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: .7rem; padding: 1rem 1.1rem; }
+  .academy-cost-vat-summary > span { padding: .75rem; border-radius: 11px; background: #f3f7fb; color: #60778f; font-size: .68rem; }
+  .academy-cost-vat-summary strong { display: block; margin-top: .2rem; color: #17344d; font-size: 1.05rem; }
+  .academy-cost-vat-summary small { grid-column: 1 / -1; color: #60778f; font-size: .68rem; }
+  .academy-cost-scenarios { overflow: hidden; }
+  .academy-cost-scenarios > header { display: flex; align-items: flex-start; gap: .85rem; padding: 1rem 1.1rem; border-bottom: 1px solid var(--academy-border); }
+  .academy-cost-scenarios > header > span { display: grid; place-items: center; flex: 0 0 42px; width: 42px; height: 42px; border-radius: 12px; background: #e8f2ff; color: var(--academy-blue); font-size: .72rem; font-weight: 900; }
+  .academy-cost-scenarios h2 { margin: 0; font-size: 1.05rem; }
+  .academy-cost-scenarios header p { margin: .2rem 0 0; color: #60778f; font-size: .78rem; }
+  .academy-cost-scenario-settings { display: flex; align-items: end; justify-content: space-between; gap: .8rem; padding: .9rem 1.1rem; background: #f8fbff; border-bottom: 1px solid #e7eef5; }
+  .academy-cost-scenario-settings label { display: grid; gap: .3rem; color: #365570; font-size: .68rem; font-weight: 800; }
+  .academy-cost-scenario-settings select { min-height: 40px; }
+  .academy-cost-scenario-list { display: grid; gap: .7rem; padding: .9rem 1.1rem; }
+  .academy-cost-scenario { display: grid; grid-template-columns: minmax(0,1.2fr) minmax(130px,.7fr) minmax(135px,.7fr) auto; align-items: end; gap: .65rem; padding: .75rem; border: 1px solid #dce7f1; border-radius: 12px; }
+  .academy-cost-scenario-result { min-height: 46px; padding: .5rem .65rem; border-radius: 10px; background: #eff6ff; }
+  .academy-cost-scenario-result span { display: block; color: #60778f; font-size: .58rem; font-weight: 800; }
+  .academy-cost-scenario-result strong { display: block; margin-top: .12rem; color: #17344d; font-size: .92rem; }
+  .academy-cost-scenario-result strong.is-negative { color: #b83242; }
+  .academy-cost-empty { margin: 0; padding: .8rem; color: #60778f; font-size: .75rem; text-align: center; }
+  .academy-cost-pdf-button { margin-top: 1rem; }
   .academy-cost-analysis-head { padding: 1rem; border: 1px solid #d6e4f1; border-radius: 14px; background: #f5f9fd; }
   .academy-cost-analysis-head[data-tone="success"] { border-color: #a9dbc5; background: #effaf5; }
   .academy-cost-analysis-head[data-tone="attention"] { border-color: #efd19b; background: #fff8eb; }
@@ -5131,6 +5165,9 @@
     .academy-operation-command > div:last-child { justify-items: start; }
     .academy-fuel-fields,
     .academy-cost-market-grid { grid-template-columns: 1fr; }
+    .academy-cost-vehicle-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .academy-cost-scenario { grid-template-columns: 1fr 1fr; }
+    .academy-cost-scenario-result { grid-column: 1; }
     .academy-cost-market .academy-field > p { min-height: 0; }
   }
 
@@ -5148,6 +5185,14 @@
     .academy-tool-complete-card { align-items: stretch; flex-direction: column; }
     .academy-cost-line,
     .academy-cost-negotiation { grid-template-columns: 1fr; }
+    .academy-cost-vat,
+    .academy-cost-reference { justify-self: start; }
+    .academy-cost-vehicle-grid { grid-template-columns: 1fr; }
+    .academy-cost-scenario-settings { align-items: stretch; flex-direction: column; }
+    .academy-cost-scenario { grid-template-columns: 1fr; }
+    .academy-cost-scenario-result { grid-column: auto; }
+    .academy-cost-vat-card > header { grid-template-columns: 42px 1fr; }
+    .academy-switch { grid-column: 2; justify-self: start; }
     .academy-cost-input { width: 100%; }
     .academy-cost-answer-grid,
     .academy-cost-detail > div,

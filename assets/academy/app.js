@@ -7,6 +7,7 @@ import { normalizeNumberFieldValue } from "./private/form-values.js";
 import { academyDashboardModel } from "./private/dashboard.js";
 import {
   COST_EXPENSE_SECTIONS,
+  VEHICLE_DATA_FIELDS,
   calculateCostOperation,
   calculateFuel,
   costCalculatorHasData,
@@ -1640,9 +1641,11 @@ function renderCostInput(field) {
   const data = ensureCosts();
   const inputId = `cost-${field.id}`;
   const helpId = field.help ? `${inputId}-help` : "";
+  const vatControl = field.vatEligible && !field.informative ? `<label class="academy-cost-vat"><input type="checkbox" data-cost-vat-field="${escapeAttribute(field.id)}"${data.vat21[field.id] ? " checked" : ""}${data.vatEnabled ? "" : " disabled"}><span>IVA 21 %</span></label>` : field.informative ? `<span class="academy-cost-reference">Solo referencia</span>` : "";
   return `<div class="academy-cost-line${field.featured ? " academy-cost-line--featured" : ""}${field.fuelCalculator ? " academy-cost-line--fuel" : ""}">
     <div class="academy-cost-line-copy"><label for="${inputId}">${escapeHtml(field.label)}</label>${field.help ? `<small id="${helpId}">${escapeHtml(field.help)}</small>` : ""}</div>
     <div class="academy-cost-input"><input id="${inputId}" type="text" inputmode="decimal" autocomplete="off" maxlength="20" placeholder="0 €" value="${escapeAttribute(data.expenses[field.id] || "")}" data-cost-field="${escapeAttribute(field.id)}"${helpId ? ` aria-describedby="${helpId}"` : ""}><span aria-hidden="true">€</span></div>
+    ${vatControl}
     ${field.fuelCalculator ? renderFuelCalculator(data) : ""}
   </div>`;
 }
@@ -1663,22 +1666,33 @@ function renderFuelCalculator(data) {
   </details>`;
 }
 
+function renderVehicleData(data) {
+  const fieldMarkup = VEHICLE_DATA_FIELDS.map((field) => {
+    const id = `cost-vehicle-${field.id}`;
+    const value = data.vehicle[field.id] || "";
+    if (field.type === "select") return `<div class="academy-field"><label for="${id}">${escapeHtml(field.label)}</label><select id="${id}" data-cost-vehicle-field="${field.id}">${field.options.map((option) => `<option value="${escapeAttribute(option)}"${option === value ? " selected" : ""}>${escapeHtml(option || "Selecciona")}</option>`).join("")}</select></div>`;
+    if (field.type === "textarea") return `<div class="academy-field academy-cost-vehicle-notes"><label for="${id}">${escapeHtml(field.label)}</label><textarea id="${id}" maxlength="700" placeholder="${escapeAttribute(field.example || "")}" data-cost-vehicle-field="${field.id}">${escapeHtml(value)}</textarea></div>`;
+    return `<div class="academy-field"><label for="${id}">${escapeHtml(field.label)}</label><input id="${id}" type="${field.type === "url" ? "url" : "text"}" maxlength="240" placeholder="${escapeAttribute(field.example || "")}" value="${escapeAttribute(value)}" data-cost-vehicle-field="${field.id}"></div>`;
+  }).join("");
+  return `<details class="academy-card academy-cost-vehicle" open><summary><span>00</span><div><h2>Datos del vehículo</h2><p>Información opcional para identificar la operación y preparar el informe.</p></div></summary><div class="academy-cost-vehicle-grid">${fieldMarkup}</div></details>`;
+}
+
 function renderCostSection(section, index) {
   return `<section class="academy-card academy-cost-section" data-cost-section="${escapeAttribute(section.id)}">
-    <header><span>${String(index + 1).padStart(2, "0")}</span><div><h2>${escapeHtml(section.title)}</h2><p>${section.id === "vehicle" ? "Empieza por el importe principal de la operación." : "Añade únicamente las partidas que correspondan."}</p></div></header>
+    <header><span>${String(index + 1).padStart(2, "0")}</span><div><h2>${escapeHtml(section.title)}</h2><p>${section.id === "vehicle" ? "La puja máxima de Copart es informativa; el cálculo usa Copart con comisión o el precio de adquisición." : "Añade únicamente las partidas que correspondan."}</p></div></header>
     <div class="academy-cost-lines">${section.fields.map(renderCostInput).join("")}</div>
   </section>`;
 }
 
 function renderCostSummary(model) {
   const labels = { vehicle: "Coste del vehículo", travel: "Gastos de viaje", administration: "Gastos administrativos", upkeep: "Puesta a punto y otros" };
-  return `<span class="academy-eyebrow">05 · Total de la operación</span><h2>Resumen de costes</h2><dl>${Object.entries(labels).map(([key, label]) => `<div><dt>${label}</dt><dd>${costCurrency(model.categoryTotals[key])}</dd></div>`).join("")}</dl>
-    <div class="academy-cost-total"><span>Coste total</span><strong>${costCurrency(model.totalCost)}</strong><small>Coche puesto en España según los datos introducidos.</small></div>
+  return `<span class="academy-eyebrow">05 · Total de la operación</span><h2>Resumen de costes</h2><dl>${model.copartBidMax ? `<div><dt>Puja máxima Copart <small>referencia</small></dt><dd>${costCurrency(model.copartBidMax)}</dd></div>` : ""}${model.copartWithFees ? `<div><dt>Copart con comisiones</dt><dd>${costCurrency(model.copartWithFees)}</dd></div>` : ""}${Object.entries(labels).map(([key, label]) => `<div><dt>${label}</dt><dd>${costCurrency(model.categoryTotals[key])}</dd></div>`).join("")}${model.state.vatEnabled ? `<div><dt>IVA 21 % sobre ${costCurrency(model.vatBase)}</dt><dd>${costCurrency(model.vatAmount)}</dd></div>` : ""}</dl>
+    <div class="academy-cost-total"><span>Coste total estimado</span><strong>${costCurrency(model.totalCost)}</strong><small>${model.state.vatEnabled ? "Incluye el IVA 21 % de los conceptos seleccionados." : "Coche puesto en España según los datos introducidos."}</small></div>
     <div class="academy-cost-summary-metrics">
       ${model.hasMarket ? `<div><span>Mercado España</span><strong>${costCurrency(model.marketValue)}</strong></div><div><span>Beneficio a mercado</span><strong>${costCurrency(model.marketProfit)}</strong></div>` : ""}
       ${model.hasDesiredProfit ? `<div><span>Precio para tu objetivo</span><strong>${costCurrency(model.targetSalePrice)}</strong></div>` : ""}
       ${model.maximumPurchasePrice !== null ? `<div><span>Compra máxima</span><strong>${costCurrency(Math.max(0, model.maximumPurchasePrice))}</strong></div>` : ""}
-    </div><small class="academy-cost-save-note">Los cambios se guardan automáticamente en este dispositivo.</small>`;
+    </div><small class="academy-cost-save-note">Los cambios se guardan automáticamente en este dispositivo.</small><button class="academy-button academy-button--primary academy-button--wide academy-cost-pdf-button" type="button" data-action="cost-pdf">Generar informe PDF</button>`;
 }
 
 function renderCostMarket(data) {
@@ -1691,6 +1705,45 @@ function renderCostMarket(data) {
     <div class="academy-cost-negotiation"><div><span class="academy-eyebrow">Tu referencia para negociar</span><label for="cost-asking">Precio anunciado <small>(opcional)</small></label><p>Compáralo con el máximo que permite tu objetivo.</p></div><div class="academy-cost-input"><input id="cost-asking" type="text" inputmode="decimal" autocomplete="off" maxlength="20" placeholder="0 €" value="${escapeAttribute(data.askingPrice)}" data-cost-meta-field="askingPrice"><span aria-hidden="true">€</span></div></div>
   </section>`;
 }
+
+function renderCostVat(data, model) {
+  return `<section class="academy-card academy-cost-market academy-cost-vat-card"><header><span>05</span><div><h2>Aplicar 21 %</h2><p>Marca solo los conceptos que forman parte de esta simulación. Nunca se aplica IVA sobre IVA.</p></div><label class="academy-switch"><input type="checkbox" data-cost-vat-enabled${data.vatEnabled ? " checked" : ""}><span>Activar</span></label></header><div class="academy-cost-vat-summary"><span>Base sujeta al 21 %<strong>${costCurrency(model.vatBase)}</strong></span><span>IVA 21 %<strong>${costCurrency(model.vatAmount)}</strong></span><small>La base se recalcula siempre desde los importes originales seleccionados.</small></div></section>`;
+}
+
+function renderCostScenarios(data, model) {
+  const rows = data.marketScenarios.map((scenario, index) => {
+    const result = model.scenarios.find((item) => item.id === scenario.id)?.result;
+    return `<div class="academy-cost-scenario" data-scenario-id="${escapeAttribute(scenario.id)}"><div class="academy-field"><label for="scenario-label-${index}">Descripción <small>(opcional)</small></label><input id="scenario-label-${index}" maxlength="100" placeholder="Precio medio" value="${escapeAttribute(scenario.label)}" data-cost-scenario-field="${escapeAttribute(scenario.id)}.label"></div><div class="academy-field"><label for="scenario-price-${index}">Precio en España</label><div class="academy-cost-input"><input id="scenario-price-${index}" inputmode="decimal" maxlength="20" placeholder="0 €" value="${escapeAttribute(scenario.priceSpain)}" data-cost-scenario-field="${escapeAttribute(scenario.id)}.priceSpain"><span>€</span></div></div><div class="academy-cost-scenario-result"><span>${escapeHtml(data.resultLabel)}</span><strong class="${result < 0 ? "is-negative" : ""}">${result === undefined ? "—" : costCurrency(result)}</strong></div><button class="academy-button academy-button--secondary academy-button--small" type="button" data-action="cost-scenario-remove" data-scenario-id="${escapeAttribute(scenario.id)}" aria-label="Eliminar escenario ${index + 1}">Eliminar</button></div>`;
+  }).join("");
+  return `<section class="academy-card academy-cost-scenarios" data-cost-scenarios><header><span>07</span><div><h2>Escenarios de venta / valor en España</h2><p>Compara varios precios con el coste total de esta operación.</p></div></header><div class="academy-cost-scenario-settings"><label>Tipo de comparación<select data-cost-result-label>${["Beneficio estimado", "Ahorro estimado", "Margen estimado"].map((option) => `<option${data.resultLabel === option ? " selected" : ""}>${option}</option>`).join("")}</select></label><button class="academy-button academy-button--secondary" type="button" data-action="cost-scenario-add">+ Añadir escenario</button></div><div class="academy-cost-scenario-list">${rows || `<p class="academy-cost-empty">Añade uno o varios precios en España para ver tu ${escapeHtml(data.resultLabel.toLowerCase())}.</p>`}</div></section>`;
+}
+
+function reportFileName(vehicle) {
+  const parts = [vehicle.make, vehicle.model, vehicle.year].filter(Boolean).join("-").replace(/[^a-z0-9áéíóúüñ-]+/gi, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+  return `IvanImports-${parts || "Analisis-Operacion"}-Analisis.pdf`;
+}
+
+function reportVehicleTitle(vehicle) { return [vehicle.make, vehicle.model].filter(Boolean).join(" ") || "Análisis de operación"; }
+
+function renderCostReport(data, model) {
+  const vehicle = data.vehicle;
+  const subtitle = [vehicle.year && `Vehículo ${vehicle.year}`, vehicle.mileage && `${vehicle.mileage} km`, vehicle.color, vehicle.source && `Compra mediante ${vehicle.source}`].filter(Boolean).join(" · ");
+  const vehicleRows = VEHICLE_DATA_FIELDS.filter(({ id }) => vehicle[id] && !["listingUrl", "notes"].includes(id)).map(({ id, label }) => `<div><span>${escapeHtml(label)}</span><strong>${escapeHtml(vehicle[id])}</strong></div>`).join("");
+  const costs = COST_EXPENSE_SECTIONS.map((section) => {
+    const rows = section.fields.filter((item) => item.id === "copartBidMax" ? model.copartBidMax > 0 : model.fieldAmounts[item.id] > 0).map((item) => {
+      const base = item.id === "copartBidMax" ? model.copartBidMax : model.fieldAmounts[item.id]; const vat = data.vatEnabled && data.vat21[item.id] ? base * .21 : 0;
+      return `<tr><td>${escapeHtml(item.label)}${item.informative ? " <small>referencia</small>" : ""}</td><td>${costCurrency(base)}</td><td>${vat ? costCurrency(vat) : "—"}</td><td>${costCurrency(base + vat)}</td></tr>`;
+    }).join("");
+    return rows ? `<section><h2>${escapeHtml(section.title)}</h2><table><thead><tr><th>Concepto</th><th>Base</th><th>IVA 21 %</th><th>Total</th></tr></thead><tbody>${rows}</tbody></table></section>` : "";
+  }).join("");
+  const scenarioRows = model.scenarios.map((item) => `<tr><td>${escapeHtml(item.label || "Escenario")}</td><td>${costCurrency(item.price)}</td><td class="${item.result < 0 ? "negative" : ""}">${costCurrency(item.result)}</td></tr>`).join("");
+  const scenarioRange = model.scenarios.length ? [Math.min(...model.scenarios.map((item) => item.price)), Math.max(...model.scenarios.map((item) => item.price))] : null;
+  const resultRange = model.scenarios.length ? [Math.min(...model.scenarios.map((item) => item.result)), Math.max(...model.scenarios.map((item) => item.result))] : null;
+  const quickRead = `${model.copartBidMax ? `Con una puja máxima de ${costCurrency(model.copartBidMax)}, ` : ""}${model.copartWithFees ? `el coste de Copart con comisiones se estima en ${costCurrency(model.copartWithFees)}. ` : ""}Sumando los costes${model.vatAmount ? " y la simulación de IVA seleccionada" : ""}, el coste total estimado de la operación asciende a ${costCurrency(model.totalCost)}.${scenarioRange ? ` Según los escenarios introducidos, el valor en España se sitúa entre ${costCurrency(scenarioRange[0])} y ${costCurrency(scenarioRange[1])}, con un ${data.resultLabel.toLowerCase()} de entre ${costCurrency(resultRange[0])} y ${costCurrency(resultRange[1])}.` : ""}`;
+  return `<!doctype html><html lang="es"><head><meta charset="utf-8"><base href="${escapeAttribute(location.origin)}/"><title>${escapeHtml(reportFileName(vehicle))}</title><style>@page{size:A4;margin:16mm}*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#122b45;font-size:10pt;line-height:1.45}header{border-bottom:4px solid #0b67d9;padding-bottom:16px}.brand{width:148px;height:auto;display:block;margin-bottom:10px}h1{font-size:25pt;margin:10px 0 3px}h2{font-size:12pt;margin:20px 0 8px;color:#0b67d9}.sub{color:#587086}.vehicle{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0}.vehicle div{padding:8px;background:#f3f7fb;border-radius:5px}.vehicle span,.total span{display:block;color:#5c738a;font-size:8pt;text-transform:uppercase}.vehicle strong{display:block;margin-top:2px}table{width:100%;border-collapse:collapse}th{text-align:left;padding:7px;background:#17344d;color:#fff;font-size:8pt}td{padding:7px;border-bottom:1px solid #dbe6f0}td:not(:first-child),th:not(:first-child){text-align:right}.total{margin:22px 0;padding:16px;background:#0b67d9;color:white;border-radius:7px}.total span{color:#d8ebff}.total strong{font-size:24pt}.reading{padding:13px;background:#f3f7fb;border-left:4px solid #0b67d9}.note{margin-top:18px;color:#60778f;font-size:8pt}.negative{color:#bd2d37;font-weight:700}small{color:#60778f}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}section{break-inside:avoid}}</style></head><body><header><img class="brand" src="assets/brand/ivan-imports-wordmark-dark.svg" alt="IvanImports"><h1>${escapeHtml(reportVehicleTitle(vehicle))}${vehicle.make || vehicle.model ? " · Análisis de operación" : ""}</h1>${subtitle ? `<p class="sub">${escapeHtml(subtitle)}</p>` : ""}</header>${vehicleRows ? `<section><h2>00 · Datos del vehículo</h2><div class="vehicle">${vehicleRows}</div>${vehicle.listingUrl ? `<p><b>Fuente / anuncio:</b> ${escapeHtml(vehicle.listingUrl)}</p>` : ""}${vehicle.notes ? `<p><b>Notas:</b> ${escapeHtml(vehicle.notes)}</p>` : ""}</section>` : ""}<section><h2>01 · Coste de adquisición</h2>${model.copartBidMax ? `<p>La puja máxima se muestra como referencia. Para el cálculo del coste total se utiliza el importe de Copart con comisiones.</p>` : ""}</section>${costs}${data.vatEnabled ? `<section><h2>IVA 21 % seleccionado</h2><table><tbody><tr><td>Base sujeta al 21 %</td><td>${costCurrency(model.vatBase)}</td></tr><tr><td>IVA 21 %</td><td>${costCurrency(model.vatAmount)}</td></tr><tr><td><b>Total IVA incluido</b></td><td><b>${costCurrency(model.vatBase + model.vatAmount)}</b></td></tr></tbody></table><p class="note">El 21 % mostrado corresponde a la simulación seleccionada en la calculadora y se aplica únicamente sobre los conceptos indicados.</p></section>` : ""}<div class="total"><span>Coste total estimado</span><strong>${costCurrency(model.totalCost)}</strong></div>${scenarioRows ? `<section><h2>Escenarios de venta y ${escapeHtml(data.resultLabel.toLowerCase())}</h2><table><thead><tr><th>Escenario</th><th>Precio en España</th><th>${escapeHtml(data.resultLabel)}</th></tr></thead><tbody>${scenarioRows}</tbody></table></section>` : ""}<section class="reading"><h2>Lectura rápida</h2><p>${escapeHtml(quickRead)}</p></section><p class="note">Este documento es una estimación generada con la calculadora de IvanImports. Los importes pueden variar en función del vehículo, operación, documentación, fiscalidad y circunstancias concretas.${scenarioRows ? " Los márgenes, beneficios o ahorros mostrados son orientativos y pueden variar por reparaciones, financiación, impuestos, gastos posteriores, precio real de venta u otros costes no incluidos." : ""}${data.vatEnabled ? " El 21 % mostrado corresponde a una simulación seleccionada por el usuario y no implica que dicho impuesto sea necesariamente aplicable a toda la operación." : ""}</p></body></html>`;
+}
+
+function generateCostPdf() { const data = ensureCosts(); const model = calculateCostOperation(data); const report = window.open("", "_blank", "noopener,noreferrer"); if (!report) { toast("Permite las ventanas emergentes para generar el informe PDF.", "error"); return; } report.document.open(); report.document.write(renderCostReport(data, model)); report.document.close(); report.document.title = reportFileName(data.vehicle); window.setTimeout(() => report.print(), 300); }
 
 function renderCostAnalysis(model) {
   const status = {
@@ -1737,8 +1790,9 @@ function renderCostAnalysis(model) {
 function renderCostTool() {
   const data = ensureCosts();
   const model = calculateCostOperation(data);
-  return `<section class="academy-cost-calculator" data-calculator-version="2">
-    <div class="academy-cost-layout"><div class="academy-cost-form">${COST_EXPENSE_SECTIONS.map(renderCostSection).join("")}${renderCostMarket(data)}</div><aside class="academy-card academy-cost-summary academy-sticky-card" data-cost-summary>${renderCostSummary(model)}</aside></div>
+  return `<section class="academy-cost-calculator" data-calculator-version="3">
+    ${renderVehicleData(data)}
+    <div class="academy-cost-layout"><div class="academy-cost-form">${COST_EXPENSE_SECTIONS.map(renderCostSection).join("")}${renderCostVat(data, model)}${renderCostMarket(data)}${renderCostScenarios(data, model)}</div><aside class="academy-card academy-cost-summary academy-sticky-card" data-cost-summary>${renderCostSummary(model)}</aside></div>
     <section class="academy-card academy-cost-analysis" data-cost-analysis aria-live="polite">${renderCostAnalysis(model)}</section>
   </section>`;
 }
@@ -1750,8 +1804,10 @@ function updateCostCalculatorResults() {
   const model = calculateCostOperation(data);
   const summary = calculator.querySelector("[data-cost-summary]");
   const analysis = calculator.querySelector("[data-cost-analysis]");
+  const scenarios = calculator.querySelector("[data-cost-scenarios]");
   if (summary) summary.innerHTML = renderCostSummary(model);
   if (analysis) analysis.innerHTML = renderCostAnalysis(model);
+  if (scenarios) scenarios.outerHTML = renderCostScenarios(data, model);
   const fuel = calculateFuel(data.fuel);
   const litres = calculator.querySelector("[data-fuel-litres]");
   const cost = calculator.querySelector("[data-fuel-cost]");
@@ -2316,14 +2372,17 @@ function handleClick(event) {
     const data = ensureCosts();
     const value = fuelCostInputValue(data.fuel);
     if (value !== "") {
-      data.expenses.fuel = value;
-      const input = document.querySelector('[data-cost-field="fuel"]');
+      data.expenses.fuelCost = value;
+      const input = document.querySelector('[data-cost-field="fuelCost"]');
       if (input) input.value = value;
       scheduleSave({ immediate: true });
       updateCostCalculatorResults();
       toast("El coste de combustible se ha añadido y puedes editarlo manualmente.", "success");
     }
   }
+  if (action === "cost-scenario-add") { const data = ensureCosts(); data.marketScenarios.push({ id: uid("scenario"), label: "", priceSpain: "" }); scheduleSave(); renderView(); window.requestAnimationFrame(() => document.querySelector("[data-cost-scenario-field]")?.focus()); }
+  if (action === "cost-scenario-remove") { const data = ensureCosts(); data.marketScenarios = data.marketScenarios.filter((item) => item.id !== target.dataset.scenarioId); scheduleSave(); renderView(); }
+  if (action === "cost-pdf") generateCostPdf();
   if (action === "market-add") { app.state.tools.market ||= { comparables: [] }; app.state.tools.market.comparables ||= []; if (app.state.tools.market.comparables.length >= 50) toast("Has alcanzado el máximo de 50 comparables.", "error"); else { app.state.tools.market.comparables.push({ id: uid("comparable") }); scheduleSave(); renderView(); const editor = document.querySelector("[data-market-editor]"); if (editor) editor.open = true; window.requestAnimationFrame(() => editor?.querySelector("input")?.focus()); } }
   if (action === "market-remove") { app.state.tools.market?.comparables?.splice(finite(target.dataset.index), 1); scheduleSave(); renderView(); }
   if (action === "question-add") { app.state.tools.questions ||= []; if (app.state.tools.questions.length >= 40) toast("Has alcanzado el máximo de 40 preguntas.", "error"); else { app.state.tools.questions.push({ id: uid("question"), category: "Estado general", text: "" }); scheduleSave(); renderView(); } }
@@ -2348,17 +2407,20 @@ function handleInput(event) {
   if (target.matches("[data-search-input]")) { renderSearchResultList(target.value); return; }
   if (target.matches("[data-answer-filter]")) { document.querySelector("[data-answer-list]").innerHTML = renderAnswerSearch(target.value); return; }
   if (target.matches("[data-operation-field]")) { const created = !app.state.operation; app.state.operation ||= { id: uid("operation"), createdAt: new Date().toISOString() }; app.state.operation[target.dataset.operationField] = inputValue(target); app.state.operation.updatedAt = new Date().toISOString(); if (created) academyTrack("academy_operation_created", { programId: app.program.id }); scheduleSave(); return; }
-  if (target.matches("[data-cost-field], [data-cost-meta-field], [data-fuel-field]")) {
+  if (target.matches("[data-cost-field], [data-cost-meta-field], [data-fuel-field], [data-cost-scenario-field]")) {
     const sanitized = sanitizeDecimalInput(target.value);
-    if (target.value !== sanitized) target.value = sanitized;
+    if (target.matches("[data-cost-field], [data-cost-meta-field], [data-fuel-field]") && target.value !== sanitized) target.value = sanitized;
     const data = ensureCosts();
     if (target.matches("[data-cost-field]")) data.expenses[target.dataset.costField] = sanitized;
     if (target.matches("[data-cost-meta-field]")) data[target.dataset.costMetaField] = sanitized;
     if (target.matches("[data-fuel-field]")) data.fuel[target.dataset.fuelField] = sanitized;
+    if (target.matches("[data-cost-scenario-field]")) { const [id, key] = target.dataset.costScenarioField.split("."); const scenario = data.marketScenarios.find((item) => item.id === id); if (scenario) scenario[key] = key === "priceSpain" ? sanitized : target.value.slice(0, 100); }
     scheduleSave();
+    if (target.matches("[data-cost-scenario-field]")) { const model = calculateCostOperation(data); const id = target.dataset.costScenarioField.split(".")[0]; const result = model.scenarios.find((item) => item.id === id)?.result; const output = target.closest(".academy-cost-scenario")?.querySelector(".academy-cost-scenario-result strong"); if (output && result !== undefined) { output.textContent = costCurrency(result); output.classList.toggle("is-negative", result < 0); } return; }
     updateCostCalculatorResults();
     return;
   }
+  if (target.matches("[data-cost-vehicle-field]")) { ensureCosts().vehicle[target.dataset.costVehicleField] = target.value.slice(0, target.matches("textarea") ? 700 : 240); scheduleSave(); return; }
   if (target.matches("[data-tool-field]")) { setPath(app.state.tools, target.dataset.toolField, inputValue(target)); if (target.dataset.toolField.startsWith("method7.") && !app.method7StartedTracked) { academyTrack("academy_method7_started", { programId: app.program.id, toolId: "metodo-7-dias" }); app.method7StartedTracked = true; } scheduleSave(); updateDynamicResults(); return; }
   if (target.matches("[data-market-field]")) { const [index, key] = target.dataset.marketField.split("."); app.state.tools.market.comparables[finite(index)][key] = inputValue(target); scheduleSave(); updateDynamicResults(); return; }
   if (target.matches("[data-question-field]")) { const [index, key] = target.dataset.questionField.split("."); app.state.tools.questions[finite(index)][key] = inputValue(target); scheduleSave(); updateDynamicResults(); }
@@ -2372,6 +2434,9 @@ function handleChange(event) {
     updateNumberValidity(target);
   }
   trackToolStart(target);
+  if (target.matches("[data-cost-vat-enabled]")) { ensureCosts().vatEnabled = target.checked; scheduleSave(); renderView(); return; }
+  if (target.matches("[data-cost-vat-field]")) { ensureCosts().vat21[target.dataset.costVatField] = target.checked; scheduleSave(); updateCostCalculatorResults(); return; }
+  if (target.matches("[data-cost-result-label]")) { ensureCosts().resultLabel = target.value; scheduleSave(); renderView(); return; }
   if (target.matches("[data-market-field]")) window.requestAnimationFrame(renderView);
   if (target.matches("[data-lesson-check]")) { app.state.tools.lessonChecklists ||= {}; app.state.tools.lessonChecklists[target.dataset.lessonCheck] ||= {}; app.state.tools.lessonChecklists[target.dataset.lessonCheck][target.dataset.itemId] = target.checked; scheduleSave(); academyTrack("academy_checklist_updated", { lessonId: target.dataset.lessonCheck, contentType: "lesson" }); }
   if (target.matches("[data-document-field]")) { app.state.tools.documents ||= {}; app.state.tools.documents[target.dataset.documentField] = target.value; scheduleSave(); academyTrack("academy_checklist_updated", { toolId: "documentos" }); }

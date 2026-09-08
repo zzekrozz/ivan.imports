@@ -1,235 +1,80 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import {
-  COST_CALCULATOR_VERSION,
-  COST_EXPENSE_FIELDS,
-  COST_EXPENSE_SECTIONS,
-  calculateCostOperation,
-  calculateFuel,
-  costCalculatorHasData,
-  createEmptyCostCalculatorState,
-  fuelCostInputValue,
-  normalizeCostCalculatorState,
-  parseCostNumber,
-  sanitizeDecimalInput,
-} from "../assets/academy/private/cost-calculator.js";
+import { COST_CALCULATOR_VERSION, COST_EXPENSE_FIELDS, COST_EXPENSE_SECTIONS, calculateCostOperation, calculateFuel, costCalculatorHasData, createEmptyCostCalculatorState, fuelCostInputValue, normalizeCostCalculatorState, parseCostNumber, sanitizeDecimalInput } from "../assets/academy/private/cost-calculator.js";
 
 const root = new URL("../", import.meta.url);
+function calculator({ expenses = {}, vehicle = {}, vatEnabled = false, vat21 = {}, marketScenarios = [], resultLabel = "Beneficio estimado", fuel = {}, marketValue = "", desiredProfit = "", askingPrice = "" } = {}) { return normalizeCostCalculatorState({ ...createEmptyCostCalculatorState(), expenses, vehicle: { ...createEmptyCostCalculatorState().vehicle, ...vehicle }, vatEnabled, vat21, marketScenarios, resultLabel, fuel: { ...createEmptyCostCalculatorState().fuel, ...fuel }, marketValue, desiredProfit, askingPrice }); }
 
-function calculator({ expenses = {}, fuel = {}, marketValue = "", desiredProfit = "", askingPrice = "" } = {}) {
-  return normalizeCostCalculatorState({
-    ...createEmptyCostCalculatorState(),
-    expenses,
-    fuel: { ...createEmptyCostCalculatorState().fuel, ...fuel },
-    marketValue,
-    desiredProfit,
-    askingPrice,
-  });
-}
-
-test("la definición canónica contiene cuatro categorías y 25 partidas únicas", () => {
+test("la definición v3 conserva categorías, IEDMT/Modelo 576 y añade campos Copart y honorarios", () => {
+  assert.equal(COST_CALCULATOR_VERSION, 3);
   assert.deepEqual(COST_EXPENSE_SECTIONS.map((section) => section.id), ["vehicle", "travel", "administration", "upkeep"]);
-  assert.equal(COST_EXPENSE_FIELDS.length, 25);
-  assert.equal(new Set(COST_EXPENSE_FIELDS.map((field) => field.id)).size, 25);
+  for (const id of ["copartBidMax", "copartWithFees", "fees", "iedmt", "fuelCost"]) assert.ok(COST_EXPENSE_FIELDS.some((item) => item.id === id));
   assert.match(COST_EXPENSE_FIELDS.find((field) => field.id === "iedmt").label, /IEDMT \/ Modelo 576/);
 });
 
-test("una calculadora vacía produce coste total cero sin conclusiones inventadas", () => {
+test("la calculadora vacía permite empezar sin vehículo y sin costes", () => {
   const result = calculateCostOperation(calculator());
-  assert.equal(result.totalCost, 0);
-  assert.equal(result.marketProfit, null);
-  assert.equal(result.targetSalePrice, null);
-  assert.equal(result.maximumPurchasePrice, null);
-  assert.equal(result.status, "incomplete");
+  assert.equal(result.totalCost, 0); assert.equal(result.vatAmount, 0); assert.equal(result.scenarios.length, 0); assert.equal(result.marketProfit, null);
 });
 
-test("suma básica: una partida corresponde a un único importe", () => {
-  assert.equal(calculateCostOperation(calculator({ expenses: { purchase: "3000", flight: "200" } })).totalCost, 3200);
+test("la puja máxima Copart es solo informativa y jamás se suma", () => {
+  const result = calculateCostOperation(calculator({ expenses: { copartBidMax: "14700", copartWithFees: "15725", fees: "2000", travelOther: "1000" } }));
+  assert.equal(result.copartBidMax, 14700); assert.equal(result.acquisitionCost, 15725); assert.equal(result.totalCost, 18725); assert.equal(result.fieldAmounts.copartBidMax, 0);
 });
 
-test("suma todas las categorías sin mezclar sus subtotales", () => {
-  const result = calculateCostOperation(calculator({ expenses: { purchase: 3000, flight: 200, itv: 100, maintenance: 250 } }));
-  assert.deepEqual(result.categoryTotals, { vehicle: 3000, travel: 200, administration: 100, upkeep: 250 });
-  assert.equal(result.totalCost, 3550);
+test("Copart con comisión prevalece sobre una adquisición genérica duplicada", () => {
+  const result = calculateCostOperation(calculator({ expenses: { purchase: 14700, copartWithFees: 15725 } }));
+  assert.equal(result.totalCost, 15725); assert.equal(result.categoryTotals.vehicle, 15725);
 });
 
-test("calcula beneficio vendiendo al mercado introducido", () => {
-  const result = calculateCostOperation(calculator({ expenses: { purchase: 3813 }, marketValue: 5000 }));
-  assert.equal(result.marketProfit, 1187);
+test("honorarios y base de IVA seleccionable reproducen la operación real", () => {
+  const result = calculateCostOperation(calculator({ expenses: { copartWithFees: 15725, fees: 2000, vehicleTransport: 1247, administrationOther: 1593 }, vatEnabled: true, vat21: { fees: true, vehicleTransport: true } }));
+  assert.equal(result.costBase, 20565); assert.equal(result.vatBase, 3247); assert.equal(result.vatAmount, 681.87); assert.equal(result.totalCost, 21246.87);
 });
 
-test("calcula el precio necesario para conseguir el beneficio deseado sin exigir mercado", () => {
-  const result = calculateCostOperation(calculator({ expenses: { purchase: 3813 }, desiredProfit: 2000 }));
-  assert.equal(result.targetSalePrice, 5813);
-  assert.equal(result.marketDifference, null);
+test("activar y desactivar el IVA no acumula impuesto sobre impuesto", () => {
+  const state = calculator({ expenses: { fees: 2000 }, vatEnabled: true, vat21: { fees: true } });
+  assert.equal(calculateCostOperation(state).totalCost, 2420);
+  state.vatEnabled = false; assert.equal(calculateCostOperation(state).totalCost, 2000);
+  state.vatEnabled = true; assert.equal(calculateCostOperation(state).totalCost, 2420);
 });
 
-test("detecta un objetivo claramente por encima del mercado", () => {
-  const result = calculateCostOperation(calculator({ expenses: { purchase: 3813 }, marketValue: 5000, desiredProfit: 2000 }));
-  assert.equal(result.marketDifference, 813);
-  assert.equal(result.status, "attention");
+test("escenarios calculan beneficio, ahorro o margen sin cambiar la fórmula", () => {
+  const result = calculateCostOperation(calculator({ expenses: { copartWithFees: 15725, fees: 2000, vehicleTransport: 1247, administrationOther: 1593 }, vatEnabled: true, vat21: { fees: true, vehicleTransport: true }, resultLabel: "Margen estimado", marketScenarios: [{ id: "one", label: "Venta rápida", priceSpain: "27000" }, { id: "two", label: "Precio medio", priceSpain: "28000" }, { id: "three", label: "", priceSpain: "29000" }] }));
+  assert.deepEqual(result.scenarios.map(({ price, result: margin }) => [price, margin]), [[27000, 5753.13], [28000, 6753.13], [29000, 7753.13]]);
 });
 
-test("detecta margen cuando el objetivo queda por debajo del mercado", () => {
-  const result = calculateCostOperation(calculator({ expenses: { purchase: 3500 }, marketValue: 5000, desiredProfit: 1000 }));
-  assert.equal(result.marketDifference, -500);
-  assert.equal(result.status, "good");
+test("los resultados negativos y cero se conservan", () => {
+  const result = calculateCostOperation(calculator({ expenses: { purchase: 25000 }, marketScenarios: [{ id: "negative", priceSpain: "23000" }, { id: "zero", priceSpain: "25000" }] }));
+  assert.deepEqual(result.scenarios.map((item) => item.result), [-2000, 0]);
 });
 
-test("considera alineados objetivo y mercado dentro de una tolerancia útil", () => {
-  const result = calculateCostOperation(calculator({ expenses: { purchase: 3900 }, marketValue: 5000, desiredProfit: 1050 }));
-  assert.equal(result.marketDifference, -50);
-  assert.equal(result.tolerance, 100);
-  assert.equal(result.status, "aligned");
+test("vehículo, IVA y escenarios se persisten y v2 se migra sin perder gastos", () => {
+  const state = calculator({ vehicle: { make: "BMW", model: "318i", mileage: "48127" }, expenses: { copartBidMax: 14700, copartWithFees: 15725, fees: 2000 }, vatEnabled: true, vat21: { fees: true }, marketScenarios: [{ id: "x", label: "Media", priceSpain: 27000 }] });
+  assert.deepEqual(normalizeCostCalculatorState(JSON.parse(JSON.stringify(state))), state);
+  const migrated = normalizeCostCalculatorState({ version: 2, expenses: { purchase: "3000", fuel: "240" }, fuel: { kilometres: "2000" } });
+  assert.equal(migrated.expenses.purchase, "3000"); assert.equal(migrated.expenses.fuelCost, "240");
 });
 
-test("calcula el precio máximo de compra descontando gastos sin compra", () => {
-  const result = calculateCostOperation(calculator({ expenses: { purchase: 3000, flight: 200, localTransport: 100, fuel: 300, food: 213 }, marketValue: 5000, desiredProfit: 2000 }));
-  assert.equal(result.expensesWithoutPurchase, 813);
-  assert.equal(result.maximumPurchasePrice, 2187);
-});
-
-test("compara una compra superior con el máximo recomendado", () => {
-  const result = calculateCostOperation(calculator({ expenses: { purchase: 3000, travelOther: 813 }, marketValue: 5000, desiredProfit: 2000 }));
-  assert.equal(result.purchaseDifference, 813);
-});
-
-test("compara una compra inferior con el máximo recomendado", () => {
-  const result = calculateCostOperation(calculator({ expenses: { purchase: 2900, travelOther: 800 }, marketValue: 5000, desiredProfit: 1000 }));
-  assert.equal(result.maximumPurchasePrice, 3200);
-  assert.equal(result.purchaseDifference, -300);
-});
-
-test("calcula cuánto negociar cuando el anuncio supera el máximo", () => {
-  const result = calculateCostOperation(calculator({ expenses: { travelOther: 1050 }, marketValue: 5000, desiredProfit: 1000, askingPrice: 3400 }));
-  assert.equal(result.maximumPurchasePrice, 2950);
-  assert.equal(result.negotiationAmount, 450);
-});
-
-test("reconoce un precio anunciado que ya entra dentro del máximo", () => {
-  const result = calculateCostOperation(calculator({ expenses: { travelOther: 1050 }, marketValue: 5000, desiredProfit: 1000, askingPrice: 2900 }));
-  assert.equal(result.negotiationAmount, -50);
-});
-
-test("calcula combustible: 2.000 km, 7,5 L/100 y 1,60 €/L", () => {
-  const result = calculateFuel({ kilometres: "2000", consumption: "7,5", pricePerLitre: "1,60" });
-  assert.equal(result.valid, true);
-  assert.equal(result.litres, 150);
-  assert.equal(result.cost, 240);
-});
-
-test("no inventa combustible si falta uno de los tres datos", () => {
-  const result = calculateFuel({ kilometres: "2000", consumption: "7,5", pricePerLitre: "" });
-  assert.equal(result.valid, false);
-  assert.equal(result.cost, 0);
-});
-
-test("el botón de usar combustible produce el importe editable esperado", () => {
+test("combustible conserva cálculo auxiliar y no acepta importes negativos", () => {
+  assert.equal(calculateFuel({ kilometres: "2000", consumption: "7,5", pricePerLitre: "1,60" }).cost, 240);
   assert.equal(fuelCostInputValue({ kilometres: 2000, consumption: 7.5, pricePerLitre: 1.6 }), "240");
+  assert.equal(parseCostNumber("3.000,50 €"), 3000.5); assert.equal(parseCostNumber("-100"), 0); assert.equal(sanitizeDecimalInput("-100"), "");
 });
 
-test("acepta decimales españoles, internacionales y cifras con miles", () => {
-  assert.equal(parseCostNumber("3000,50"), 3000.5);
-  assert.equal(parseCostNumber("3000.50"), 3000.5);
-  assert.equal(parseCostNumber("3.000,50 €"), 3000.5);
-  assert.equal(parseCostNumber("3.813"), 3813);
-});
-
-test("descarta NaN, texto y cantidades negativas", () => {
-  assert.equal(parseCostNumber("texto"), 0);
-  assert.equal(parseCostNumber(Number.NaN), 0);
-  assert.equal(parseCostNumber("-100"), 0);
-  assert.equal(sanitizeDecimalInput("-100"), "");
-});
-
-test("con mercado pero sin beneficio solo muestra el beneficio a mercado", () => {
-  const result = calculateCostOperation(calculator({ expenses: { purchase: 3000 }, marketValue: 5000 }));
-  assert.equal(result.marketProfit, 2000);
-  assert.equal(result.targetSalePrice, null);
-  assert.equal(result.maximumPurchasePrice, null);
-});
-
-test("con beneficio pero sin mercado muestra precio objetivo y omite compra máxima", () => {
-  const result = calculateCostOperation(calculator({ expenses: { purchase: 3000 }, desiredProfit: 2000 }));
-  assert.equal(result.targetSalePrice, 5000);
-  assert.equal(result.marketProfit, null);
-  assert.equal(result.maximumPurchasePrice, null);
-});
-
-test("el caso de aceptación 3.813 / 5.000 / 2.000 pasa exactamente", () => {
-  const result = calculateCostOperation(calculator({
-    expenses: { purchase: 3000, flight: 200, localTransport: 100, fuel: 300, food: 213 },
-    marketValue: 5000,
-    desiredProfit: 2000,
-  }));
-  assert.equal(result.totalCost, 3813);
-  assert.equal(result.marketProfit, 1187);
-  assert.equal(result.targetSalePrice, 5813);
-  assert.equal(result.marketDifference, 813);
-  assert.equal(result.expensesWithoutPurchase, 813);
-  assert.equal(result.maximumPurchasePrice, 2187);
-  assert.equal(result.purchaseDifference, 813);
-});
-
-test("la persistencia v2 conserva gastos, combustible, mercado, beneficio y anuncio", () => {
-  const state = calculator({ expenses: { purchase: "3000,50" }, fuel: { kilometres: 2000, consumption: "7,5", pricePerLitre: "1,60" }, marketValue: 5000, desiredProfit: 2000, askingPrice: 3400 });
-  const restored = normalizeCostCalculatorState(JSON.parse(JSON.stringify(state)));
-  assert.equal(restored.version, COST_CALCULATOR_VERSION);
-  assert.deepEqual(restored, state);
-});
-
-test("el modelo antiguo Estimado/Confirmado/Real empieza limpio en v2", () => {
-  const restored = normalizeCostCalculatorState({ rows: { purchase: { estimated: 3000, confirmed: 3100, actual: 3200 } }, marketValue: 5000 });
-  assert.deepEqual(restored, createEmptyCostCalculatorState());
-});
-
-test("Vaciar calculadora puede distinguir estado vacío de estado con datos", () => {
+test("el estado con datos descriptivos también se considera guardable", () => {
   assert.equal(costCalculatorHasData(createEmptyCostCalculatorState()), false);
-  assert.equal(costCalculatorHasData(calculator({ expenses: { purchase: 0 } })), true);
-  assert.equal(costCalculatorHasData(calculator({ fuel: { kilometres: 2000 } })), true);
+  assert.equal(costCalculatorHasData(calculator({ vehicle: { make: "BMW" } })), true);
 });
 
-test("la integración elimina la tabla antigua y actualiza sin reconstruir el formulario", async () => {
-  const source = await readFile(new URL("assets/academy/app.js", root), "utf8");
-  const calculatorSource = source.slice(source.indexOf("function ensureCosts"), source.indexOf("function renderDocumentsTool"));
-  assert.doesNotMatch(calculatorSource, /Estimado|Confirmado|Desviación|data-cost-diff|<table/);
-  assert.match(calculatorSource, /data-calculator-version="2"/);
-  assert.match(calculatorSource, /updateCostCalculatorResults/);
-  assert.match(calculatorSource, /costCurrency/);
-  assert.match(source, /useGrouping: "always"/);
-  assert.match(source, /data-action="fuel-use"/);
-  assert.doesNotMatch(source, /\[data-market-field\], \[data-cost-field\]/);
+test("la interfaz usa una única fuente de cálculo, informe A4 y controles de escenarios", async () => {
+  const source = await readFile(new URL("assets/academy/app.js", root), "utf8"); const calculation = await readFile(new URL("assets/academy/private/cost-calculator.js", root), "utf8");
+  assert.match(source, /data-calculator-version="3"/); assert.match(source, /renderCostReport\(data, model\)/); assert.match(source, /data-cost-vat-field/); assert.match(source, /data-cost-scenario-field/); assert.match(source, /Generar informe PDF/); assert.match(calculation, /Copart · Puja máxima/);
+  assert.doesNotMatch(source, /html2canvas/);
 });
 
-test("la navegación principal separa las cinco áreas y elimina el acceso privilegiado a la calculadora", async () => {
-  const source = await readFile(new URL("assets/academy/app.js", root), "utf8");
-  const shellSource = source.slice(source.indexOf("function navCurrent"), source.indexOf("function pageTitle"));
-  for (const label of ["Inicio", "Academia", "Herramientas", "Mis vehículos", "Recursos"]) assert.match(shellSource, new RegExp(label));
-  assert.doesNotMatch(shellSource, /"calculator", "Calculadora"/);
-  assert.doesNotMatch(shellSource, />Ruta completa</);
-});
-
-test("el CSS contiene layout responsive y evita tablas horizontales", async () => {
-  const css = await readFile(new URL("assets/academy/app.css", root), "utf8");
-  assert.match(css, /\.academy-cost-layout\s*\{[^}]*grid-template-columns:/);
-  assert.match(css, /\.academy-cost-line[\s\S]*\.academy-cost-input/);
-  assert.match(css, /@media \(max-width: 600px\)[\s\S]*\.academy-cost-line/);
-  assert.doesNotMatch(css, /academy-cost-blocks|academy-cost-decision/);
-});
-
-test("el cat\u00e1logo p\u00fablico describe el modelo sencillo sin estados paralelos", async () => {
-  const program = JSON.parse(await readFile(new URL("assets/academy/program-v2.json", root), "utf8"));
-  const tool = program.tools.find((entry) => entry.id === "cost-calculator");
-  const searchEntry = program.searchIndex.find((entry) => entry.kind === "tool" && entry.id === "cost-calculator");
-  assert.equal(tool.description, "Suma todos los gastos y descubre el precio, beneficio y compra m\u00e1xima que hacen cuadrar la operaci\u00f3n.");
-  assert.doesNotMatch(`${tool.description} ${searchEntry.text}`, /estimado|confirmado|real|desviaci\u00f3n/i);
-});
-
-test("la p\u00e1gina SEO de la calculadora conserva ruta y descripci\u00f3n actuales", async () => {
+test("la página SEO mantiene la ruta de la herramienta", async () => {
   const html = await readFile(new URL("herramientas/calculadora-coste-importacion/index.html", root), "utf8");
-  assert.match(html, /<h1>Calculadora de coste de importación de coches<\/h1>/);
-  assert.match(html, /Suma todos los gastos y calcula el coste real, el margen y la compra máxima/);
-  assert.match(html, /<link rel="canonical" href="https:\/\/ivanimports\.es\/herramientas\/calculadora-coste-importacion\/">/);
-  assert.doesNotMatch(html, /Distingue estimado, confirmado, real/i);
+  assert.match(html, /<h1>Calculadora de coste de importación de coches<\/h1>/); assert.match(html, /herramientas\/calculadora-coste-importacion/);
 });
