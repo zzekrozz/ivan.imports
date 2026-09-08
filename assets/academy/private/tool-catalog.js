@@ -6,7 +6,7 @@ const entries = [
   ["ad-analyzer", "analizador-anuncio", "Analizador de anuncios", "/herramientas/analizador-anuncios/", "Vehículos y anuncios", true, 10, "Crea una ficha editable desde un anuncio de mobile.de."],
   ["question-builder", "preguntas", "Preparador de preguntas", "/herramientas/preparador-preguntas/", "Vehículos y anuncios", false, 40, "Ordena llamada y bloques breves para WhatsApp."],
   ["market-comparator", "mercado", "Comparador con España", "/herramientas/comparador-espana/", "Mercado", true, 12, "Construye una muestra equivalente y una franja conservadora."],
-  ["cost-calculator", "coste-total", "Calculadora de coste de importación", "/herramientas/calculadora-coste-importacion/", "Costes y rentabilidad", true, 5, "Suma todos los gastos y calcula el coste real, el margen y la compra máxima."],
+  ["cost-calculator", "coste-total", "Calculadora de coste de importación", "/herramientas/calculadora-coste-importacion/", "Costes y rentabilidad", true, 5, "Calcula el coste real de importar un vehículo, añade impuestos, compara su valor en España y genera un informe PDF completo."],
   ["document-passport", "documentos", "Pasaporte documental", "/herramientas/pasaporte-documental/", "Documentación y matriculación", false, 50, "Muestra el estado de cada documento y la duda pendiente."],
   ["plan-abc", "plan-abc", "Plan A/B/C", "/herramientas/plan-abc/", "Vehículos y anuncios", false, 45, "Conserva alternativas cercanas y comprobables."],
   ["travel-planner", "viaje", "Planificador de viaje", "/herramientas/planificador-viaje/", "Viaje e inspección", false, 60, "Cruza vuelo, horarios, banco, placas y alternativas."],

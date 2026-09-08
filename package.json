@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@vercel/blob": "2.6.1",
+    "jspdf": "^4.2.1",
     "web-push": "3.6.7"
   }
 }
