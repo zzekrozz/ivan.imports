@@ -17,6 +17,7 @@ import {
   normalizeCostCalculatorState,
   sanitizeDecimalInput,
 } from "./private/cost-calculator.js";
+import { clearKairosBudgets, kairosBudgetHasData, mountKairosBudgetApp, renderKairosBudgetApp, setKairosBudgetPurchase } from "../kairos-budget/ui.js";
 import { ACADEMY_PATCH_NOTES, ACADEMY_VERSION } from "./patch-notes.js";
 import { TOOL_CATALOG, toolCatalogEntry, validateToolCatalog } from "./private/tool-catalog.js";
 import { PLATFORM_AREAS, navigationItem, platformAreaForRoute } from "./private/platform-navigation.js";
@@ -798,6 +799,9 @@ function renderView() {
     const robots = document.querySelector('meta[name="robots"]');
     if (robots) robots.content = ["vehicles", "vehicle", "candidates"].includes(app.route.name) ? "noindex,nofollow,noarchive" : "index,follow,max-image-preview:large";
     updateDynamicResults();
+    if (app.route.name === "tool" && canonicalToolSlug(app.route.slug) === "coste-total") {
+      mountKairosBudgetApp({ root: document.querySelector("[data-kairos-budget]"), legacyState: app.state.tools.costs });
+    }
     bindSectionTracking();
   } catch (error) {
     console.error("Academy view error", error);
@@ -1426,7 +1430,9 @@ function toolDefinition(slug) {
     definition.description = "Importa una URL de mobile.de o crea una ficha normalizada y editable para revisar el vehículo.";
   }
   if (canonical === "coste-total") {
-    definition.description = "Calcula el coste real de importar un vehículo, añade impuestos, compara su valor en España y genera un informe PDF completo.";
+    definition.title = "Presupuesto Copart KAIROS";
+    definition.h1 = "Calculadora profesional de operaciones Copart";
+    definition.description = "Presupuesta compra, REBU, gastos y rentabilidad en una vista interna separada del presupuesto comercial para el cliente.";
   }
   if (canonical === "operation-dashboard") {
     definition.title = "Mis vehículos";
@@ -1905,13 +1911,7 @@ function renderCostResult(model) {
 }
 
 function renderCostTool() {
-  const data = ensureCosts();
-  const model = calculateCostOperation(data);
-  return `<section class="academy-cost-calculator" data-calculator-version="4">
-    ${renderVehicleData(data)}
-    <div class="academy-cost-layout"><div class="academy-cost-form">${COST_EXPENSE_SECTIONS.map(renderCostSection).join("")}${renderCostVat(data, model)}${renderCostScenarios(data, model)}</div><aside class="academy-card academy-cost-summary academy-sticky-card" data-cost-summary>${renderCostSummary(model)}</aside></div>
-    <section class="academy-card academy-cost-result" data-cost-result aria-live="polite">${renderCostResult(model)}</section>
-  </section>`;
+  return renderKairosBudgetApp(app.state.tools.costs);
 }
 
 function updateCostCalculatorResults() {
@@ -2452,7 +2452,7 @@ function handleClick(event) {
   if (action === "vehicle-delete") { const vehicle = ensureVehicleAnalyzer().vehicles.find((item) => item.id === target.dataset.id); if (vehicle && window.confirm(`¿Eliminar la ficha de ${vehicleTitle(vehicle)}?`)) { app.state.tools.adAnalyzer.vehicles = removeVehicle(app.state.tools.adAnalyzer.vehicles, vehicle.id); app.vehicleMode = "list"; app.vehicleSelectedId = null; scheduleSave({ immediate: true }); if (app.route.name === "vehicle") navigate("/mis-vehiculos/"); else renderView(); toast("Ficha eliminada.", "success"); } }
   if (action === "vehicle-duplicate") { const vehicle = ensureVehicleAnalyzer().vehicles.find((item) => item.id === target.dataset.id); if (vehicle) { const copy = duplicateVehicle(vehicle); app.state.tools.adAnalyzer.vehicles = upsertVehicle(app.state.tools.adAnalyzer.vehicles, copy); app.vehicleSelectedId = copy.id; app.vehicleMode = "detail"; scheduleSave({ immediate: true }); navigate(vehicleHref(copy)); toast("Ficha duplicada como entrada manual.", "success"); } }
   if (action === "vehicle-update") { const vehicle = ensureVehicleAnalyzer().vehicles.find((item) => item.id === target.dataset.id); if (vehicle?.sourceUrl) void importVehicleUrl(vehicle.sourceUrl, { existingId: vehicle.id }); }
-  if (action === "vehicle-calculate") { const vehicle = ensureVehicleAnalyzer().vehicles.find((item) => item.id === target.dataset.id); if (vehicle?.price !== null && vehicle?.price !== undefined) { ensureCosts().expenses.purchase = String(vehicle.price); scheduleSave({ immediate: true }); navigate(toolHref("coste-total")); toast("Precio del vehículo enviado a la calculadora.", "success"); } }
+  if (action === "vehicle-calculate") { const vehicle = ensureVehicleAnalyzer().vehicles.find((item) => item.id === target.dataset.id); if (vehicle?.price !== null && vehicle?.price !== undefined) { ensureCosts().expenses.purchase = String(vehicle.price); setKairosBudgetPurchase(vehicle.price, app.state.tools.costs); scheduleSave({ immediate: true }); navigate(toolHref("coste-total")); toast("Precio del vehículo enviado a la calculadora.", "success"); } }
   if (action === "search-suggest") {
     const input = document.querySelector("[data-search-input]");
     if (input) { input.value = target.dataset.query || ""; renderSearchResultList(input.value); input.focus(); }
@@ -2498,8 +2498,11 @@ function handleClick(event) {
   }
   if (action === "tool-reset") {
     const slug = canonicalToolSlug(target.dataset.toolId);
-    const hasData = slug === "coste-total" ? costCalculatorHasData(app.state.tools.costs) : true;
-    if (!hasData || window.confirm(slug === "coste-total" ? "¿Vaciar todos los datos de la calculadora? Esta acción no se puede deshacer." : "¿Vaciar todos los datos guardados en esta herramienta? Esta acción no se puede deshacer.")) resetTool(slug);
+    const hasData = slug === "coste-total" ? kairosBudgetHasData(app.state.tools.costs) : true;
+    if (!hasData || window.confirm(slug === "coste-total" ? "¿Vaciar todos los presupuestos y datos de la calculadora? Esta acción no se puede deshacer." : "¿Vaciar todos los datos guardados en esta herramienta? Esta acción no se puede deshacer.")) {
+      if (slug === "coste-total") clearKairosBudgets();
+      resetTool(slug);
+    }
   }
   if (action === "fuel-use") {
     const data = ensureCosts();

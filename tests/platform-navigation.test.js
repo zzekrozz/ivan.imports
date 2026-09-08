@@ -99,8 +99,8 @@ test("las rutas antiguas redirigen en un único salto permanente", () => {
 test("SEO, sitemap y persistencia conservan sus contratos", () => {
   const calculator = read("herramientas/calculadora-coste-importacion/index.html");
   const analyzer = read("herramientas/analizador-anuncios/index.html");
-  assert.match(calculator, /<title>Calculadora de coste para importar un coche a España \| IvanImports<\/title>/);
-  assert.match(calculator, /<h1>Calculadora de coste de importación de coches<\/h1>/);
+  assert.match(calculator, /<title>Calculadora Copart y presupuesto de cliente \| IvanImports<\/title>/);
+  assert.match(calculator, /<h1>Calculadora profesional de operaciones Copart<\/h1>/);
   assert.match(analyzer, /<title>Analizador de anuncios de coches de Alemania \| IvanImports<\/title>/);
   assert.match(analyzer, /<h1>Analiza un anuncio de coche antes de comprarlo<\/h1>/);
   const sitemap = read("sitemap.xml");

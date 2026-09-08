@@ -141,20 +141,18 @@ test("los nombres PDF son limpios, incluyen el acabado y nunca duplican Analisis
   assert.equal(costReportFileName({ make: "Citroën", model: "C5/Aircross" }), "IvanImports-Citroen-C5-Aircross-Analisis.pdf");
 });
 
-test("la interfaz v4 usa jsPDF para una descarga real y ya no usa popups ni impresión en la calculadora", async () => {
+test("la interfaz KAIROS sustituye la vista v4 y conserva PDF real sin popups ni impresión", async () => {
   const source = await readFile(new URL("assets/academy/app.js", root), "utf8");
-  const calculatorSource = source.slice(source.indexOf("function ensureCosts"), source.indexOf("function renderDocumentsTool"));
-  assert.match(calculatorSource, /data-calculator-version="4"/);
-  assert.match(calculatorSource, /function loadCostPdfLibrary/);
-  assert.match(calculatorSource, /function buildCostPdfDocument/);
-  assert.match(calculatorSource, /\.save\(costReportFileName/);
+  const calculatorSource = await readFile(new URL("assets/kairos-budget/ui.js", root), "utf8");
+  assert.match(source, /renderKairosBudgetApp/);
+  assert.match(calculatorSource, /function buildClientPdf/);
+  assert.match(calculatorSource, /function buildInternalPdf/);
+  assert.match(calculatorSource, /\.save\(safePdfFileName/);
   assert.match(calculatorSource, /jspdf\.umd\.min\.js/);
-  assert.match(calculatorSource, /\+ Añadir precio en España/);
   assert.match(calculatorSource, /Generando PDF…/);
   assert.doesNotMatch(calculatorSource, /window\.open\s*\(/);
   assert.doesNotMatch(calculatorSource, /window\.print\s*\(/);
   assert.doesNotMatch(calculatorSource, /report\.print\s*\(/);
-  assert.doesNotMatch(calculatorSource, /marketValue|desiredProfit|askingPrice|maximumPurchasePrice|negotiationAmount/);
   assert.doesNotMatch(calculatorSource, /html2canvas/);
 });
 
@@ -164,10 +162,9 @@ test("la librería PDF cliente está versionada y no depende de node_modules en 
   assert.match(await readFile(file, "utf8"), /jsPDF/);
 });
 
-test("la página SEO mantiene su URL y explica coste, España y PDF sin compra máxima", async () => {
+test("la página SEO mantiene su URL y presenta el presupuesto Copart interno y cliente", async () => {
   const html = await readFile(new URL("herramientas/calculadora-coste-importacion/index.html", root), "utf8");
-  assert.match(html, /<h1>Calculadora de coste de importación de coches<\/h1>/);
-  assert.match(html, /Calcula el coste real de importar un vehículo, añade impuestos, compara su valor en España y genera un informe PDF completo\./);
+  assert.match(html, /<h1>Calculadora profesional de operaciones Copart<\/h1>/);
+  assert.match(html, /Presupuesta compra, REBU, gastos y rentabilidad en una vista interna separada del presupuesto comercial para el cliente\./);
   assert.match(html, /herramientas\/calculadora-coste-importacion/);
-  assert.doesNotMatch(html, /compra máxima/i);
 });
