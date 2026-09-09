@@ -140,6 +140,17 @@ test("el régimen fiscal se guarda, aparece en el informe y no altera ningún c�
   assert.match(reportSource, /textLine\("Régimen fiscal", safe\.vehicle\.taxRegime\.toUpperCase\(\), true\)/);
 });
 
+test("la vista Solo gastos conserva el estado y suma compra más gastos sin alterar fórmulas comerciales", () => {
+  const budget = operation({ purchase: 5000, expenses: 1000, deductible: 100, profit: 2000, finalPrice: 9000 });
+  budget.view = "simple";
+  const normalized = normalizeKairosBudget(budget);
+  const model = calculateKairosBudget(normalized);
+  assert.equal(normalized.view, "simple");
+  assert.equal(model.totalPaid, 6000);
+  assert.equal(model.totalNetCost, 5900);
+  assert.equal(model.requiredSalePrice, 8509);
+});
+
 test("los gastos personalizados son editables y no tienen un límite artificial", () => {
   let updated = createEmptyKairosBudget();
   for (let index = 0; index < 120; index += 1) updated = addCustomExpense(updated);
@@ -186,7 +197,9 @@ test("la UI usa módulos TypeScript compilados, vistas separadas y dos PDFs real
   const source = readFileSync(new URL("../assets/kairos-budget/ui.js", import.meta.url), "utf8");
   const academy = readFileSync(new URL("../assets/academy/app.js", import.meta.url), "utf8");
   assert.match(source, /Vista interna/);
+  assert.match(source, /Solo gastos/);
   assert.match(source, /Vista cliente/);
+  assert.match(source, /data-kb-view-panel="simple"/);
   assert.match(source, /buildClientPdf/);
   assert.match(source, /buildInternalPdf/);
   assert.match(source, /\.save\(safePdfFileName/);

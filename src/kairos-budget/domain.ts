@@ -2,7 +2,7 @@ export const KAIROS_BUDGET_VERSION = 1;
 export const DEFAULT_VAT_RATE = 21;
 export const MAX_BUDGETS = 50;
 
-export type BudgetView = "internal" | "client";
+export type BudgetView = "internal" | "simple" | "client";
 export type ClientBudgetMode = "estimated" | "closed";
 export type ClientDetail = "simple" | "detailed";
 export type BudgetStatus = "BORRADOR" | "ENVIADO" | "CLIENTE INTERESADO" | "RESERVADO" | "PUJANDO" | "ADJUDICADO" | "PERDIDO" | "FINALIZADO";
@@ -175,7 +175,7 @@ export function normalizeKairosBudget(value: unknown): KairosBudget {
     createdAt: text(source.createdAt, 40) || base.createdAt,
     updatedAt: text(source.updatedAt, 40) || base.updatedAt,
     status: statuses.includes(source.status as BudgetStatus) ? source.status as BudgetStatus : "BORRADOR",
-    view: source.view === "client" ? "client" : "internal",
+    view: source.view === "client" ? "client" : source.view === "simple" ? "simple" : "internal",
     vehicle: {
       make: text(vehicle.make, 80), model: text(vehicle.model, 100), year: text(vehicle.year, 10), mileage: text(vehicle.mileage, 20),
       fuel: text(vehicle.fuel, 50), transmission: text(vehicle.transmission, 50), color: text(vehicle.color, 50), taxRegime: (["No consta", "Sin REBU", "Con REBU"].includes(String(vehicle.taxRegime)) ? vehicle.taxRegime : "No consta") as TaxRegime, copartLocation: text(vehicle.copartLocation, 120),
@@ -235,10 +235,12 @@ export interface KairosBudgetModel {
   automaticPurchaseTotal: number;
   purchaseRebu: number;
   operatingExpensesGross: number;
+  totalPaid: number;
   spanishRecoverableVat: number;
   foreignRecoverableVat: number;
   recoverableVat: number;
   netExpenses: number;
+  totalNetCost: number;
   targetProfit: number;
   buffer: number;
   vatRate: number;
@@ -279,6 +281,8 @@ export function calculateKairosBudget(value: unknown): KairosBudgetModel {
   const foreignRecoverableVat = roundMoney(operating.filter((item) => !isSpain(item.country)).reduce((total, item) => total + recoverableFor(item), 0));
   const recoverableVat = roundMoney(spanishRecoverableVat + (budget.recovery.includeForeignVat ? foreignRecoverableVat : 0));
   const netExpenses = roundMoney(Math.max(0, operatingExpensesGross - recoverableVat));
+  const totalPaid = roundMoney(purchaseRebu + operatingExpensesGross);
+  const totalNetCost = roundMoney(purchaseRebu + netExpenses);
   const targetProfit = finite(budget.pricing.targetProfit);
   const buffer = finite(budget.pricing.buffer);
   const vatRate = finite(budget.pricing.vatRate);
@@ -315,7 +319,7 @@ export function calculateKairosBudget(value: unknown): KairosBudgetModel {
   if (hammer > 0 && finalPrice > 0 && hammer > maximumHammer) alerts.push({ level: "danger", text: `No pujar: la puja máxima rentable con estos datos es ${formatEuro(maximumHammer)}.` });
   if (reservation < 500) alerts.push({ level: "danger", text: "La reserva calculada no alcanza el mínimo de 500 €." });
   const signal = marketSpain <= 0 || finalPrice <= 0 ? "neutral" : clientSavings < 0 || realProfit < 0 ? "red" : clientSavingsPercent < budget.alerts.savingsThreshold || realProfit < targetProfit ? "yellow" : "green";
-  return { budget, hammer, copartCommission, copartOther, automaticPurchaseTotal, purchaseRebu, operatingExpensesGross, spanishRecoverableVat, foreignRecoverableVat, recoverableVat, netExpenses, targetProfit, buffer, vatRate, multiplier, requiredSalePrice, finalPrice, marginRebu, vatRebu, netMarginRebu, realProfit, maximumPurchase, maximumHammer, reservation, marketSpain, clientSavings, clientSavingsPercent, saleMarginPercent, roiPercent, profitOnPurchasePercent, expenseRatioPercent, signal, alerts, categoryTotals };
+  return { budget, hammer, copartCommission, copartOther, automaticPurchaseTotal, purchaseRebu, operatingExpensesGross, totalPaid, spanishRecoverableVat, foreignRecoverableVat, recoverableVat, netExpenses, totalNetCost, targetProfit, buffer, vatRate, multiplier, requiredSalePrice, finalPrice, marginRebu, vatRebu, netMarginRebu, realProfit, maximumPurchase, maximumHammer, reservation, marketSpain, clientSavings, clientSavingsPercent, saleMarginPercent, roiPercent, profitOnPurchasePercent, expenseRatioPercent, signal, alerts, categoryTotals };
 }
 
 export function addCustomExpense(budget: KairosBudget): KairosBudget {

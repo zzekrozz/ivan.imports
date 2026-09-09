@@ -99,7 +99,7 @@ export function normalizeKairosBudget(value) {
         createdAt: text(source.createdAt, 40) || base.createdAt,
         updatedAt: text(source.updatedAt, 40) || base.updatedAt,
         status: statuses.includes(source.status) ? source.status : "BORRADOR",
-        view: source.view === "client" ? "client" : "internal",
+        view: source.view === "client" ? "client" : source.view === "simple" ? "simple" : "internal",
         vehicle: {
             make: text(vehicle.make, 80), model: text(vehicle.model, 100), year: text(vehicle.year, 10), mileage: text(vehicle.mileage, 20),
             fuel: text(vehicle.fuel, 50), transmission: text(vehicle.transmission, 50), color: text(vehicle.color, 50), taxRegime: (["No consta", "Sin REBU", "Con REBU"].includes(String(vehicle.taxRegime)) ? vehicle.taxRegime : "No consta"), copartLocation: text(vehicle.copartLocation, 120),
@@ -163,6 +163,8 @@ export function calculateKairosBudget(value) {
     const foreignRecoverableVat = roundMoney(operating.filter((item) => !isSpain(item.country)).reduce((total, item) => total + recoverableFor(item), 0));
     const recoverableVat = roundMoney(spanishRecoverableVat + (budget.recovery.includeForeignVat ? foreignRecoverableVat : 0));
     const netExpenses = roundMoney(Math.max(0, operatingExpensesGross - recoverableVat));
+    const totalPaid = roundMoney(purchaseRebu + operatingExpensesGross);
+    const totalNetCost = roundMoney(purchaseRebu + netExpenses);
     const targetProfit = finite(budget.pricing.targetProfit);
     const buffer = finite(budget.pricing.buffer);
     const vatRate = finite(budget.pricing.vatRate);
@@ -210,7 +212,7 @@ export function calculateKairosBudget(value) {
     if (reservation < 500)
         alerts.push({ level: "danger", text: "La reserva calculada no alcanza el mínimo de 500 €." });
     const signal = marketSpain <= 0 || finalPrice <= 0 ? "neutral" : clientSavings < 0 || realProfit < 0 ? "red" : clientSavingsPercent < budget.alerts.savingsThreshold || realProfit < targetProfit ? "yellow" : "green";
-    return { budget, hammer, copartCommission, copartOther, automaticPurchaseTotal, purchaseRebu, operatingExpensesGross, spanishRecoverableVat, foreignRecoverableVat, recoverableVat, netExpenses, targetProfit, buffer, vatRate, multiplier, requiredSalePrice, finalPrice, marginRebu, vatRebu, netMarginRebu, realProfit, maximumPurchase, maximumHammer, reservation, marketSpain, clientSavings, clientSavingsPercent, saleMarginPercent, roiPercent, profitOnPurchasePercent, expenseRatioPercent, signal, alerts, categoryTotals };
+    return { budget, hammer, copartCommission, copartOther, automaticPurchaseTotal, purchaseRebu, operatingExpensesGross, totalPaid, spanishRecoverableVat, foreignRecoverableVat, recoverableVat, netExpenses, totalNetCost, targetProfit, buffer, vatRate, multiplier, requiredSalePrice, finalPrice, marginRebu, vatRebu, netMarginRebu, realProfit, maximumPurchase, maximumHammer, reservation, marketSpain, clientSavings, clientSavingsPercent, saleMarginPercent, roiPercent, profitOnPurchasePercent, expenseRatioPercent, signal, alerts, categoryTotals };
 }
 export function addCustomExpense(budget) {
     return normalizeKairosBudget({ ...budget, expenses: [...budget.expenses, { ...expense(id("expense"), "PERSONALIZADO", "Gasto personalizado"), custom: true }] });
