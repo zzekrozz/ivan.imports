@@ -1801,17 +1801,17 @@ function buildCostPdfDocument(JsPDF, data, model) {
   const reportTitle = vehicleName === "Análisis de operación" ? vehicleName : `${vehicleName} · Análisis de operación`;
   const titleLines = lines(reportTitle, contentWidth);
   doc.text(titleLines, margin, y); y += titleLines.length * 8.8;
-  const vehicleMeta = [data.vehicle.year && `Vehículo ${data.vehicle.year}`, data.vehicle.mileage && `${data.vehicle.mileage} km`, data.vehicle.color, data.vehicle.source].filter(Boolean).join(" · ");
+  const vehicleMeta = [data.vehicle.year && `Vehículo ${data.vehicle.year}`, data.vehicle.mileage && `${data.vehicle.mileage} km`, data.vehicle.color, data.vehicle.source, data.vehicle.taxRegime !== "No consta" && String(data.vehicle.taxRegime).toUpperCase()].filter(Boolean).join(" · ");
   if (vehicleMeta) { doc.setFont("helvetica", "normal"); doc.setFontSize(9); setText(muted); doc.text(lines(vehicleMeta, contentWidth), margin, y); y += 5; }
   doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); setText(muted);
   doc.text(`Generado el ${new Intl.DateTimeFormat("es-ES").format(new Date())}`, margin, y); y += 7;
   doc.setDrawColor(...blue); doc.setLineWidth(1); doc.line(margin, y, pageWidth - margin, y); y += 4;
 
-  const vehicleRows = VEHICLE_DATA_FIELDS.filter(({ id }) => data.vehicle[id] && !["listingUrl", "notes"].includes(id));
+  const vehicleRows = VEHICLE_DATA_FIELDS.filter(({ id }) => data.vehicle[id] && !["listingUrl", "notes"].includes(id) && !(id === "taxRegime" && data.vehicle[id] === "No consta"));
   if (vehicleRows.length || data.vehicle.listingUrl || data.vehicle.notes) {
     sectionTitle("00", "Datos del vehículo");
     tableHeader("Dato", "Valor");
-    vehicleRows.forEach(({ id, label }, index) => tableRow(label, data.vehicle[id], index));
+    vehicleRows.forEach(({ id, label }, index) => tableRow(label, id === "taxRegime" ? String(data.vehicle[id]).toUpperCase() : data.vehicle[id], index, id === "taxRegime"));
     if (data.vehicle.listingUrl) { y += 3; paragraph(`Anuncio: ${data.vehicle.listingUrl}`, { size: 8, color: muted }); }
     if (data.vehicle.notes) paragraph(`Notas: ${data.vehicle.notes}`, { size: 8, color: muted });
   }

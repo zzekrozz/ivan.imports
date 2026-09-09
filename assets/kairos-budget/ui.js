@@ -59,6 +59,7 @@ function vehicleFields(budget) {
     ${field("Combustible", "vehicle.fuel", vehicle.fuel, { placeholder: "Diésel" })}
     ${field("Cambio", "vehicle.transmission", vehicle.transmission, { placeholder: "Automático" })}
     ${field("Color", "vehicle.color", vehicle.color, { placeholder: "Gris" })}
+    ${selectField("Régimen fiscal", "vehicle.taxRegime", vehicle.taxRegime, ["No consta", "Sin REBU", "Con REBU"])}
     ${field("Ubicación Copart", "vehicle.copartLocation", vehicle.copartLocation, { placeholder: "München" })}
     ${field("URL del anuncio Copart", "vehicle.listingUrl", vehicle.listingUrl, { type: "url", placeholder: "https://www.copart.de/...", wide: true })}
     ${field("Valor vehículo comparable en España", "vehicle.marketSpain", numeric(vehicle.marketSpain), { type: "number", placeholder: "29000" })}
@@ -126,11 +127,12 @@ function includedItems(detail) {
 }
 function clientView(budget, model) {
     const title = [budget.vehicle.make, budget.vehicle.model, budget.vehicle.year].filter(Boolean).join(" ") || "Vehículo por definir";
+    const vehicleMeta = [budget.vehicle.mileage && `${budget.vehicle.mileage} km`, budget.vehicle.copartLocation, budget.vehicle.fuel, budget.vehicle.transmission, budget.vehicle.taxRegime !== "No consta" && budget.vehicle.taxRegime.toUpperCase()].filter(Boolean).map(escapeHtml).join(" · ");
     const recommendedHammer = model.hammer || Math.max(0, model.maximumHammer);
     const estimatedMin = Number(budget.client.estimatedMin) || model.finalPrice;
     const estimatedMax = Number(budget.client.estimatedMax) || model.finalPrice;
     const priceMarkup = budget.client.mode === "closed" ? `<span>Precio máximo llave en mano</span><strong data-kb-output="finalPrice">${formatEuro(model.finalPrice)}</strong><small>El precio incluye la operación completa hasta entregar el vehículo matriculado en España, salvo circunstancias extraordinarias previamente comunicadas.</small>` : `<span>Precio estimado matriculado</span><strong>${formatEuro(Math.min(estimatedMin, estimatedMax))} – ${formatEuro(Math.max(estimatedMin, estimatedMax))}</strong><small>Estimación inicial sujeta a adjudicación, documentación y comprobaciones de la operación.</small>`;
-    return `<div class="kb-client-shell" data-kb-view-panel="client"><section class="kb-client-document" data-kb-signal="${model.signal}"><header><div><span class="kb-brand">KAIROS</span><p>Presupuesto de importación de vehículo</p></div><span class="kb-status">${escapeHtml(budget.status)}</span></header><div class="kb-client-vehicle">${budget.vehicle.photoDataUrl ? `<img src="${attr(budget.vehicle.photoDataUrl)}" alt="${attr(title)}">` : `<div class="kb-photo-empty" aria-hidden="true">K</div>`}<div><h2>${escapeHtml(title)}</h2><p>${[budget.vehicle.mileage && `${budget.vehicle.mileage} km`, budget.vehicle.copartLocation, budget.vehicle.fuel, budget.vehicle.transmission].filter(Boolean).map(escapeHtml).join(" · ") || "Datos pendientes de completar"}</p></div></div><div class="kb-client-numbers"><div><span>Valor aproximado en España</span><strong data-kb-output="marketSpain">${formatEuro(model.marketSpain)}</strong></div><div><span>Puja máxima recomendada</span><strong data-kb-output="recommendedHammer">${formatEuro(recommendedHammer)}</strong></div><div class="is-primary">${priceMarkup}</div><div><span>Ahorro estimado frente al mercado</span><strong data-kb-output="clientSavings">${signedEuro(model.clientSavings)}</strong><small data-kb-output="clientSavingsPercent">${formatPercent(model.clientSavingsPercent)}</small></div></div><section class="kb-client-included"><h3>Incluido</h3><ul>${includedItems(budget.client.detail)}</ul></section><section class="kb-reservation"><div><span>Reserva para activar la operación</span><strong data-kb-output="reservation">${formatEuro(model.reservation)}</strong></div><p>Para activar la operación se solicita una reserva del 10% de la puja máxima, con un mínimo de 500 €. Esta cantidad forma parte del precio final de la operación y no supone un coste adicional.</p></section><footer>Estimación preparada con los datos disponibles. Se confirmará antes de activar la compra.</footer></section>
+    return `<div class="kb-client-shell" data-kb-view-panel="client"><section class="kb-client-document" data-kb-signal="${model.signal}"><header><div><span class="kb-brand">KAIROS</span><p>Presupuesto de importación de vehículo</p></div><span class="kb-status">${escapeHtml(budget.status)}</span></header><div class="kb-client-vehicle">${budget.vehicle.photoDataUrl ? `<img src="${attr(budget.vehicle.photoDataUrl)}" alt="${attr(title)}">` : `<div class="kb-photo-empty" aria-hidden="true">K</div>`}<div><h2>${escapeHtml(title)}</h2><p>${vehicleMeta || "Datos pendientes de completar"}</p></div></div><div class="kb-client-numbers"><div><span>Valor aproximado en España</span><strong data-kb-output="marketSpain">${formatEuro(model.marketSpain)}</strong></div><div><span>Puja máxima recomendada</span><strong data-kb-output="recommendedHammer">${formatEuro(recommendedHammer)}</strong></div><div class="is-primary">${priceMarkup}</div><div><span>Ahorro estimado frente al mercado</span><strong data-kb-output="clientSavings">${signedEuro(model.clientSavings)}</strong><small data-kb-output="clientSavingsPercent">${formatPercent(model.clientSavingsPercent)}</small></div></div><section class="kb-client-included"><h3>Incluido</h3><ul>${includedItems(budget.client.detail)}</ul></section><section class="kb-reservation"><div><span>Reserva para activar la operación</span><strong data-kb-output="reservation">${formatEuro(model.reservation)}</strong></div><p>Para activar la operación se solicita una reserva del 10% de la puja máxima, con un mínimo de 500 €. Esta cantidad forma parte del precio final de la operación y no supone un coste adicional.</p></section><footer>Estimación preparada con los datos disponibles. Se confirmará antes de activar la compra.</footer></section>
     <aside class="kb-client-controls"><section class="kb-card"><h2>Presentación al cliente</h2>${selectField("Modo de presupuesto", "client.mode", budget.client.mode, ["estimated", "closed"], { estimated: "Precio estimado", closed: "Precio máximo cerrado" })}${budget.client.mode === "estimated" ? `${field("Desde", "client.estimatedMin", numeric(budget.client.estimatedMin), { type: "number", placeholder: String(model.finalPrice) })}${field("Hasta", "client.estimatedMax", numeric(budget.client.estimatedMax), { type: "number", placeholder: String(model.finalPrice) })}` : ""}${selectField("Nivel de detalle", "client.detail", budget.client.detail, ["simple", "detailed"], { simple: "Simple", detailed: "Detallado" })}${field("Validez del presupuesto (días)", "client.validityDays", budget.client.validityDays, { type: "number", min: 1, max: 90, step: "1" })}<button class="kb-button kb-button--primary kb-button--wide" type="button" data-kb-action="pdf-client">Generar PDF cliente</button><p class="kb-privacy-note"><strong>Vista comercial:</strong> el documento cliente se genera únicamente con la propuesta y los datos visibles en esta pantalla.</p></section></aside></div>`;
 }
 function topCards(budget, model) {
@@ -257,6 +259,8 @@ function buildClientPdf(JsPDF, budget) {
         catch { /* La imagen es opcional. */ }
     }
     pdf.section("Vehículo");
+    if (safe.vehicle.taxRegime)
+        pdf.textLine("Régimen fiscal", safe.vehicle.taxRegime.toUpperCase(), true);
     [["Kilómetros", safe.vehicle.mileage], ["Combustible", safe.vehicle.fuel], ["Cambio", safe.vehicle.transmission], ["Color", safe.vehicle.color], ["Ubicación", safe.vehicle.location]].filter(([, value]) => value).forEach(([label, value]) => pdf.textLine(String(label), String(value)));
     pdf.section("Propuesta");
     pdf.textLine("Valor aproximado en España", formatEuro(safe.marketSpain));
@@ -287,6 +291,10 @@ function buildInternalPdf(JsPDF, budget) {
     const model = calculateKairosBudget(budget);
     const title = [budget.vehicle.make, budget.vehicle.model, budget.vehicle.year].filter(Boolean).join(" ") || "Informe interno";
     const pdf = pdfFrame(JsPDF, title, "Informe interno de operación · confidencial");
+    if (budget.vehicle.taxRegime !== "No consta") {
+        pdf.section("Vehículo");
+        pdf.textLine("Régimen fiscal", budget.vehicle.taxRegime.toUpperCase(), true);
+    }
     pdf.section("Compra Copart");
     pdf.textLine("Puja / martillo", formatEuro(model.hammer));
     pdf.textLine("Comisión Copart", formatEuro(model.copartCommission));
@@ -497,7 +505,7 @@ export function kairosBudgetHasData(legacyState) {
     const store = loadStore(legacyState);
     const budget = currentKairosBudget(store);
     const model = calculateKairosBudget(budget);
-    return store.budgets.length > 1 || model.purchaseRebu > 0 || model.operatingExpensesGross > 0 || Object.entries(budget.vehicle).some(([key, value]) => key !== "photoDataUrl" && Boolean(value)) || Boolean(budget.vehicle.photoDataUrl);
+    return store.budgets.length > 1 || model.purchaseRebu > 0 || model.operatingExpensesGross > 0 || Object.entries(budget.vehicle).some(([key, value]) => !["photoDataUrl", "taxRegime"].includes(key) && Boolean(value)) || Boolean(budget.vehicle.photoDataUrl);
 }
 export function clearKairosBudgets() { localStorage.removeItem(STORAGE_KEY); }
 export function setKairosBudgetPurchase(value, legacyState) {

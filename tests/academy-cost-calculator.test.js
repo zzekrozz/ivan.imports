@@ -121,6 +121,16 @@ test("versión/acabado y el ejemplo coherente de motor forman parte de los datos
   assert.equal(VEHICLE_DATA_FIELDS.find(({ id }) => id === "engine").example, "2.0 gasolina · 1.998 cc");
 });
 
+test("el régimen fiscal se persiste, aparece en el informe y no modifica el coste total", async () => {
+  const baseline = calculator({ expenses: { purchase: 5000, travelOther: 1000 }, vatEnabled: true, vat21: { travelOther: true } });
+  const withRegime = calculator({ expenses: { purchase: 5000, travelOther: 1000 }, vatEnabled: true, vat21: { travelOther: true }, vehicle: { taxRegime: "Sin REBU" } });
+  assert.equal(createEmptyCostCalculatorState().vehicle.taxRegime, "No consta");
+  assert.equal(withRegime.vehicle.taxRegime, "Sin REBU");
+  assert.equal(calculateCostOperation(withRegime).totalCost, calculateCostOperation(baseline).totalCost);
+  const reportSource = await readFile(new URL("assets/academy/app.js", root), "utf8");
+  assert.match(reportSource, /id === "taxRegime" \? String\(data\.vehicle\[id\]\)\.toUpperCase\(\)/);
+});
+
 test("combustible conserva el cálculo auxiliar y no acepta importes negativos", () => {
   assert.equal(calculateFuel({ kilometres: "2000", consumption: "7,5", pricePerLitre: "1,60" }).cost, 240);
   assert.equal(fuelCostInputValue({ kilometres: 2000, consumption: 7.5, pricePerLitre: 1.6 }), "240");

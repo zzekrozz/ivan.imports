@@ -127,6 +127,19 @@ test("el modelo del PDF cliente no contiene campos internos ni estructuras de co
   assert.equal(safe.reservation, 500.7);
 });
 
+test("el régimen fiscal se guarda, aparece en el informe y no altera ningún cálculo", () => {
+  const baselineBudget = operation({ finalPrice: 9000, profit: 2000, buffer: 300 });
+  const baseline = calculateKairosBudget(baselineBudget);
+  const taggedBudget = normalizeKairosBudget({ ...baselineBudget, vehicle: { ...baselineBudget.vehicle, taxRegime: "Sin REBU" } });
+  const tagged = calculateKairosBudget(taggedBudget);
+  assert.equal(createEmptyKairosBudget().vehicle.taxRegime, "No consta");
+  assert.equal(tagged.budget.vehicle.taxRegime, "Sin REBU");
+  assert.equal(clientPdfModel(taggedBudget).vehicle.taxRegime, "Sin REBU");
+  for (const key of ["purchaseRebu", "vatRebu", "netExpenses", "realProfit", "requiredSalePrice", "maximumHammer", "clientSavings"]) assert.equal(tagged[key], baseline[key], key);
+  const reportSource = readFileSync(new URL("../assets/kairos-budget/ui.js", import.meta.url), "utf8");
+  assert.match(reportSource, /textLine\("Régimen fiscal", safe\.vehicle\.taxRegime\.toUpperCase\(\), true\)/);
+});
+
 test("los gastos personalizados son editables y no tienen un límite artificial", () => {
   let updated = createEmptyKairosBudget();
   for (let index = 0; index < 120; index += 1) updated = addCustomExpense(updated);

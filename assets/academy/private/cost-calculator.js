@@ -11,6 +11,7 @@ export const VEHICLE_DATA_FIELDS = Object.freeze([
   field("color", "Color", { type: "text", example: "Gris", vatEligible: false }),
   field("transmission", "Cambio", { type: "select", options: ["", "Automático", "Manual"], vatEligible: false }),
   field("fuel", "Combustible", { type: "select", options: ["", "Gasolina", "Diésel", "Híbrido", "Híbrido enchufable", "Eléctrico", "Otro"], vatEligible: false }),
+  field("taxRegime", "Régimen fiscal", { type: "select", options: ["No consta", "Sin REBU", "Con REBU"], vatEligible: false }),
   field("horsepower", "Potencia / caballos", { type: "text", example: "156 CV", vatEligible: false }),
   field("engine", "Motor", { type: "text", example: "2.0 gasolina · 1.998 cc", vatEligible: false }),
   field("country", "País de origen", { type: "text", example: "Alemania", vatEligible: false }),
@@ -41,7 +42,7 @@ export const COST_EXPENSE_SECTIONS = Object.freeze([
 
 export const COST_EXPENSE_FIELDS = Object.freeze(COST_EXPENSE_SECTIONS.flatMap((section) => section.fields));
 export const COST_VAT_FIELDS = Object.freeze(COST_EXPENSE_FIELDS.filter((item) => item.vatEligible && !item.informative));
-const emptyVehicle = () => Object.fromEntries(VEHICLE_DATA_FIELDS.map(({ id }) => [id, ""]));
+const emptyVehicle = () => ({ ...Object.fromEntries(VEHICLE_DATA_FIELDS.map(({ id }) => [id, ""])), taxRegime: "No consta" });
 const normalizeText = (value, limit = 500) => typeof value === "string" ? value.trim().slice(0, limit) : "";
 const roundMoney = (value) => Math.round((Number(value) + Number.EPSILON) * 100) / 100;
 
@@ -73,6 +74,7 @@ export function normalizeCostCalculatorState(value) {
   const sourceExpenses = value.expenses && typeof value.expenses === "object" ? value.expenses : {}; const expenses = {};
   COST_EXPENSE_FIELDS.forEach(({ id }) => { const rawValue = id === "fuelCost" ? sourceExpenses.fuelCost ?? sourceExpenses.fuel : sourceExpenses[id]; const normalized = sanitizeDecimalInput(rawValue); if (normalized !== "") expenses[id] = normalized; });
   const vehicle = Object.fromEntries(VEHICLE_DATA_FIELDS.map(({ id }) => [id, normalizeText(value.vehicle?.[id], id === "notes" ? 700 : 240)]));
+  vehicle.taxRegime = ["No consta", "Sin REBU", "Con REBU"].includes(value.vehicle?.taxRegime) ? value.vehicle.taxRegime : "No consta";
   const vat21 = Object.fromEntries(COST_VAT_FIELDS.map(({ id }) => [id, Boolean(value.vat21?.[id])]));
   const marketScenarios = Array.isArray(value.marketScenarios) ? value.marketScenarios.slice(0, 30).map((item, index) => ({ id: normalizeText(item?.id, 60) || `scenario-${index + 1}`, label: normalizeText(item?.label, 100), priceSpain: sanitizeDecimalInput(item?.priceSpain) })) : [];
   return { version: COST_CALCULATOR_VERSION, vehicle, expenses, vatEnabled: Boolean(value.vatEnabled), vat21, fuel: { kilometres: sanitizeDecimalInput(value.fuel?.kilometres), consumption: sanitizeDecimalInput(value.fuel?.consumption), pricePerLitre: sanitizeDecimalInput(value.fuel?.pricePerLitre) }, marketScenarios, resultLabel: ["Beneficio estimado", "Ahorro estimado", "Margen estimado"].includes(value.resultLabel) ? value.resultLabel : "Beneficio estimado" };
@@ -89,7 +91,7 @@ export function calculateCostOperation(value) {
   return { state, fieldAmounts, categoryTotals, acquisitionCost, copartBidMax: parseCostNumber(state.expenses.copartBidMax), copartWithFees, genericPurchase, fees: fieldAmounts.fees, costBase, vatBase, vatAmount, vatTotal, totalCost, scenarios };
 }
 
-export function costCalculatorHasData(value) { const state = normalizeCostCalculatorState(value); return COST_EXPENSE_FIELDS.some(({ id }) => sanitizeDecimalInput(state.expenses[id]) !== "") || Object.values(state.fuel).some((item) => sanitizeDecimalInput(item) !== "") || Object.values(state.vehicle).some(Boolean) || state.marketScenarios.some((item) => item.label || item.priceSpain); }
+export function costCalculatorHasData(value) { const state = normalizeCostCalculatorState(value); return COST_EXPENSE_FIELDS.some(({ id }) => sanitizeDecimalInput(state.expenses[id]) !== "") || Object.values(state.fuel).some((item) => sanitizeDecimalInput(item) !== "") || Object.entries(state.vehicle).some(([id, item]) => id !== "taxRegime" && Boolean(item)) || state.marketScenarios.some((item) => item.label || item.priceSpain); }
 export function fuelCostInputValue(fuel) { const result = calculateFuel(fuel); return result.valid ? String(roundMoney(result.cost)) : ""; }
 
 export function costReportFileName(vehicle = {}) {

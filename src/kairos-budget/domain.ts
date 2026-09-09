@@ -7,6 +7,7 @@ export type ClientBudgetMode = "estimated" | "closed";
 export type ClientDetail = "simple" | "detailed";
 export type BudgetStatus = "BORRADOR" | "ENVIADO" | "CLIENTE INTERESADO" | "RESERVADO" | "PUJANDO" | "ADJUDICADO" | "PERDIDO" | "FINALIZADO";
 export type ExpenseCategory = "SUBASTA" | "VIAJE" | "VEHÍCULO" | "MATRICULACIÓN" | "PERSONALIZADO";
+export type TaxRegime = "No consta" | "Sin REBU" | "Con REBU";
 
 export interface VehicleData {
   make: string;
@@ -16,6 +17,7 @@ export interface VehicleData {
   fuel: string;
   transmission: string;
   color: string;
+  taxRegime: TaxRegime;
   copartLocation: string;
   listingUrl: string;
   marketSpain: number | "";
@@ -124,7 +126,7 @@ export const REQUIRED_EXPENSES: ReadonlyArray<Readonly<ExpenseItem>> = Object.fr
   expense("registration-other", "MATRICULACIÓN", "Otros"),
 ]);
 
-const emptyVehicle = (): VehicleData => ({ make: "", model: "", year: "", mileage: "", fuel: "", transmission: "", color: "", copartLocation: "", listingUrl: "", marketSpain: "", notes: "", photoDataUrl: "" });
+const emptyVehicle = (): VehicleData => ({ make: "", model: "", year: "", mileage: "", fuel: "", transmission: "", color: "", taxRegime: "No consta", copartLocation: "", listingUrl: "", marketSpain: "", notes: "", photoDataUrl: "" });
 
 export function createEmptyKairosBudget(): KairosBudget {
   const createdAt = now();
@@ -176,7 +178,7 @@ export function normalizeKairosBudget(value: unknown): KairosBudget {
     view: source.view === "client" ? "client" : "internal",
     vehicle: {
       make: text(vehicle.make, 80), model: text(vehicle.model, 100), year: text(vehicle.year, 10), mileage: text(vehicle.mileage, 20),
-      fuel: text(vehicle.fuel, 50), transmission: text(vehicle.transmission, 50), color: text(vehicle.color, 50), copartLocation: text(vehicle.copartLocation, 120),
+      fuel: text(vehicle.fuel, 50), transmission: text(vehicle.transmission, 50), color: text(vehicle.color, 50), taxRegime: (["No consta", "Sin REBU", "Con REBU"].includes(String(vehicle.taxRegime)) ? vehicle.taxRegime : "No consta") as TaxRegime, copartLocation: text(vehicle.copartLocation, 120),
       listingUrl: text(vehicle.listingUrl, 500), marketSpain: vehicle.marketSpain === "" ? "" : finite(vehicle.marketSpain), notes: text(vehicle.notes, 1000),
       photoDataUrl: typeof vehicle.photoDataUrl === "string" && /^data:image\/(?:png|jpeg|webp);base64,/i.test(vehicle.photoDataUrl) ? vehicle.photoDataUrl.slice(0, 2_800_000) : "",
     },
@@ -334,7 +336,7 @@ export function migrateLegacyCostCalculator(value: unknown): KairosBudget | null
   if (![2, 3, 4].includes(Number(legacy.version || legacy.schemaVersion))) return null;
   const budget = createEmptyKairosBudget();
   const vehicle = legacy.vehicle || {};
-  budget.vehicle = { ...budget.vehicle, make: text(vehicle.make, 80), model: text(vehicle.model, 100), year: text(vehicle.year, 10), mileage: text(vehicle.mileage, 20), fuel: text(vehicle.fuel, 50), transmission: text(vehicle.transmission, 50), color: text(vehicle.color, 50), listingUrl: text(vehicle.listingUrl, 500), notes: text(vehicle.notes, 1000), marketSpain: finite(legacy.marketScenarios?.[0]?.priceSpain) || "" };
+  budget.vehicle = { ...budget.vehicle, make: text(vehicle.make, 80), model: text(vehicle.model, 100), year: text(vehicle.year, 10), mileage: text(vehicle.mileage, 20), fuel: text(vehicle.fuel, 50), transmission: text(vehicle.transmission, 50), color: text(vehicle.color, 50), taxRegime: (["Sin REBU", "Con REBU"].includes(String(vehicle.taxRegime)) ? vehicle.taxRegime : "No consta") as TaxRegime, listingUrl: text(vehicle.listingUrl, 500), notes: text(vehicle.notes, 1000), marketSpain: finite(legacy.marketScenarios?.[0]?.priceSpain) || "" };
   budget.purchase.hammer = finite(legacy.expenses?.copartBidMax) || "";
   budget.purchase.totalRebu = finite(legacy.expenses?.copartWithFees || legacy.expenses?.purchase) || "";
   const mapping: Record<string, string> = { fees: "vehicle-other", flight: "travel-flight", localTransport: "travel-taxi", exportPlates: "vehicle-plates", temporaryInsurance: "vehicle-insurance", fuelCost: "travel-fuel-de", tolls: "travel-tolls", hotel: "travel-hotel", food: "travel-food", travelOther: "travel-other", itv: "registration-itv", coc: "registration-coc", dgt: "registration-dgt", ivtm: "registration-ivtm", iedmt: "registration-576", registrationPlates: "registration-plates", agency: "registration-agency", administrationOther: "registration-other", maintenance: "vehicle-other", repairs: "vehicle-repairs", detailing: "vehicle-cleaning", vehicleTransport: "vehicle-transport", other: "vehicle-other" };
@@ -363,7 +365,7 @@ export function clientPdfModel(value: unknown) {
   const model = calculateKairosBudget(value);
   const budget = model.budget;
   return Object.freeze({
-    vehicle: { make: budget.vehicle.make, model: budget.vehicle.model, year: budget.vehicle.year, mileage: budget.vehicle.mileage, fuel: budget.vehicle.fuel, transmission: budget.vehicle.transmission, color: budget.vehicle.color, location: budget.vehicle.copartLocation, photoDataUrl: budget.vehicle.photoDataUrl },
+    vehicle: { make: budget.vehicle.make, model: budget.vehicle.model, year: budget.vehicle.year, mileage: budget.vehicle.mileage, fuel: budget.vehicle.fuel, transmission: budget.vehicle.transmission, color: budget.vehicle.color, taxRegime: budget.vehicle.taxRegime === "No consta" ? "" : budget.vehicle.taxRegime, location: budget.vehicle.copartLocation, photoDataUrl: budget.vehicle.photoDataUrl },
     marketSpain: model.marketSpain,
     recommendedHammer: model.hammer || Math.max(0, model.maximumHammer),
     mode: budget.client.mode,
