@@ -26,6 +26,338 @@
   padding: 0;
 }
 
+/* Copart auction service */
+.copart-page {
+  --copart-ink: #121b2a;
+  --copart-blue: #22334e;
+  --copart-green: #b7d86b;
+  --copart-green-soft: #eef7d8;
+  --copart-warm: #f4efe6;
+  --wide: var(--max);
+  --text: var(--ink);
+  --surface-alt: #f8fafc;
+  --line-strong: #aeb8ba;
+  --accent: var(--red);
+  --ok: var(--green);
+  --shadow-strong: 0 24px 60px rgba(12, 20, 34, 0.14);
+}
+
+.copart-page main { overflow: clip; }
+
+.copart-hero-wrap,
+.copart-section,
+.copart-contact-wrap {
+  max-width: var(--wide);
+  margin: 0 auto;
+  padding: 2.3rem 1.5rem;
+}
+
+.copart-hero {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1.18fr) minmax(330px, 0.82fr);
+  align-items: stretch;
+  gap: 2rem;
+  padding: clamp(2rem, 5vw, 4.8rem);
+  overflow: hidden;
+  color: #fff;
+  border-radius: 20px;
+  background:
+    linear-gradient(112deg, rgba(18, 27, 42, 0.98), rgba(34, 51, 78, 0.94)),
+    repeating-linear-gradient(135deg, transparent 0 18px, rgba(255,255,255,0.04) 18px 19px);
+  box-shadow: 0 28px 68px rgba(12, 20, 34, 0.24);
+}
+
+.copart-hero::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 520px;
+  height: 520px;
+  top: -310px;
+  right: 18%;
+  border: 1px solid rgba(183, 216, 107, 0.22);
+  border-radius: 50%;
+  box-shadow: 0 0 0 72px rgba(183, 216, 107, 0.035), 0 0 0 144px rgba(183, 216, 107, 0.025);
+}
+
+.copart-hero-copy { min-width: 0; }
+
+.copart-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.42rem 0.82rem;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 999px;
+  color: var(--copart-green);
+  font: 700 0.72rem/1 "Inter", sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.copart-eyebrow::before {
+  content: "";
+  width: 0.48rem;
+  height: 0.48rem;
+  border-radius: 50%;
+  background: var(--copart-green);
+  box-shadow: 0 0 0 5px rgba(183, 216, 107, 0.12);
+}
+
+.copart-wordmark {
+  margin-top: 1.35rem;
+  color: var(--copart-green);
+  font: 800 clamp(3.5rem, 9vw, 7.5rem)/0.8 "Inter", sans-serif;
+  letter-spacing: -0.075em;
+}
+
+.copart-hero h1 {
+  max-width: 14ch;
+  margin: 1.25rem 0 1rem;
+  font-size: clamp(2.35rem, 4.4vw, 4.4rem);
+}
+
+.copart-hero-copy > p:not(.copart-damage-line):not(.copart-principle) {
+  max-width: 63ch;
+  color: rgba(255,255,255,0.74);
+  font-size: 1.03rem;
+}
+
+.copart-damage-line {
+  margin-bottom: 1rem;
+  color: #fff;
+  font: 700 clamp(1rem, 2vw, 1.25rem)/1.4 "Inter", sans-serif;
+  letter-spacing: 0.01em;
+}
+
+.copart-hero .btn-primary {
+  background: var(--copart-green);
+  color: var(--copart-ink);
+  box-shadow: 0 12px 30px rgba(183, 216, 107, 0.18);
+}
+
+.copart-hero .btn-secondary {
+  border-color: rgba(255,255,255,0.26);
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+}
+
+.copart-principle {
+  display: inline-flex;
+  margin-top: 1.45rem;
+  padding-left: 1rem;
+  border-left: 3px solid var(--copart-green);
+  color: #fff;
+  font: 700 1rem/1.4 "Inter", sans-serif;
+}
+
+.copart-principle.dark { color: var(--copart-ink); }
+
+.copart-bid-card {
+  align-self: center;
+  padding: clamp(1.5rem, 3vw, 2.2rem);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 18px;
+  background: rgba(7, 13, 23, 0.56);
+  box-shadow: inset 0 1px rgba(255,255,255,0.08), 0 22px 46px rgba(0,0,0,0.2);
+  backdrop-filter: blur(10px);
+}
+
+.copart-bid-status {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: rgba(255,255,255,0.66);
+  font: 700 0.72rem/1 "Inter", sans-serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.copart-bid-status span {
+  width: 0.48rem;
+  height: 0.48rem;
+  border-radius: 50%;
+  background: var(--copart-green);
+  box-shadow: 0 0 12px var(--copart-green);
+}
+
+.copart-bid-kicker { margin: 1.7rem 0 0.55rem; color: rgba(255,255,255,0.64); font-size: 0.86rem; }
+.copart-bid-title { color: #fff; font: 800 clamp(2.6rem, 5vw, 4.6rem)/0.86 "Inter", sans-serif; letter-spacing: -0.065em; }
+
+.copart-bid-meter {
+  height: 7px;
+  margin: 1.5rem 0;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.12);
+}
+
+.copart-bid-meter span { display: block; width: 72%; height: 100%; background: var(--copart-green); border-radius: inherit; }
+.copart-bid-rule { display: flex; align-items: center; justify-content: space-between; gap: 1rem; color: rgba(255,255,255,0.65); font-size: 0.82rem; }
+.copart-bid-rule strong { color: var(--copart-green); font: 800 1rem/1 "Inter", sans-serif; }
+.copart-mini-plans { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.55rem; margin: 1.5rem 0 0.8rem; }
+.copart-mini-plans span { display: grid; place-items: center; aspect-ratio: 1.35; border: 1px solid rgba(255,255,255,0.14); border-radius: 8px; color: #fff; font: 800 1rem/1 "Inter", sans-serif; }
+.copart-mini-plans span:first-child { border-color: var(--copart-green); color: var(--copart-green); background: rgba(183,216,107,0.08); }
+.copart-bid-card small { color: rgba(255,255,255,0.58); }
+
+.copart-section { padding-top: clamp(3rem, 7vw, 6rem); padding-bottom: clamp(3rem, 7vw, 6rem); }
+.copart-section-head { max-width: 780px; margin-bottom: 2rem; }
+.copart-section-head h2, .copart-value-panel h2, .copart-transparency h2, .copart-audience h2, .copart-not-for h2, .copart-contact h2 { margin: 1rem 0; }
+.copart-section-head > p, .copart-transparency > p, .copart-audience-cards p, .copart-not-for li, .copart-contact-copy > p { color: var(--muted); }
+
+.copart-damage-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+.copart-damage-card { min-height: 245px; padding: 1.5rem; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,0.86); }
+.copart-damage-card > span { display: block; margin-bottom: 3rem; color: var(--accent); font: 700 0.75rem/1 "JetBrains Mono", monospace; }
+.copart-damage-card h3 { margin-bottom: 0.7rem; }
+.copart-damage-card p { color: var(--muted); font-size: 0.92rem; }
+.copart-statement { margin-top: 1.25rem; padding: clamp(1.4rem, 3vw, 2.2rem); border: 0; border-left: 5px solid var(--copart-green); border-radius: 0 16px 16px 0; background: var(--copart-ink); color: #fff; font: 700 clamp(1.25rem, 2.5vw, 1.75rem)/1.35 "Inter", sans-serif; }
+
+.copart-process-section { max-width: 1120px; }
+.copart-process-list { position: relative; display: grid; gap: 1rem; }
+.copart-process-list::before { content: ""; position: absolute; top: 2rem; bottom: 2rem; left: 2rem; width: 1px; background: var(--line); }
+.copart-process-step { position: relative; z-index: 1; display: grid; grid-template-columns: 4rem minmax(0,1fr); gap: 1.4rem; padding: 1.6rem; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,0.95); }
+.copart-process-number { display: grid; place-items: center; align-self: start; width: 4rem; height: 4rem; border: 1px solid var(--line-strong); border-radius: 50%; background: #fff; color: var(--copart-blue); font: 800 1rem/1 "JetBrains Mono", monospace; }
+.copart-process-step h3 { margin: 0.25rem 0 0.65rem; font-size: 1.35rem; }
+.copart-process-step p { color: var(--muted); }
+.copart-process-step.is-key { border-color: rgba(183,216,107,0.75); box-shadow: 0 16px 38px rgba(31,77,69,0.08); }
+.copart-process-step.is-key .copart-process-number { border-color: var(--copart-green); background: var(--copart-green-soft); }
+.copart-step-note { margin-top: 0.8rem; font-weight: 700; color: var(--copart-ink) !important; }
+.copart-guarantee { display: flex; align-items: center; gap: 1rem; margin: 1rem 0; padding: 1.1rem; border-radius: 12px; background: var(--copart-green-soft); }
+.copart-guarantee > strong { color: var(--copart-ink); font: 800 clamp(2.5rem,6vw,4rem)/0.8 "Inter", sans-serif; letter-spacing: -0.07em; }
+.copart-guarantee span { color: var(--muted); font-size: 0.86rem; }
+.copart-guarantee b { color: var(--copart-ink); }
+.copart-details { margin-top: 1rem; border-top: 1px solid var(--line); }
+.copart-details summary { padding: 1rem 0 0; color: var(--copart-blue); font: 700 0.9rem/1.4 "Inter", sans-serif; cursor: pointer; }
+.copart-details div { padding-top: 0.8rem; }
+
+.copart-flow-wrap { padding: 0 1.5rem; }
+.copart-flow { max-width: var(--wide); margin: 0 auto; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0.8rem; padding: 1.4rem; border-radius: 16px; background: var(--copart-ink); color: #fff; }
+.copart-flow span { font: 700 0.74rem/1 "Inter", sans-serif; letter-spacing: 0.08em; text-transform: uppercase; }
+.copart-flow i { color: var(--copart-green); font-style: normal; }
+
+.copart-max-grid { display: grid; grid-template-columns: minmax(0,0.9fr) minmax(360px,0.7fr); gap: clamp(2rem,6vw,6rem); align-items: center; }
+.copart-max-grid .copart-section-head { margin-bottom: 0; }
+.copart-calculator { overflow: hidden; border: 1px solid var(--line); border-radius: 18px; background: #fff; box-shadow: var(--shadow-strong); }
+.copart-calc-top, .copart-calc-result { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.3rem 1.5rem; font-family: "Inter", sans-serif; }
+.copart-calc-top { background: var(--copart-warm); }
+.copart-calculator ul { list-style: none; padding: 0.65rem 1.5rem; }
+.copart-calculator li { display: flex; justify-content: space-between; gap: 1rem; padding: 0.7rem 0; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 0.92rem; }
+.copart-calculator li:last-child { border-bottom: 0; }
+.copart-calculator li b { color: var(--accent); }
+.copart-calc-result { background: var(--copart-ink); color: #fff; }
+.copart-calc-result strong { color: var(--copart-green); letter-spacing: 0.05em; }
+
+.copart-plans-section { max-width: 1120px; text-align: center; }
+.copart-plans-section .copart-section-head { margin-left: auto; margin-right: auto; }
+.copart-plans-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 1rem; }
+.copart-plan { padding: 1.5rem 1rem; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
+.copart-plan > span { display: block; color: var(--muted); font: 700 0.72rem/1 "Inter", sans-serif; letter-spacing: 0.12em; }
+.copart-plan > strong { display: block; margin: 1rem 0; color: var(--copart-blue); font: 800 clamp(3.8rem,8vw,6rem)/0.75 "Inter", sans-serif; letter-spacing: -0.08em; }
+.copart-plan p { color: var(--muted); font-size: 0.88rem; }
+.copart-plan.is-primary { border-color: var(--copart-green); background: var(--copart-green-soft); transform: translateY(-0.5rem); }
+.copart-plans-rule { display: inline-flex; margin-top: 1.5rem; padding: 0.75rem 1rem; border-radius: 999px; background: var(--copart-ink); color: #fff; font: 700 0.9rem/1.3 "Inter", sans-serif; }
+
+.copart-two-col, .copart-audience-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1.2rem; align-items: stretch; }
+.copart-value-panel, .copart-transparency, .copart-audience, .copart-not-for { padding: clamp(1.5rem,4vw,3rem); border: 1px solid var(--line); border-radius: 18px; background: rgba(255,255,255,0.94); }
+.copart-check-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0.8rem 1.2rem; margin-top: 1.5rem; list-style: none; }
+.copart-check-list li { position: relative; padding-left: 1.45rem; color: var(--muted); font-size: 0.91rem; }
+.copart-check-list li::before { content: "✓"; position: absolute; left: 0; color: var(--ok); font-weight: 800; }
+.copart-transparency { background: var(--copart-ink); color: #fff; }
+.copart-transparency .section-label { color: var(--copart-green); border-color: rgba(183,216,107,0.18); background: rgba(183,216,107,0.08); }
+.copart-transparency > p { color: rgba(255,255,255,0.68); margin-bottom: 1rem; }
+.copart-risk-row { display: flex; flex-wrap: wrap; gap: 0.55rem; margin-top: 1.5rem; }
+.copart-risk-row span { padding: 0.5rem 0.75rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 999px; color: var(--copart-green); font: 700 0.78rem/1 "Inter", sans-serif; }
+.copart-audience-cards { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0.85rem; margin-top: 1.5rem; }
+.copart-audience-cards article { padding: 1.1rem; border: 1px solid var(--line); border-radius: 12px; }
+.copart-audience-cards h3 { margin-bottom: 0.5rem; font-size: 1rem; line-height: 1.25; }
+.copart-audience-cards p { font-size: 0.86rem; }
+.copart-not-for { background: var(--copart-warm); }
+.copart-not-for ul { display: grid; gap: 0.75rem; margin-top: 1.5rem; padding-left: 1.2rem; }
+
+.copart-contact-wrap { padding-bottom: 3rem; }
+.copart-contact { display: grid; grid-template-columns: minmax(0,0.9fr) minmax(400px,0.7fr); gap: clamp(2rem,5vw,5rem); padding: clamp(1.6rem,5vw,4rem); border-radius: 20px; background: var(--copart-ink); color: #fff; box-shadow: var(--shadow-strong); }
+.copart-contact-copy { align-self: center; }
+.copart-contact-copy > p { color: rgba(255,255,255,0.7); }
+.copart-contact-tags { margin-top: 1.4rem; color: var(--copart-green) !important; font: 700 0.86rem/1.5 "Inter", sans-serif; }
+.copart-form { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1rem; padding: 1.4rem; border-radius: 16px; background: #fff; color: var(--text); }
+.copart-field { display: grid; gap: 0.4rem; }
+.copart-field-full, .copart-submit, .copart-form-note { grid-column: 1 / -1; }
+.copart-field label { font: 700 0.78rem/1.3 "Inter", sans-serif; }
+.copart-field label span { color: var(--muted); font-weight: 500; }
+.copart-field input, .copart-field select { width: 100%; min-height: 48px; padding: 0.75rem 0.85rem; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-alt); color: var(--text); font: inherit; }
+.copart-field input:focus, .copart-field select:focus { outline: 3px solid rgba(183,216,107,0.32); border-color: var(--ok); }
+.copart-submit { width: 100%; }
+.copart-form-note { color: var(--muted); font-size: 0.76rem; text-align: center; }
+.copart-legal-note { padding-top: 1rem; padding-bottom: 4rem; }
+.copart-legal-note p { max-width: 1000px; margin: 0 auto; color: var(--muted); font-size: 0.78rem; text-align: center; }
+
+.copart-service-card {
+  position: relative;
+  isolation: isolate;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0,1.35fr) minmax(250px,0.65fr);
+  gap: 1.5rem;
+  overflow: hidden;
+  border-color: rgba(183,216,107,0.82);
+  background: linear-gradient(125deg, var(--copart-ink, #121b2a), #263954);
+  color: #fff;
+  box-shadow: 0 22px 50px rgba(18,27,42,0.18);
+}
+.copart-service-card::after { content: ""; position: absolute; z-index: -1; width: 360px; height: 360px; right: -120px; top: -190px; border: 1px solid rgba(183,216,107,0.2); border-radius: 50%; box-shadow: 0 0 0 55px rgba(183,216,107,0.025), 0 0 0 110px rgba(183,216,107,0.018); }
+.copart-service-card .service-step { color: #b7d86b; }
+.copart-card-word { color: #b7d86b; font: 800 clamp(3rem,7vw,5.5rem)/0.8 "Inter", sans-serif; letter-spacing: -0.07em; }
+.copart-service-card .service-name { margin: 1rem 0 0.45rem; font-size: clamp(1.5rem,2.5vw,2.2rem); color: #fff; }
+.copart-card-tag { display: inline-flex; margin-bottom: 1rem; padding: 0.4rem 0.7rem; border: 1px solid rgba(255,255,255,0.14); border-radius: 999px; color: #fff; font: 700 0.78rem/1.2 "Inter", sans-serif; }
+.copart-service-card .service-desc { max-width: 70ch; color: rgba(255,255,255,0.7); }
+.copart-service-card .service-actions { justify-content: center; }
+.copart-service-card .btn-primary { background: #b7d86b; color: #121b2a; }
+.copart-service-card .btn-secondary { border-color: rgba(255,255,255,0.24); background: rgba(255,255,255,0.08); color: #fff; }
+
+@media (max-width: 980px) {
+  .copart-hero, .copart-contact, .copart-max-grid { grid-template-columns: 1fr; }
+  .copart-bid-card { width: 100%; max-width: 560px; }
+  .copart-damage-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .copart-two-col, .copart-audience-grid { grid-template-columns: 1fr; }
+  .copart-service-card { grid-template-columns: 1fr; }
+  .copart-service-card .service-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+
+@media (max-width: 740px) {
+  .copart-hero-wrap, .copart-section, .copart-contact-wrap { padding-left: 1rem; padding-right: 1rem; }
+  .copart-hero { padding: 1.45rem; border-radius: 16px; }
+  .copart-wordmark { font-size: clamp(3.3rem,20vw,5.2rem); }
+  .copart-hero h1 { font-size: clamp(2rem,10vw,3rem); }
+  .copart-hero .hero-actions { display: grid; }
+  .copart-damage-grid, .copart-plans-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .copart-damage-card { min-height: 210px; }
+  .copart-process-step { grid-template-columns: 3.2rem minmax(0,1fr); gap: 0.9rem; padding: 1.1rem; }
+  .copart-process-number { width: 3.2rem; height: 3.2rem; }
+  .copart-process-list::before { left: 1.6rem; }
+  .copart-flow { align-items: stretch; justify-content: flex-start; flex-direction: column; }
+  .copart-flow i { transform: rotate(90deg); align-self: flex-start; margin-left: 1.7rem; }
+  .copart-flow span { padding: 0.45rem 0; }
+  .copart-plan.is-primary { transform: none; }
+  .copart-check-list { grid-template-columns: 1fr; }
+  .copart-contact { padding: 1.2rem; }
+  .copart-form { grid-template-columns: 1fr; padding: 1rem; }
+}
+
+@media (max-width: 520px) {
+  .copart-hero-wrap { padding-top: 1rem; }
+  .copart-bid-rule { align-items: flex-start; flex-direction: column; }
+  .copart-damage-grid, .copart-audience-cards { grid-template-columns: 1fr; }
+  .copart-damage-card { min-height: 0; }
+  .copart-damage-card > span { margin-bottom: 1.5rem; }
+  .copart-guarantee { align-items: flex-start; flex-direction: column; }
+  .copart-plans-grid { gap: 0.65rem; }
+  .copart-plan { padding: 1.2rem 0.55rem; }
+  .copart-plan > strong { font-size: 3.3rem; }
+  .copart-service-card .service-actions { grid-template-columns: 1fr; }
+}
+
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 88px;
@@ -478,6 +810,70 @@ p {
   background: rgba(15, 25, 30, 0.82);
   color: var(--white);
   box-shadow: var(--shadow);
+}
+
+.hub-copart-feature {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(240px, 0.65fr);
+  gap: 1.5rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding: clamp(1.5rem, 4vw, 2.8rem);
+  overflow: hidden;
+  border: 1px solid rgba(183, 216, 107, 0.7);
+  border-radius: var(--radius-lg, 28px);
+  background: linear-gradient(125deg, #121b2a, #263954);
+  color: #fff;
+  text-decoration: none;
+  box-shadow: 0 22px 50px rgba(18, 27, 42, 0.18);
+}
+
+.hub-copart-feature::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 360px;
+  height: 360px;
+  top: -190px;
+  right: -100px;
+  border: 1px solid rgba(183, 216, 107, 0.2);
+  border-radius: 50%;
+  box-shadow: 0 0 0 55px rgba(183,216,107,0.025), 0 0 0 110px rgba(183,216,107,0.018);
+}
+
+.hub-copart-feature small {
+  display: block;
+  margin-bottom: 0.7rem;
+  color: #b7d86b;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.hub-copart-feature h3 {
+  margin-bottom: 0.8rem;
+  color: #b7d86b;
+  font-size: clamp(2.8rem, 7vw, 5.5rem);
+  line-height: 0.82;
+  letter-spacing: -0.075em;
+}
+
+.hub-copart-feature strong {
+  display: block;
+  margin-bottom: 0.55rem;
+  color: #fff;
+  font-size: clamp(1.25rem, 2.4vw, 2rem);
+}
+
+.hub-copart-feature p { max-width: 68ch; color: rgba(255,255,255,0.72); }
+.hub-copart-feature-tag { display: inline-flex; margin-top: 1rem; padding: 0.45rem 0.7rem; border: 1px solid rgba(255,255,255,0.16); border-radius: 999px; color: #fff; font-size: 0.8rem; font-weight: 750; }
+.hub-copart-feature-cta { justify-self: stretch; padding: 1rem 1.2rem; border-radius: 999px; background: #b7d86b; color: #121b2a; font-weight: 800; text-align: center; }
+
+@media (max-width: 760px) {
+  .hub-copart-feature { grid-template-columns: 1fr; }
+  .hub-copart-feature-cta { justify-self: stretch; }
 }
 
 .hero-route-board,

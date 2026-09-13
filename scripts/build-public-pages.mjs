@@ -285,11 +285,12 @@ function servicePage(service) {
   return basePage({ title, description, path, schema, body: bodyWithInstallment, pageEvent: "service_opened", pageType: "service" });
 }
 
-for (const service of servicesData.services.filter((item) => item.active && item.id !== "subastaspro")) await writeRoute(`servicios/${service.slug}`, servicePage(service));
+for (const service of servicesData.services.filter((item) => item.active && !["subastaspro", "compra-subasta-copart"].includes(item.id))) await writeRoute(`servicios/${service.slug}`, servicePage(service));
 
 const activeServices = servicesData.services.filter((item) => item.active);
 const firstImportService = activeServices.find((service) => service.id === "primera-importacion-contigo");
 function serviceCard(service, index) {
+  if (service.id === "compra-subasta-copart") return `<a class="hub-copart-feature" href="${servicePath(service)}" data-event="copart_service_opened"><div><small>Subastas · Nuevo servicio</small><h3>COPART</h3><strong>Compra en subasta</strong><p>Buscamos oportunidades, calculamos la operación completa y fijamos una puja máxima antes de entrar en subasta.</p><span class="hub-copart-feature-tag">Granizo · Pequeños daños · Roces</span></div><span class="hub-copart-feature-cta">Ver cómo funciona →</span></a>`;
   if (service.id === "primera-importacion-contigo") return `<a class="hub-service-row hub-service-row--first-import" href="${servicePath(service)}" style="--service-level:${index + 1}"><span class="hub-service-index">0${index + 1}</span><div><small class="hub-service-mode">Servicio integral · 100 % remoto</small><h3>Primera Importación Contigo</h3><strong class="hub-service-tagline">Tu primera importación, acompañada de principio a fin</strong><p>Tú compras el coche. Yo preparo, reviso y superviso contigo toda la operación en remoto: búsqueda, negociación, documentación, viaje, compra y matriculación en España.</p><span class="hub-service-highlight">Desde que decidimos qué vehículo buscar hasta que tienes la matrícula española.</span><span class="hub-service-card-cta">Quiero hacer mi primera importación contigo <span aria-hidden="true">→</span></span></div><span class="hub-price"><strong>997 € IVA incluido</strong>${service.installmentNote ? `<small>${esc(service.installmentNote)}</small>` : ""}</span></a>`;
   return `<a class="hub-service-row" href="${servicePath(service)}" style="--service-level:${index + 1}"><span class="hub-service-index">0${index + 1}</span><div><small class="hub-service-mode">${esc(service.eyebrow)}</small><h3>${esc(service.title)}</h3><p>${esc(service.summary)}</p></div>${service.priceLabel ? `<span class="hub-price">${esc(service.priceLabel)}</span>` : ""}</a>`;
 }

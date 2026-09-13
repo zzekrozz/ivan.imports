@@ -1,7 +1,23 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-09-07",
+  "updatedAt": "2026-09-13",
   "services": [
+    {
+      "id": "compra-subasta-copart",
+      "slug": "compra-subasta-copart",
+      "title": "Compra en subasta Copart",
+      "eyebrow": "Operación completa · Puja con límites",
+      "summary": "Buscamos oportunidades en Copart, calculamos el coste completo y fijamos una puja máxima antes de entrar en subasta.",
+      "audience": "Para quien busca oportunidades de granizo, pequeños daños o roces y quiere que IvanImports gestione la operación hasta España y matriculación.",
+      "includes": ["Búsqueda y selección", "Análisis de daños y documentación disponible", "Cálculo económico completo", "Puja máxima y alternativas", "Participación en la subasta", "Recogida y logística", "ITV y matriculación"],
+      "excludes": ["Garantía del estado mecánico real", "Compra sin riesgos", "Pujas por encima del límite acordado"],
+      "cta": "Quiero buscar una oportunidad",
+      "ctaType": "custom",
+      "whatsappMessage": "Hola Iván, quiero analizar una oportunidad de compra en Copart",
+      "analyticsEvent": "copart_service_opened",
+      "active": true,
+      "featured": true
+    },
     {
       "id": "consultoria",
       "slug": "consultoria",
