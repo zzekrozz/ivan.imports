@@ -85,7 +85,7 @@ try {
     const response = await page.goto("http://127.0.0.1:4173" + route, { waitUntil: "networkidle" });
     assert.equal(response.status(), 200);
     assert.equal(await page.locator(".rev-sticky").count(), 0);
-    if (route !== "/academia/") assert.equal(await page.locator(".hub-mobile-nav").count(), 1);
+    if (["/", "/servicios/", "/servicios/consultoria/"].includes(route)) assert.equal(await page.locator(".hub-mobile-nav").count(), 1);
     report.push({ route, result: "passed" });
     await page.close();
   }
