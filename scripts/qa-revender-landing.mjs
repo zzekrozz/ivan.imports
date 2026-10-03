@@ -65,7 +65,7 @@ try {
     await page.locator("#pricing_cta").click();
     const tracked = await page.evaluate(() => window.dataLayer.filter((item) => item.event === "revender_checkout_clicked"));
     assert.ok(tracked.some((item) => item.section === "pricing_cta"));
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight, behavior: "instant" }));
     await page.waitForTimeout(300);
     if (width <= 760) {
       const footerClear = await page.evaluate(() => {
