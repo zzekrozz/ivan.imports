@@ -26,13 +26,36 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
-      - run: test -f dist/como-encontrar-coches-para-revender/index.html
+      - run: npm run build
+        if: success() || failure()
+      - run: node scripts/build-revender-landing.mjs
+        if: success() || failure()
+      - run: test -f como-encontrar-coches-para-revender/index.html
+        if: success() || failure()
       - run: npm install --no-save --package-lock=false @playwright/test@1.56.1
+        if: success() || failure()
       - run: npx playwright install --with-deps chromium
+        if: success() || failure()
       - run: node scripts/qa-revender-landing.mjs
+        if: success() || failure()
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: revender-responsive-qa
           path: qa-artifacts/
           if-no-files-found: ignore
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: d7fe01cf4184fda2d4dc994026fa94be6ca78e69
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+        if: success() || failure()

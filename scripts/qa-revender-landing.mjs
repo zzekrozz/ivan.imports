@@ -49,6 +49,10 @@ try {
       assert.equal(await page.locator(".rev-sticky").isVisible(), false);
     }
     await page.screenshot({ path: "qa-artifacts/landing-" + width + ".png", fullPage: true });
+    if (width === 390 || width === 1440) {
+      const preview = await page.screenshot({ fullPage: false });
+      console.log("QA_SCREENSHOT_" + width + "=" + preview.toString("base64"));
+    }
     const question = page.locator(".rev-faq details").first();
     await question.locator("summary").click();
     assert.equal(await question.getAttribute("open"), "");
