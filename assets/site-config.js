@@ -1,13 +1,13 @@
 window.IVAN_IMPORTS_CONFIG = Object.freeze({
-  brand: { name: "IvanImports", legalName: "", taxId: "", address: "" },
+  brand: { name: "IvanImports", legalName: "Ivan Pogrebnyak Pristupa", taxId: "09880800T", address: "Calle Cristóbal Colón 3, 29649 Mijas, Málaga, España", businessType: "Autónomo" },
   siteUrl: "https://ivanimports.es",
-  contact: { whatsappPhone: "34674252436", email: "" },
+  contact: { whatsappPhone: "34674252436", email: "radarivanimports@gmail.com" },
   social: {
     tiktok: "https://www.tiktok.com/@ivan.imports",
     youtube: "https://www.youtube.com/@IvanPogg",
     instagram: ""
   },
-  legal: { notice: "", privacy: "", cookies: "", purchaseTerms: "" },
+  legal: { notice: "/aviso-legal", privacy: "/privacidad", cookies: "/cookies", purchaseTerms: "/condiciones-de-compra" },
   features: {
     academy: true,
     opportunities: true,

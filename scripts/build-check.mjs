@@ -1,4 +1,5 @@
-import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync } from "node:fs";
+import { normalizeHtmlConsent } from "./consent-markup.mjs";
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, extname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { TOOL_CATALOG, validateToolCatalog } from "../assets/academy/private/tool-catalog.js";
@@ -9,7 +10,8 @@ const read = (path) => readFileSync(join(root, path), "utf8");
 const json = (path) => JSON.parse(read(path));
 
 const requiredRoutes = [
-  "index.html", "404.html", "academia/index.html", "control/index.html", "herramientas/index.html", "mis-vehiculos/index.html", "mis-vehiculos/candidatos/index.html", "recursos/index.html", "recursos/respuestas/index.html", "go/index.html", "placasverdes/index.html", "oportunidades/index.html", "directos/index.html", "servicios/index.html", "servicios/busqueda-vehiculo-europa/index.html", "subastaspro/index.html", "recomendaciones/index.html", "actualizaciones/index.html", "academia/ayuda/index.html", "academia/edicion-pdf/index.html", "importa-en-7-dias/gracias/index.html", "gracias-acompanamiento/index.html"
+  "aviso-legal/index.html", "privacidad/index.html", "cookies/index.html", "condiciones-de-compra/index.html",
+  "como-encontrar-coches-para-revender/index.html", "index.html", "404.html", "academia/index.html", "control/index.html", "herramientas/index.html", "mis-vehiculos/index.html", "mis-vehiculos/candidatos/index.html", "recursos/index.html", "recursos/respuestas/index.html", "go/index.html", "placasverdes/index.html", "oportunidades/index.html", "directos/index.html", "servicios/index.html", "servicios/busqueda-vehiculo-europa/index.html", "subastaspro/index.html", "recomendaciones/index.html", "actualizaciones/index.html", "academia/ayuda/index.html", "academia/edicion-pdf/index.html", "importa-en-7-dias/gracias/index.html", "gracias-acompanamiento/index.html"
 ];
 for (const route of requiredRoutes) if (!existsSync(join(root, route))) failures.push(`Falta la ruta pública: ${route}`);
 
@@ -56,8 +58,8 @@ for (const file of seoPages) {
 }
 
 const activeServices = services.services.filter((service) => service.active);
-if (activeServices.length !== 4) failures.push("Deben publicarse exactamente cuatro servicios activos");
-const expectedServices = new Map([["consultoria", "60 € / 90 € IVA incluido"], ["busqueda-vehiculo-europa", undefined], ["primera-compra-subasta", "397 € IVA incluido"], ["primera-importacion-contigo", "997 € IVA incluido"]]);
+if (activeServices.length !== 5) failures.push("Deben publicarse exactamente cinco servicios activos");
+const expectedServices = new Map([["compra-subasta-copart", undefined], ["consultoria", "60 € / 90 € IVA incluido"], ["busqueda-vehiculo-europa", undefined], ["primera-compra-subasta", "397 € IVA incluido"], ["primera-importacion-contigo", "997 € IVA incluido"]]);
 for (const [id, price] of expectedServices) if (activeServices.find((service) => service.id === id)?.priceLabel !== price) failures.push(`Precio o servicio incorrecto: ${id}`);
 const accompanimentService = activeServices.find((service) => service.id === "primera-importacion-contigo");
 const accompanimentPage = read("servicios/primera-importacion-contigo/index.html");
@@ -143,10 +145,14 @@ const dist = join(root, "dist");
 if (relative(root, dist) !== "dist") throw new Error("Ruta de salida no segura");
 rmSync(dist, { recursive: true, force: true });
 mkdirSync(dist, { recursive: true });
-const publicDirectories = ["academia", "actualizaciones", "assets", "control", "directos", "go", "gracias-acompanamiento", "herramientas", "importa-en-7-dias", "ivi", "mis-vehiculos", "oportunidades", "placasverdes", "recursos", "recomendaciones", "servicios", "subastaspro"];
+const publicDirectories = ["aviso-legal", "privacidad", "cookies", "condiciones-de-compra", "como-encontrar-coches-para-revender", "academia", "actualizaciones", "assets", "control", "directos", "go", "gracias-acompanamiento", "herramientas", "importa-en-7-dias", "ivi", "mis-vehiculos", "oportunidades", "placasverdes", "recursos", "recomendaciones", "servicios", "subastaspro"];
 const publicFiles = ["index.html", "404.html", "CNAME", "favicon.svg", "robots.txt", "sitemap.xml"];
 for (const directory of publicDirectories) if (existsSync(join(root, directory))) cpSync(join(root, directory), join(dist, directory), { recursive: true });
 for (const file of publicFiles) if (existsSync(join(root, file))) cpSync(join(root, file), join(dist, file));
+
+for (const htmlFile of walk(dist).filter((file) => extname(file).toLowerCase() === ".html")) {
+  writeFileSync(htmlFile, normalizeHtmlConsent(readFileSync(htmlFile, "utf8")), "utf8");
+}
 
 for (const obsolete of ["assets/academy/map", "assets/academy-private.js", "assets/academy-private.css", "servicios/consultas", "servicios/revision-anuncio", "servicios/calculo-coste-real", "servicios/vendedor-documentacion", "servicios/compra-preparada", "servicios/compra-preparada-online", "servicios/pack-personalizado", "servicios/busco-filtro-compruebo", "servicios/busco-y-filtro", "servicios/mini-filtro-gratuito"]) rmSync(join(dist, obsolete), { recursive: true, force: true });
 

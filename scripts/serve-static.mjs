@@ -3,7 +3,7 @@ import { createServer } from "node:http";
 import { dirname, extname, join, normalize, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..", process.argv.find((value) => value.startsWith("--root="))?.slice(7) || ".");
 const port = Number(process.argv.find((value) => value.startsWith("--port="))?.split("=")[1] || 4173);
 const types = { ".css": "text/css; charset=utf-8", ".html": "text/html; charset=utf-8", ".jpg": "image/jpeg", ".js": "text/javascript; charset=utf-8", ".json": "application/json; charset=utf-8", ".svg": "image/svg+xml", ".webp": "image/webp", ".xml": "application/xml; charset=utf-8" };
 

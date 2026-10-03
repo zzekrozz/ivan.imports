@@ -48,9 +48,10 @@ test("la Academia gratuita conserva exactamente 13, 72, 317 y 17", () => {
   assert.equal(readdirSync(resolve(root, "academia/paso"), { withFileTypes: true }).filter((entry) => entry.isDirectory()).length, 72);
 });
 
-test("los cuatro servicios definidos son la única oferta activa", () => {
+test("los cinco servicios definidos son la única oferta activa", () => {
   const active = json("assets/data/services.json").services.filter((service) => service.active);
   assert.deepEqual(active.map(({ id, priceLabel }) => [id, priceLabel]), [
+    ["compra-subasta-copart", undefined],
     ["consultoria", "60 € / 90 € IVA incluido"],
     ["busqueda-vehiculo-europa", undefined],
     ["primera-compra-subasta", "397 € IVA incluido"],
