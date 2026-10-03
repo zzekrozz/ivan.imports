@@ -4,7 +4,9 @@
 .ivan-consent h2 { font-size: 1.3rem; margin: 0 0 12px; }
 .ivan-consent p { font-size: .92rem; line-height: 1.55; margin: 0 0 16px; }
 .ivan-consent a { color: #175fba; }
-.ivan-consent-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.ivan-consent-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.ivan-consent-actions [data-consent-choice="save"] { grid-column: 1 / -1; }
+@media (max-width: 620px) { .ivan-consent-actions { grid-template-columns: 1fr; } }
 .ivan-consent-actions button { flex: 1 1 140px; min-height: 44px; border: 1px solid #175fba; border-radius: 8px; background: #fff; color: #175fba; padding: 10px 12px; font: 700 .85rem Inter, sans-serif; cursor: pointer; }
 .ivan-consent-actions button:hover { background: #f0f6ff; }
 .ivan-consent button:focus-visible, .ivan-consent input:focus-visible { outline: 3px solid #175fba; outline-offset: 3px; }
