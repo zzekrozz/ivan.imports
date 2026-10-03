@@ -5,6 +5,8 @@ export const PRICE_CHANGE_DATE = "2026-11-01";
 export const CHECKOUT_URL = "#";
 export const PROMOTION_MONTH = "octubre";
 export const UPDATE_MONTHS = "octubre y noviembre";
+// Pendiente: URL real del área del alumno de esta formación. Vacío = sin enlace.
+export const STUDENT_ACCESS_URL = "";
 
 // Usar la imagen de marca existente hasta disponer de una portada real del curso.
 export const OG_IMAGE = "/assets/og-ivanimports.jpg";

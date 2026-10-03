@@ -20,9 +20,16 @@ test("The versioned landing matches the generator and uses existing shell and tr
   const html = await readFile(new URL("../como-encontrar-coches-para-revender/index.html", import.meta.url), "utf8");
   assert.equal(html, renderRevenderLanding());
   for (const id of ["hero_cta", "mid_cta", "pricing_cta", "sticky_mobile_cta"]) assert.ok(html.includes('data-cta="' + id + '"'));
-  assert.ok(html.includes("<site-header>"));
+  assert.ok(html.includes('class="site-nav hub-nav rev-header"'));
   assert.ok(html.includes("<site-footer>"));
   assert.ok(html.includes("GTM-PRKZJFTT"));
-  assert.equal((html.match(/<details>/g) || []).length, 8);
+  assert.equal((html.match(/<details>/g) || []).length, 10);
   assert.equal((html.match(/Captura real del curso pendiente/g) || []).length, 4);
+});
+
+test("Dedicated header has no exit menu and shows student access only when configured", () => {
+  const header = (html) => html.match(/<header[\s\S]*?<\/header>/)[0];
+  assert.doesNotMatch(header(renderRevenderLanding()), /Academia|Herramientas|Mis Servicios|Entrar gratis|nav-toggle|Ya soy alumno/);
+  assert.match(header(renderRevenderLanding({ ...config, STUDENT_ACCESS_URL: "https://example.systeme.io/alumno" })), /Ya soy alumno · Entrar/);
+  assert.doesNotMatch(header(renderRevenderLanding({ ...config, STUDENT_ACCESS_URL: "#" })), /Ya soy alumno/);
 });

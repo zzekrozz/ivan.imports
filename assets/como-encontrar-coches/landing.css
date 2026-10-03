@@ -47,9 +47,9 @@
 .revender-page .rev-questions li:last-child { grid-column: 1 / -1; }
 .revender-page .rev-emphasis { margin-top: 24px; padding: 20px 24px; border-left: 3px solid var(--hub-teal); color: var(--hub-deep); background: var(--hub-alt); font-weight: 800; }
 .revender-page .rev-time { padding: clamp(28px, 4vw, 44px); border-radius: 18px; background: var(--hub-deep); color: #fff; }
-.revender-page .rev-time strong { display: block; font-size: clamp(4rem, 7vw, 6rem); line-height: 1; color: #fff; }
+.revender-page .rev-time h3 { margin-top: 18px; font-size: clamp(1.75rem, 3vw, 2.7rem); line-height: 1.12; color: #fff; }
+.revender-page .rev-time .hub-kicker { color: #82e5ed; }
 .revender-page .rev-time p { color: #e4edf7; margin-top: 18px; }
-.revender-page .rev-time small { display: block; margin-top: 18px; color: #d0e1f2; }
 .revender-page .rev-dark { background: var(--hub-deep); }
 .revender-page .rev-dark h2, .revender-page .rev-dark h3, .revender-page .rev-dark strong { color: #fff; }
 .revender-page .rev-dark p { color: #e0ebf7; }
@@ -72,10 +72,6 @@
 .revender-page .rev-update-price strong { display: block; margin-top: 10px; color: var(--hub-deep); font-size: 2.7rem; line-height: 1; }
 .revender-page .rev-update-price > div:first-child { border: 2px solid var(--hub-blue); }
 .revender-page .rev-note { margin-top: 24px; padding: 18px 22px; border: 1px solid var(--hub-border); border-radius: 12px; background: var(--hub-alt); }
-.revender-page .rev-consult { display: flex; gap: 24px; justify-content: space-between; align-items: center; padding: 26px; border: 1px solid var(--hub-border); border-radius: 16px; background: #fff; }
-.revender-page .rev-consult h2 { font-size: 1.45rem; margin-bottom: 10px; }
-.revender-page .rev-consult p { max-width: 72ch; }
-.revender-page .rev-consult a { flex-shrink: 0; min-height: 44px; display: inline-flex; align-items: center; color: var(--hub-blue); font-weight: 800; }
 .revender-page .rev-pricing { padding: clamp(28px, 5vw, 58px); border-radius: 22px; background: var(--hub-deep); display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, .8fr); gap: 32px; align-items: center; }
 .revender-page .rev-pricing h2 { color: #fff; font-size: clamp(2rem, 3.5vw, 3.2rem); line-height: 1.08; margin: 14px 0 22px; }
 .revender-page .rev-pricing .hub-kicker { color: #82e5ed; }
@@ -96,7 +92,6 @@
   .revender-page .rev-grid { grid-template-columns: 1fr; }
   .revender-page .rev-hero h1 { max-width: 20ch; }
   .revender-page .rev-cards, .revender-page .rev-video-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .revender-page .rev-consult { align-items: flex-start; flex-direction: column; gap: 12px; }
 }
 @media (max-width: 760px) {
   body.revender-page { padding-bottom: calc(78px + env(safe-area-inset-bottom)); }
@@ -115,3 +110,6 @@
   .revender-page .rev-placeholder { margin: 10px; padding: 18px; }
   .revender-page .rev-payment { font-size: .8rem; }
 }
+
+.revender-page .rev-student-link { min-height: 44px; display: inline-flex; align-items: center; color: var(--hub-muted); font-size: .82rem; text-decoration: none; }
+.revender-page .rev-header .nav-inner { justify-content: space-between; }

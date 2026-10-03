@@ -39,29 +39,51 @@ try {
     const ctas = page.locator("[data-cta]");
     assert.equal(await ctas.count(), 4);
     for (let i = 0; i < 4; i++) assert.equal(await ctas.nth(i).getAttribute("href"), "#");
-    if (width <= 760) {
-      assert.equal(await page.locator(".rev-sticky").isVisible(), true);
-      await page.locator(".nav-toggle").click();
-      assert.equal(await page.locator(".nav-toggle").getAttribute("aria-expanded"), "true");
-      await page.keyboard.press("Escape");
-      assert.equal(await page.locator(".nav-toggle").getAttribute("aria-expanded"), "false");
-    } else {
-      assert.equal(await page.locator(".rev-sticky").isVisible(), false);
-    }
+    assert.equal(await page.locator(".nav-toggle").count(), 0);
+    assert.equal(await page.locator(".nav-panel").count(), 0);
+    assert.equal(await page.locator(".rev-student-link").count(), 0);
+    const headerBounds = await page.locator(".rev-header").boundingBox();
+    assert.ok(headerBounds.height >= 44 && headerBounds.height <= 100);
+    assert.equal(await page.locator(".rev-sticky").isVisible(), false);
     await page.screenshot({ path: "qa-artifacts/landing-" + width + ".png", fullPage: true });
     if (width === 390 || width === 1440) {
       const preview = await page.screenshot({ fullPage: false });
       console.log("QA_SCREENSHOT_" + width + "=" + preview.toString("base64"));
     }
-    const question = page.locator(".rev-faq details").first();
-    await question.locator("summary").click();
-    assert.equal(await question.getAttribute("open"), "");
-    assert.equal(await question.locator("p").isVisible(), true);
-    await question.locator("summary").click();
-    assert.equal(await question.getAttribute("open"), null);
+    // Part of the hero is still visible: the sticky must remain hidden.
+    await page.evaluate(() => {
+      const hero = document.querySelector(".rev-hero");
+      window.scrollTo({ top: hero.offsetTop + hero.offsetHeight - 40, behavior: "instant" });
+    });
+    await page.waitForTimeout(150);
+    assert.equal(await page.locator(".rev-sticky").isVisible(), false);
+    await page.evaluate(() => {
+      const hero = document.querySelector(".rev-hero");
+      window.scrollTo({ top: hero.offsetTop + hero.offsetHeight + 2, behavior: "instant" });
+    });
+    await page.waitForTimeout(150);
+    assert.equal(await page.locator(".rev-sticky").isVisible(), width <= 760);
+    await page.screenshot({ path: "qa-artifacts/after-hero-" + width + ".png" });
+    const questions = page.locator(".rev-faq details");
+    assert.equal(await questions.count(), 10);
+    for (let i = 0; i < 10; i++) {
+      const question = questions.nth(i);
+      await question.locator("summary").click();
+      assert.equal(await question.getAttribute("open"), "");
+      assert.equal(await question.locator("p").isVisible(), true);
+      await question.locator("summary").click();
+      assert.equal(await question.getAttribute("open"), null);
+    }
+    await page.locator(".rev-faq").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: "qa-artifacts/faq-" + width + ".png" });
     await page.locator("#pricing_cta").scrollIntoViewIfNeeded();
     await page.waitForTimeout(300);
     assert.equal(await page.locator(".rev-sticky").isVisible(), false);
+    await page.screenshot({ path: "qa-artifacts/pricing-" + width + ".png" });
+    if (width === 390) {
+      const preview = await page.screenshot();
+      console.log("QA_PRICING_390=" + preview.toString("base64"));
+    }
     await page.locator("#pricing_cta").click();
     const tracked = await page.evaluate(() => window.dataLayer.filter((item) => item.event === "revender_checkout_clicked"));
     assert.ok(tracked.some((item) => item.section === "pricing_cta"));
@@ -75,6 +97,9 @@ try {
       });
       assert.ok(footerClear, "Mobile CTA overlaps footer");
     }
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+    await page.waitForTimeout(150);
+    assert.equal(await page.locator(".rev-sticky").isVisible(), false);
     assert.deepEqual(errors, []);
     report.push({ route: "landing", ...metrics, errors, result: "passed" });
     await page.close();

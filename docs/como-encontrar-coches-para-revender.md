@@ -25,9 +25,9 @@ Asignar las rutas en `COURSE_PREVIEWS` y `OG_IMAGE`, luego ejecutar `npm run gen
 
 ## Tracking y móvil
 Se conserva GTM-PRKZJFTT y el mecanismo `data-event` de site.js.
-Evento: `revender_checkout_clicked`; `section` identifica `hero_cta`, `mid_cta`, `pricing_cta` y `sticky_mobile_cta`. Todos también tienen id y data-cta. No se envían datos personales.
+`STUDENT_ACCESS_URL` está vacío: no existe todavía una URL real de acceso a esta formación. El enlace “Ya soy alumno · Entrar” solo se renderiza al configurar la URL HTTPS real.\n\nEvento: `revender_checkout_clicked`; `section` identifica `hero_cta`, `mid_cta`, `pricing_cta` y `sticky_mobile_cta`. Todos también tienen id y data-cta. No se envían datos personales.
 
-El atributo `data-mobile-cta` evita la navegación fija inferior únicamente en esta página. El CTA móvil reserva espacio inferior más safe-area; se oculta cuando el CTA de precio está visible. Header y footer siguen siendo los compartidos. FAQ nativo con teclado y sin dependencia de JavaScript.
+El atributo `data-mobile-cta` evita la navegación fija inferior únicamente en esta página. El CTA móvil empieza oculto y solo aparece una vez superado el hero; se oculta al volver al hero y cuando el bloque de precio está visible. Reserva espacio inferior más safe-area. El header dedicado reutiliza logo y estilos de la marca sin menú de salida; el footer sigue siendo compartido. FAQ nativo con teclado y sin dependencia de JavaScript.
 
 ## Verificación
 `npm run check` ejecuta lint, typecheck, tests y build.

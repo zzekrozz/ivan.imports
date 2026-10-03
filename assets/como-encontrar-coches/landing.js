@@ -1,9 +1,18 @@
-// Ocultar el CTA fijo cuando el CTA final ya es visible evita duplicar acciones.
+// El CTA permanece oculto al inicio, al volver al hero y mientras el pricing es visible.
 const sticky = document.querySelector(".rev-sticky");
-const pricing = document.querySelector("#pricing_cta");
-if (sticky && pricing && "IntersectionObserver" in window) {
-  const observer = new IntersectionObserver(([entry]) => {
-    sticky.hidden = entry.isIntersecting;
-  });
+const hero = document.querySelector(".rev-hero");
+const pricing = document.querySelector(".rev-pricing");
+
+if (sticky && hero && pricing && "IntersectionObserver" in window) {
+  const updateSticky = () => {
+    const heroPassed = hero.getBoundingClientRect().bottom <= 0;
+    const priceBounds = pricing.getBoundingClientRect();
+    const pricingVisible = priceBounds.top < window.innerHeight && priceBounds.bottom > 0;
+    sticky.hidden = !heroPassed || pricingVisible;
+  };
+  const observer = new IntersectionObserver(updateSticky, { threshold: 0 });
+  observer.observe(hero);
   observer.observe(pricing);
+  window.addEventListener("resize", updateSticky);
+  updateSticky();
 }
