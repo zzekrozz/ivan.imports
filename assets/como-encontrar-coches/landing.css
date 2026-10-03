@@ -110,3 +110,5 @@
 .revender-page .rev-visual[hidden] { display: none; }
 .revender-page .rev-final-price { display: block; font-size: .9rem; font-weight: 600; line-height: 1.6; letter-spacing: 0; }
 .revender-page .rev-offer small .rev-final-price { display: inline; font-size: inherit; }
+
+.revender-page .rev-pricing p .rev-final-price { display: inline; font-size: inherit; line-height: inherit; font-weight: inherit; }
