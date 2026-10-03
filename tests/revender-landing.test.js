@@ -21,10 +21,11 @@ test("The versioned landing matches the generator and uses existing shell and tr
   assert.equal(html, renderRevenderLanding());
   for (const id of ["hero_cta", "mid_cta", "pricing_cta", "sticky_mobile_cta"]) assert.ok(html.includes('data-cta="' + id + '"'));
   assert.ok(html.includes('class="site-nav hub-nav rev-header"'));
-  assert.ok(html.includes("<site-footer>"));
-  assert.ok(html.includes("GTM-PRKZJFTT"));
+  assert.ok(html.includes("ivan-legal-footer"));
+  assert.ok(html.includes("data-consent-default"));
   assert.equal((html.match(/<details>/g) || []).length, 10);
-  assert.equal((html.match(/Captura real del curso pendiente/g) || []).length, 4);
+  assert.doesNotMatch(html, /Captura real del curso pendiente|rev-placeholder/);
+  assert.equal((html.match(/data-course-preview="[^"]+" hidden/g) || []).length, 4);
 });
 
 test("Dedicated header has no exit menu and shows student access only when configured", () => {

@@ -1,11 +1,12 @@
+import { consentHead } from "./consent-markup.mjs";
+import { legalFooter } from "./render-legal-pages.mjs";
 import * as defaultConfig from "../assets/como-encontrar-coches/config.js";
 
 const escape = (value = "") => String(value).replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
-const playIcon = '<svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><rect x="3" y="3" width="42" height="42" rx="10" stroke="currentColor" stroke-width="2"/><path d="m20 15 14 9-14 9V15Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
 
 export function renderRevenderLanding(config = defaultConfig) {
   const { CURRENT_PRICE, FUTURE_PRICE, PRICE_CHANGE_DATE, CHECKOUT_URL, PROMOTION_MONTH, UPDATE_MONTHS, OG_IMAGE, COURSE_PREVIEWS, STUDENT_ACCESS_URL } = config;
-  const price = (value) => escape(value) + " €";
+  const price = (value) => escape(value) + ' € <span class="rev-final-price">· Precio final</span>';
   const dateLabel = new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "long", timeZone: "UTC" }).format(new Date(PRICE_CHANGE_DATE + "T00:00:00Z"));
   // No fecha actual, temporizadores ni cambio automático de precio.
   const current = price(CURRENT_PRICE);
@@ -13,15 +14,13 @@ export function renderRevenderLanding(config = defaultConfig) {
   const checkout = escape(CHECKOUT_URL);
   const cta = (id, label) => '<a class="btn btn-primary rev-buy" href="' + checkout + '" id="' + id + '" data-cta="' + id + '" data-event="revender_checkout_clicked" data-section="' + id + '" data-item="video-training">' + escape(label) + '</a>';
   const benefits = (items) => '<ul class="rev-benefits">' + items.map((item) => '<li>' + escape(item) + '</li>').join("") + '</ul>';
-  const commonBenefits = ["Estrategias de búsqueda en Europa", "Fuentes y portales que poca gente conoce", "Análisis de mercado y costes reales", "Casos prácticos completos en vídeo"];
+  const commonBenefits = ["Estrategias de búsqueda en Europa", "Fuentes y portales fuera de los habituales", "Análisis de mercado y costes reales", "Casos prácticos completos en vídeo"];
   const heading = (kicker, title, text = "") => '<div class="rev-heading"><span class="hub-kicker">' + escape(kicker) + '</span><h2>' + title + '</h2>' + (text ? '<p>' + text + '</p>' : "") + '</div>';
   const section = (id, className, content) => '<section class="rev-section ' + className + '" id="' + id + '"><div class="hub-shell">' + content + '</div></section>';
   const video = (key, title, caption) => {
     const source = COURSE_PREVIEWS[key];
-    return '<figure class="rev-visual" data-course-preview="' + key + '">' + (source
-      ? '<img src="' + escape(source) + '" alt="' + escape(title) + '" width="1280" height="720" loading="' + (key === "hero" ? "eager" : "lazy") + '" decoding="async">'
-      : '<div class="rev-placeholder">' + playIcon + '<span>Captura real del curso pendiente</span><small>Espacio reservado para ' + escape(title.toLowerCase()) + '.</small></div>') +
-      '<figcaption><strong>' + escape(title) + '</strong><p>' + escape(caption) + '</p></figcaption></figure>';
+    if (!source) return '<figure class="rev-visual" data-course-preview="' + key + '" hidden></figure>';
+    return '<figure class="rev-visual" data-course-preview="' + key + '"><img src="' + escape(source) + '" alt="' + escape(title) + '" width="1280" height="720" loading="' + (key === "hero" ? "eager" : "lazy") + '" decoding="async"><figcaption><strong>' + escape(title) + '</strong><p>' + escape(caption) + '</p></figcaption></figure>';
   };
   const skills = [
     ["Búsqueda", "Diferentes estrategias para encontrar vehículos", "Aprende a identificar candidatos y a cambiar de enfoque cuando una búsqueda no funciona.", ["Empezar desde un presupuesto", "Buscar por marca, modelo y generación", "Modificar búsquedas y explorar versiones concretas"]],
@@ -54,7 +53,7 @@ export function renderRevenderLanding(config = defaultConfig) {
   const content =
     '<section class="rev-hero"><div class="hub-shell rev-grid"><div><span class="hub-kicker">FORMACIÓN EN VÍDEO · ACCESO INMEDIATO</span><h1>Cómo encontrar coches para revender</h1><p class="rev-lead">Aprende cómo busco vehículos en Europa, cómo comparo su precio con el mercado español y cómo decido qué merece la pena seguir investigando antes de comprar.</p>' +
     benefits(commonBenefits) + '<div class="rev-offer"><strong class="rev-price">' + current + '</strong><span>durante ' + escape(PROMOTION_MONTH) + '</span><small>Después ' + future + '</small></div>' +
-    cta("hero_cta", "QUIERO ACCEDER POR " + CURRENT_PRICE + " €") + '<p class="rev-payment">Pago único · Acceso inmediato</p><p class="rev-payment">Acceso para siempre · Actualizaciones incluidas</p><p class="rev-payment">Mercado abierto europeo · No centrado en subastas</p><div class="rev-not-pdf"><strong>Esto no es un PDF.</strong><p>No vas a recibir una guía de 10 páginas. Entrarás a una formación en vídeo donde me verás buscar vehículos reales, comparar mercados, cambiar de estrategia, descartar coches y analizar si una operación merece seguir investigándose.</p></div></div><div class="rev-hero-aside">' +
+    cta("hero_cta", "ACCEDER AHORA POR " + CURRENT_PRICE + " €") + '<p class="rev-payment">Pago único · Precio final · Acceso inmediato</p><p class="rev-payment">Acceso para siempre · Actualizaciones incluidas</p><p class="rev-payment">Mercado abierto europeo · No centrado en subastas</p><div class="rev-not-pdf"><strong>Esto no es un PDF.</strong><p>No vas a recibir una guía de 10 páginas. Entrarás a una formación en vídeo donde me verás buscar vehículos reales, comparar mercados, cambiar de estrategia, descartar coches y analizar si una operación merece seguir investigándose.</p></div></div><div class="rev-hero-aside">' +
     video("hero", "Búsquedas reales, explicadas en vídeo", "Verás el proceso: buscar, comparar, investigar y decidir qué descartar.") + '<div class="rev-principle"><span class="hub-kicker">Criterio antes de comprar</span><strong>El negocio empieza encontrando bien el coche.</strong></div></div></div></section>' +
     section("el-problema", "rev-section--white", heading("El punto de partida", "«Tengo presupuesto, pero no sé qué coche comprar.»", "Tienes 5.000 €, 10.000 € o 20.000 € para empezar. Abres Mobile.de y aparecen miles de vehículos. El presupuesto es un comienzo; ahora necesitas saber cómo buscar.") +
     '<ul class="rev-questions"><li>¿Qué marca y modelo?</li><li>¿Qué año?</li><li>¿Cuántos kilómetros?</li><li>¿Realmente está barato?</li><li>¿Y si cuesta prácticamente lo mismo una vez puesto en España?</li></ul><p class="rev-emphasis">Eso es precisamente lo que vas a aprender a resolver.</p>') +
@@ -69,11 +68,11 @@ export function renderRevenderLanding(config = defaultConfig) {
     '<div class="rev-cards"><article class="rev-card"><span class="rev-card-label">Mercedes GLA</span><h3>Un candidato que se descarta.</h3><p>Seguir investigando también sirve para decidir que no merece la pena avanzar.</p><span class="rev-status">Descartado</span></article><article class="rev-card"><span class="rev-card-label">Audi TT · 160 CV</span><h3>Cambiar de versión cambia la búsqueda.</h3><p>Una opción no resulta suficientemente interesante. Al cambiar de versión aparece una alternativa mejor para investigar.</p><span class="rev-status rev-status--change">Cambio de estrategia</span></article><article class="rev-card"><span class="rev-card-label">Presupuesto como punto de partida</span><h3>«Empiezo con 5.000 € desde cero.»</h3><p>Cómo empezar cuando tienes un presupuesto, pero todavía no tienes un modelo elegido.</p><span class="rev-status rev-status--change">Búsqueda desde cero</span></article></div><ol class="rev-flow"><li>Buscar</li><li>Analizar</li><li>Descartar</li><li>Cambiar estrategia</li><li>Volver a buscar</li></ol>') +
     section("formacion-en-video", "rev-section--white", heading("Formación completa en vídeo", "Mírame hacerlo, no solo te lo cuento.", "Las lecciones están grabadas directamente sobre búsquedas y vehículos reales. No es un ebook ni simplemente una lista de páginas web.") +
     '<div class="rev-video-grid">' + video("studentArea", "Área del alumno", "Captura real del curso y sus lecciones.") + video("search", "Una búsqueda real", "Fotograma de una búsqueda: presupuesto, filtros y cambios de estrategia.") + video("analysis", "Un caso práctico real", "Fotograma de análisis: comparar mercados y descartar candidatos.") + '</div><div class="hub-actions">' +
-    cta("mid_cta", "QUIERO VER LA FORMACIÓN POR " + CURRENT_PRICE + " €") + '</div><p class="rev-payment">Acceso inmediato después de la compra · Pago único</p>') +
+    cta("mid_cta", "QUIERO VER LA FORMACIÓN POR " + CURRENT_PRICE + " €") + '</div><p class="rev-payment">Pago único · Precio final · Acceso inmediato</p>') +
     section("actualizaciones", "rev-section--alt", '<div class="rev-grid"><div class="rev-copy"><span class="hub-kicker">Acceso para siempre</span><h2>Compra ahora. Quédate con todas las mejoras.</h2><p>La formación ya está preparada para utilizarla hoy. Durante ' + escape(UPDATE_MONTHS) + ' seguiré añadiendo nuevas búsquedas, ejemplos y mejoras al menos semanalmente. Si entras ahora, todas esas actualizaciones estarán incluidas para siempre.</p></div><div class="rev-update-price"><div><span>PRECIO DE LANZAMIENTO · ' + escape(PROMOTION_MONTH).toUpperCase() + '</span><strong>' + current + '</strong></div><div><span>DESDE EL ' + escape(dateLabel).toUpperCase() + '</span><strong>' + future + '</strong></div></div></div>') +
     section("para-quien", "rev-section--white", heading("Para quién es", "Para buscar con más criterio.") + '<div class="rev-cards"><article class="rev-card"><span class="rev-card-label">Empiezas</span><h3>Quieres comprar coches para revender y no sabes qué buscar.</h3></article><article class="rev-card"><span class="rev-card-label">Amplías tu búsqueda</span><h3>Ya buscas vehículos y quieres nuevas estrategias y fuentes en Europa.</h3><p>También para pequeños compraventas que quieren ampliar sus fuentes.</p></article><article class="rev-card"><span class="rev-card-label">Analizas antes de decidir</span><h3>Quieres evaluar mejor una oportunidad antes de arriesgar tu dinero.</h3></article></div><p class="rev-note"><strong>Actualmente, el contenido está centrado principalmente en la búsqueda por Europa.</strong> La parte específica de España se añadirá próximamente.</p>') +
     section("acceder", "rev-section--white", '<div class="rev-pricing"><div><span class="hub-kicker">El negocio empieza encontrando bien</span><h2>Aprende a buscar antes de comprar.</h2>' + benefits(["Formación completa en vídeo", "Acceso inmediato", "Acceso para siempre", "Actualizaciones futuras incluidas", "Casos prácticos reales"]) + '</div><div><strong class="rev-price">' + current + '</strong><p>Precio especial durante ' + escape(PROMOTION_MONTH) + '.<br>A partir del ' + escape(dateLabel) + ': ' + future + '.</p>' +
-    cta("pricing_cta", "ACCEDER AHORA POR " + CURRENT_PRICE + " €") + '<p class="rev-payment">Pago único.</p></div></div>') +
+    cta("pricing_cta", "ACCEDER AHORA POR " + CURRENT_PRICE + " €") + '<p class="rev-payment">Pago único · Precio final · Acceso inmediato</p></div></div>') +
     section("preguntas-frecuentes", "", '<div class="rev-faq">' + heading("Antes de acceder", "Preguntas frecuentes") + faq.map(([question, answer]) => '<details><summary>' + escape(question) + '</summary><p>' + escape(answer) + '</p></details>').join("") + '</div>');
 
   return '<!doctype html>\n<html lang="es">\n<head>\n' +
@@ -83,10 +82,10 @@ export function renderRevenderLanding(config = defaultConfig) {
     '<meta property="og:site_name" content="IvanImports"><meta property="og:locale" content="es_ES"><meta property="og:type" content="website"><meta property="og:title" content="' + title + '"><meta property="og:description" content="' + description + '"><meta property="og:url" content="' + canonical + '"><meta property="og:image" content="' + escape(image) + '">\n' +
     '<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="' + title + '"><meta name="twitter:description" content="' + description + '"><meta name="twitter:image" content="' + escape(image) + '">\n' +
     '<link rel="stylesheet" href="/assets/site.css"><link rel="stylesheet" href="/assets/hub.css"><link rel="stylesheet" href="/assets/como-encontrar-coches/landing.css">\n' +
-    '<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({\'gtm.start\':new Date().getTime(),event:\'gtm.js\'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!=\'dataLayer\'?\'&l=\'+l:\'\';j.async=true;j.src=\'https://www.googletagmanager.com/gtm.js?id=\'+i+dl;f.parentNode.insertBefore(j,f);})(window,document,\'script\',\'dataLayer\',\'GTM-PRKZJFTT\');</script>\n' +
+    consentHead() + '\n' +
     '</head><body class="hub-page revender-page" data-mobile-cta="true" data-page-event="revender_landing_viewed" data-page-type="video-training">\n' +
-    '<a class="skip-link" href="#contenido">Saltar al contenido</a><noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PRKZJFTT" height="0" width="0" style="display:none;visibility:hidden" title="Google Tag Manager"></iframe></noscript>\n' +
-    landingHeader + '<main id="contenido">' + content + '</main><site-footer></site-footer>\n' +
+    '<a class="skip-link" href="#contenido">Saltar al contenido</a>\n' +
+    landingHeader + '<main id="contenido">' + content + '</main>' + legalFooter() + '\n' +
     '<aside class="rev-sticky" aria-label="Acceder a la formación" hidden>' + cta("sticky_mobile_cta", "Acceder · " + CURRENT_PRICE + " €") + '</aside>\n' +
     '<script src="/assets/site-config.js" defer></script><script src="/assets/site.js" defer></script><script src="/assets/como-encontrar-coches/landing.js" defer></script>\n</body></html>\n';
 }
