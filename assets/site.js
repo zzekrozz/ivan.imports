@@ -60,7 +60,7 @@ function mobileNavMarkup() {
 function renderChrome() {
   document.querySelectorAll("site-header").forEach((node) => { node.outerHTML = headerMarkup(); });
   document.querySelectorAll("site-footer").forEach((node) => { node.outerHTML = footerMarkup(); });
-  if (!document.querySelector(".hub-mobile-nav") && !document.body.dataset.academyRoute) document.body.insertAdjacentHTML("beforeend", mobileNavMarkup());
+  if (!document.querySelector(".hub-mobile-nav") && !document.body.dataset.academyRoute && !document.body.dataset.mobileCta) document.body.insertAdjacentHTML("beforeend", mobileNavMarkup());
   document.body.classList.toggle("has-hub-mobile-nav", Boolean(document.querySelector(".hub-mobile-nav")));
 }
 

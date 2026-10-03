@@ -1,3 +1,4 @@
+import { buildRevenderLanding } from "./build-revender-landing.mjs";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -362,7 +363,9 @@ await writeFile(join(root, "404.html"), `${basePage({
   body: `<section class="hub-page-hero hub-go-hero"><div class="hub-shell"><span class="hub-kicker">Error 404</span><h1>Esta ruta no lleva a ningún coche.</h1><p>Puede que el enlace haya cambiado o que la dirección esté incompleta.</p><div class="hub-actions"><a class="btn btn-primary" href="/">Volver al inicio</a><a class="btn btn-secondary" href="/academia/">Abrir la Academia</a><a class="btn btn-secondary" href="/servicios/">Ver servicios</a></div></div></section>`,
 })}\n`, "utf8");
 
-const sitemapRoutes = ["/", "/academia/", "/herramientas/", "/mi-operacion/", "/mi-operacion/candidatos/", "/recursos/", "/recursos/respuestas/", "/academia/ayuda/", "/academia/edicion-pdf/", "/oportunidades/", "/directos/", "/servicios/", "/recomendaciones/", "/go/", "/actualizaciones/", "/placasverdes/", ...program.stages.map((stage) => `/academia/etapa/${stage.slug}/`), ...program.lessons.map((lesson) => `/academia/paso/${lesson.slug}/`), ...program.concepts.filter((concept) => standaloneConceptIds.has(concept.id)).map((concept) => `/academia/conceptos/${slugify(concept.title)}/`), placasPath, ...publicTools.map((tool) => tool.publicPath), ...opportunitiesData.opportunities.filter((item) => item.published).map((item) => `/oportunidades/${item.slug}/`), ...servicesData.services.filter((item) => item.active).map(servicePath)];
+await buildRevenderLanding(root);
+
+const sitemapRoutes = ["/como-encontrar-coches-para-revender/", "/", "/academia/", "/herramientas/", "/mi-operacion/", "/mi-operacion/candidatos/", "/recursos/", "/recursos/respuestas/", "/academia/ayuda/", "/academia/edicion-pdf/", "/oportunidades/", "/directos/", "/servicios/", "/recomendaciones/", "/go/", "/actualizaciones/", "/placasverdes/", ...program.stages.map((stage) => `/academia/etapa/${stage.slug}/`), ...program.lessons.map((lesson) => `/academia/paso/${lesson.slug}/`), ...program.concepts.filter((concept) => standaloneConceptIds.has(concept.id)).map((concept) => `/academia/conceptos/${slugify(concept.title)}/`), placasPath, ...publicTools.map((tool) => tool.publicPath), ...opportunitiesData.opportunities.filter((item) => item.published).map((item) => `/oportunidades/${item.slug}/`), ...servicesData.services.filter((item) => item.active).map(servicePath)];
 const uniqueRoutes = [...new Set(sitemapRoutes.filter((route) => !route.startsWith("/mi-operacion/") && !route.startsWith("/mis-vehiculos/")))];
 await writeFile(join(root, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${uniqueRoutes.map((route) => `  <url><loc>${siteUrl}${route}</loc><lastmod>2026-08-13</lastmod></url>`).join("\n")}\n</urlset>\n`, "utf8");
 

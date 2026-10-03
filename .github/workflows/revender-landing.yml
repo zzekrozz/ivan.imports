@@ -1,0 +1,38 @@
+name: Landing de formación en vídeo
+on:
+  push:
+    branches: [codex/como-encontrar-coches-para-revender]
+  pull_request:
+    paths:
+      - 'como-encontrar-coches-para-revender/**'
+      - 'assets/como-encontrar-coches/**'
+      - 'assets/site.js'
+      - 'scripts/*revender*'
+      - 'scripts/build-public-pages.mjs'
+      - 'scripts/build-check.mjs'
+      - 'tests/revender-landing.test.js'
+      - '.github/workflows/revender-landing.yml'
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: test -f dist/como-encontrar-coches-para-revender/index.html
+      - run: npm install --no-save --package-lock=false @playwright/test@1.56.1
+      - run: npx playwright install --with-deps chromium
+      - run: node scripts/qa-revender-landing.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: revender-responsive-qa
+          path: qa-artifacts/
+          if-no-files-found: ignore
