@@ -56,8 +56,8 @@ for (const file of seoPages) {
 }
 
 const activeServices = services.services.filter((service) => service.active);
-if (activeServices.length !== 4) failures.push("Deben publicarse exactamente cuatro servicios activos");
-const expectedServices = new Map([["consultoria", "60 € / 90 € IVA incluido"], ["busqueda-vehiculo-europa", undefined], ["primera-compra-subasta", "397 € IVA incluido"], ["primera-importacion-contigo", "997 € IVA incluido"]]);
+if (activeServices.length !== 5) failures.push("Deben publicarse exactamente cinco servicios activos");
+const expectedServices = new Map([["compra-subasta-copart", undefined], ["consultoria", "60 € / 90 € IVA incluido"], ["busqueda-vehiculo-europa", undefined], ["primera-compra-subasta", "397 € IVA incluido"], ["primera-importacion-contigo", "997 € IVA incluido"]]);
 for (const [id, price] of expectedServices) if (activeServices.find((service) => service.id === id)?.priceLabel !== price) failures.push(`Precio o servicio incorrecto: ${id}`);
 const accompanimentService = activeServices.find((service) => service.id === "primera-importacion-contigo");
 const accompanimentPage = read("servicios/primera-importacion-contigo/index.html");

@@ -328,7 +328,9 @@ test("el entitlement es idempotente, persistente y no reduce el bonus existente"
   assert.equal(entitlementSet.at(-1).includes("EX"), false, "el acceso comprado no debe caducar silenciosamente");
 });
 
-test("auth request es neutral; código y magic link son de un uso; cookie segura y logout revoca", async () => {
+test("auth request es neutral; código y magic link son de un uso; cookie segura y logout revoca", async (t) => {
+  // La sesión y el repositorio de prueba deben usar el mismo reloj que el handler.
+  t.mock.timers.enable({ apis: ["Date"], now: Date.parse("2026-08-12T10:00:00.000Z") });
   const service = createMemoryService();
   const env = academyEnv();
   await seedEntitlement(service, env);
