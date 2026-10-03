@@ -17,7 +17,7 @@ try {
   });
   browser = await chromium.launch();
   for (const width of [320, 360, 390, 430, 768, 1024, 1440]) {
-    const page = await browser.newPage({ viewport: { width, height: 844 }, deviceScaleFactor: 1 });
+    const page = await browser.newPage({ viewport: { width, height: 844 }, deviceScaleFactor: 1, reducedMotion: "reduce" });
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
     await page.route("https://www.googletagmanager.com/**", (route) => route.abort());
@@ -71,7 +71,7 @@ try {
       await question.locator("summary").click();
       assert.equal(await question.getAttribute("open"), "");
       assert.equal(await question.locator("p").isVisible(), true);
-      await question.locator("summary").click();
+      await question.locator("summary").press("Enter");
       assert.equal(await question.getAttribute("open"), null);
     }
     await page.locator(".rev-faq").scrollIntoViewIfNeeded();
