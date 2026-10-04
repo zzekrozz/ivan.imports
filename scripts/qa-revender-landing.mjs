@@ -11,7 +11,7 @@ const server = spawn(process.execPath, ["scripts/serve-static.mjs", "--port=4173
 let browser;
 const report = [];
 // Capturas de sección sin chrome fijo; las verificaciones funcionales lo conservan.
-const sectionCaptureStyle = ".rev-header,.rev-sticky{visibility:hidden!important;}";
+const sectionCaptureStyle = ".rev-header,.rev-sticky,.skip-link{visibility:hidden!important;}";
 try {
   await new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error("Static server timeout")), 10000);

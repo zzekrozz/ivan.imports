@@ -1,5 +1,6 @@
 /* Automotive editorial. Reutiliza la paleta y tipografías de IvanImports. */
 .revender-page { --revender-space: clamp(64px, 8vw, 124px); --rev-mono: ui-monospace, "SFMono-Regular", Consolas, monospace; background: var(--hub-surface); }
+body.revender-page { background: var(--hub-surface); }
 .revender-page main { overflow: clip; }
 .revender-page .hub-shell { width: min(1280px, calc(100% - 80px)); }
 .revender-page .rev-section { position: relative; padding-block: var(--revender-space); border-top: 1px solid var(--hub-border); }
@@ -22,7 +23,8 @@
 .revender-page .rev-final-price { display: block; font: 500 .85rem/1.6 var(--rev-mono); letter-spacing: 0; }
 .revender-page .rev-offer small { flex-basis: 100%; font-size: .85rem; color: var(--hub-muted); }
 .revender-page .rev-offer small .rev-final-price, .revender-page .rev-pricing p .rev-final-price { display: inline; font: inherit; letter-spacing: inherit; }
-.revender-page .rev-buy { min-height: 56px; border-radius: 3px; box-shadow: none; text-align: center; white-space: normal; position: relative; transition: background-color .2s, transform .2s; }
+.revender-page .rev-buy { min-height: 56px; border-radius: 3px; box-shadow: none; background: var(--hub-blue); text-align: center; white-space: normal; position: relative; transition: background-color .2s, transform .2s; }
+.revender-page .rev-buy:hover { background: var(--hub-deep); }
 .revender-page .rev-buy::after { content: "↗"; margin-left: 14px; transition: transform .2s; }
 .revender-page .rev-buy:hover::after { transform: translate(2px, -2px); }
 .revender-page .rev-payment { margin-top: 12px; font-size: .8rem; line-height: 1.5; }
