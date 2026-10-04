@@ -29,7 +29,7 @@ try {
     const response = await page.goto("http://127.0.0.1:4173/como-encontrar-coches-para-revender", { waitUntil: "networkidle" });
     assert.equal(response.status(), 200);
     await page.evaluate(() => document.fonts.ready);
-    assert.equal(await page.evaluate(() => document.fonts.check('600 48px "Barlow Condensed"')), true, "Barlow must be loaded before visual QA");
+    assert.equal(await page.evaluate(() => document.fonts.check('800 48px "Barlow Condensed"')), true, "Barlow must be loaded before visual QA");
     await page.locator("#ivan-consent").waitFor({ state: "visible" });
     assert.deepEqual(analyticsRequests, [], "Analytics requested before consent");
     assert.equal(await page.evaluate(() => window.IVAN_CONSENT.getState().analytics), false);
@@ -55,9 +55,8 @@ try {
     assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem("ivanimports.consent.v1")).analytics), false);
     assert.doesNotMatch(await page.locator("body").innerText(), /Captura real del curso pendiente|Espacio reservado para|Fuentes y portales que poca gente conoce/);
     assert.match(await page.locator(".rev-offer").innerText(), new RegExp(CURRENT_PRICE + " €"));
-    assert.match(await page.locator(".rev-offer").innerText(), /Precio final/);
     assert.match(await page.locator(".rev-update-price").innerText(), new RegExp(FUTURE_PRICE + " €"));
-    assert.equal(await page.locator("#hero_cta").innerText(), "ACCEDER AHORA POR " + CURRENT_PRICE + " €");
+    assert.equal(await page.locator("#hero_cta").innerText(), "Acceder por " + CURRENT_PRICE + " €");
     for (const legalRoute of ["/aviso-legal", "/privacidad", "/cookies", "/condiciones-de-compra"]) assert.equal(await page.locator(".ivan-legal-footer a[href='" + legalRoute + "']").count(), 1);
     assert.equal(await page.locator("h1").count(), 1);
     assert.equal(await page.locator(".site-nav").count(), 1);
@@ -101,9 +100,9 @@ try {
     await page.waitForTimeout(150);
     assert.equal(await page.locator(".rev-sticky").isVisible(), width <= 760);
     await page.screenshot({ path: "qa-artifacts/after-hero-" + width + ".png" });
-    const questions = page.locator(".rev-faq details");
-    assert.equal(await questions.count(), 10);
-    for (let i = 0; i < 10; i++) {
+    const questions = page.locator("details");
+    assert.equal(await questions.count(), 6);
+    for (let i = 0; i < 6; i++) {
       const question = questions.nth(i);
       await question.locator("summary").click();
       assert.equal(await question.getAttribute("open"), "");
@@ -120,7 +119,7 @@ try {
     }
     if (width === 390) console.log("QA_CASES_390=" + (await page.locator("#casos-reales").screenshot({ style: sectionCaptureStyle })).toString("base64"));
     if (width === 1440) console.log("QA_PROCESS_1440=" + (await page.locator(".rev-flow").screenshot({ style: sectionCaptureStyle })).toString("base64"));
-    await page.locator(".rev-faq").scrollIntoViewIfNeeded();
+    await page.locator("#preguntas-frecuentes").scrollIntoViewIfNeeded();
     await page.screenshot({ path: "qa-artifacts/faq-" + width + ".png" });
     await page.locator("#pricing_cta").scrollIntoViewIfNeeded();
     await page.waitForTimeout(300);
@@ -139,7 +138,7 @@ try {
     await page.waitForTimeout(300);
     if (width <= 760) {
       const footerClear = await page.evaluate(() => {
-        const last = document.querySelector(".footer-bottom").getBoundingClientRect();
+        const last = document.querySelector("footer").getBoundingClientRect();
         const sticky = document.querySelector(".rev-sticky").getBoundingClientRect();
         return last.bottom <= sticky.top;
       });

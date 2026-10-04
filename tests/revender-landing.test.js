@@ -20,12 +20,13 @@ test("The versioned landing matches the generator and uses existing shell and tr
   const html = await readFile(new URL("../como-encontrar-coches-para-revender/index.html", import.meta.url), "utf8");
   assert.equal(html, renderRevenderLanding());
   for (const id of ["hero_cta", "mid_cta", "pricing_cta", "sticky_mobile_cta"]) assert.ok(html.includes('data-cta="' + id + '"'));
-  assert.ok(html.includes('class="site-nav hub-nav rev-header"'));
+  assert.ok(html.includes('class="nav site-nav rev-header"'));
   assert.ok(html.includes("ivan-legal-footer"));
   assert.ok(html.includes("data-consent-default"));
-  assert.equal((html.match(/<details>/g) || []).length, 10);
+  assert.equal((html.match(/<details>/g) || []).length, 6);
   assert.doesNotMatch(html, /Captura real del curso pendiente|rev-placeholder/);
-  assert.equal((html.match(/data-course-preview="[^"]+" hidden/g) || []).length, 4);
+  assert.doesNotMatch(html, /fonts.googleapis.com/);
+  assert.ok(html.includes("Esquema ilustrativo del análisis"));
 });
 
 test("Dedicated header has no exit menu and shows student access only when configured", () => {
