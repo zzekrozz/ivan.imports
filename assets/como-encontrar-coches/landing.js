@@ -16,3 +16,14 @@ if (sticky && hero && pricing && "IntersectionObserver" in window) {
   window.addEventListener("resize", updateSticky);
   updateSticky();
 }
+
+ // Movimiento breve al entrar; el contenido siempre está visible incluso sin JS.
+if ("IntersectionObserver" in window && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  const reveal = new IntersectionObserver((entries) => {
+    for (const entry of entries) if (entry.isIntersecting) {
+      entry.target.classList.add("rev-reveal");
+      reveal.unobserve(entry.target);
+    }
+  }, { threshold: .08 });
+  document.querySelectorAll(".rev-source-map, .rev-flow, .rev-video-grid").forEach((node) => reveal.observe(node));
+}
