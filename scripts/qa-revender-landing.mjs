@@ -136,7 +136,7 @@ try {
     assert.ok(tracked.some((item) => item.section === "pricing_cta"));
     await page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight, behavior: "instant" }));
     await page.waitForTimeout(300);
-    if (width <= 760) {
+    if (width <= 760 && await page.locator(".rev-sticky").isVisible()) {
       const footerClear = await page.evaluate(() => {
         const last = document.querySelector("footer").getBoundingClientRect();
         const sticky = document.querySelector(".rev-sticky").getBoundingClientRect();
