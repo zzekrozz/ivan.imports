@@ -229,3 +229,23 @@ body.revender-page { background: var(--hub-surface); }
 @media (prefers-reduced-motion: reduce) {
  .revender-page *, .revender-page *::before, .revender-page *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* Prueba tipográfica: Barlow Condensed SemiBold, alojada localmente (SIL OFL). */
+@font-face {
+ font-family: "Barlow Condensed";
+ src: url("/assets/como-encontrar-coches/fonts/BarlowCondensed-SemiBold.woff2") format("woff2");
+ font-style: normal;
+ font-weight: 600;
+ font-display: swap;
+}
+.revender-page .rev-hero h1,
+.revender-page .rev-heading h2,
+.revender-page .rev-copy h2,
+.revender-page .rev-card h3,
+.revender-page .rev-time h3,
+.revender-page .rev-pricing h2 {
+ font-family: "Barlow Condensed", Manrope, Inter, sans-serif;
+ font-weight: 600;
+ letter-spacing: -.015em;
+ font-synthesis: none;
+}

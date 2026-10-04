@@ -28,6 +28,8 @@ try {
     await page.route("https://www.googletagmanager.com/**", (route) => route.abort());
     const response = await page.goto("http://127.0.0.1:4173/como-encontrar-coches-para-revender", { waitUntil: "networkidle" });
     assert.equal(response.status(), 200);
+    await page.evaluate(() => document.fonts.ready);
+    assert.equal(await page.evaluate(() => document.fonts.check('600 48px "Barlow Condensed"')), true, "Barlow must be loaded before visual QA");
     await page.locator("#ivan-consent").waitFor({ state: "visible" });
     assert.deepEqual(analyticsRequests, [], "Analytics requested before consent");
     assert.equal(await page.evaluate(() => window.IVAN_CONSENT.getState().analytics), false);

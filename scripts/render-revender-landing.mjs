@@ -82,7 +82,7 @@ export function renderRevenderLanding(config = defaultConfig) {
     '<link rel="canonical" href="' + canonical + '"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><meta name="theme-color" content="#f4f8fc">\n' +
     '<meta property="og:site_name" content="IvanImports"><meta property="og:locale" content="es_ES"><meta property="og:type" content="website"><meta property="og:title" content="' + title + '"><meta property="og:description" content="' + description + '"><meta property="og:url" content="' + canonical + '"><meta property="og:image" content="' + escape(image) + '">\n' +
     '<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="' + title + '"><meta name="twitter:description" content="' + description + '"><meta name="twitter:image" content="' + escape(image) + '">\n' +
-    '<link rel="stylesheet" href="/assets/site.css"><link rel="stylesheet" href="/assets/hub.css"><link rel="stylesheet" href="/assets/como-encontrar-coches/landing.css">\n' +
+    '<link rel="preload" href="/assets/como-encontrar-coches/fonts/BarlowCondensed-SemiBold.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/assets/site.css"><link rel="stylesheet" href="/assets/hub.css"><link rel="stylesheet" href="/assets/como-encontrar-coches/landing.css">\n' +
     consentHead() + '\n' +
     '</head><body class="hub-page revender-page" data-mobile-cta="true" data-page-event="revender_landing_viewed" data-page-type="video-training">\n' +
     '<a class="skip-link" href="#contenido">Saltar al contenido</a>\n' +
