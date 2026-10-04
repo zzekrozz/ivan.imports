@@ -10,6 +10,8 @@ await mkdir("qa-artifacts", { recursive: true });
 const server = spawn(process.execPath, ["scripts/serve-static.mjs", "--port=4173", "--root=dist"], { stdio: ["ignore", "pipe", "inherit"] });
 let browser;
 const report = [];
+// Capturas de sección sin chrome fijo; las verificaciones funcionales lo conservan.
+const sectionCaptureStyle = ".rev-header,.rev-sticky{visibility:hidden!important;}";
 try {
   await new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error("Static server timeout")), 10000);
@@ -78,7 +80,7 @@ try {
     assert.ok(headerBounds.height >= 44 && headerBounds.height <= 100);
     assert.equal(await page.locator(".rev-sticky").isVisible(), false);
     await page.screenshot({ path: "qa-artifacts/landing-" + width + ".png", fullPage: true });
-    await page.locator(".rev-hero").screenshot({ path: "qa-artifacts/hero-" + width + ".png" });
+    await page.locator(".rev-hero").screenshot({ path: "qa-artifacts/hero-" + width + ".png", style: sectionCaptureStyle });
     if (width === 390 || width === 1440) {
       const preview = await page.screenshot({ fullPage: false });
       console.log("QA_SCREENSHOT_" + width + "=" + preview.toString("base64"));
@@ -108,19 +110,21 @@ try {
       assert.equal(await question.getAttribute("open"), null);
     }
     for (const [name, selector] of [["proceso", ".rev-flow"], ["mercado", "#precio-de-mercado"], ["casos", "#casos-reales"]]) {
-      await page.locator(selector).screenshot({ path: "qa-artifacts/" + name + "-" + width + ".png" });
+      await page.locator(selector).screenshot({ path: "qa-artifacts/" + name + "-" + width + ".png", style: sectionCaptureStyle });
       if (width === 1440 && name === "mercado") {
         await page.locator(selector).scrollIntoViewIfNeeded();
-        console.log("QA_MARKET_1440=" + (await page.screenshot()).toString("base64"));
+        console.log("QA_MARKET_1440=" + (await page.screenshot({ style: sectionCaptureStyle })).toString("base64"));
       }
     }
+    if (width === 390) console.log("QA_CASES_390=" + (await page.locator("#casos-reales").screenshot({ style: sectionCaptureStyle })).toString("base64"));
+    if (width === 1440) console.log("QA_PROCESS_1440=" + (await page.locator(".rev-flow").screenshot({ style: sectionCaptureStyle })).toString("base64"));
     await page.locator(".rev-faq").scrollIntoViewIfNeeded();
     await page.screenshot({ path: "qa-artifacts/faq-" + width + ".png" });
     await page.locator("#pricing_cta").scrollIntoViewIfNeeded();
     await page.waitForTimeout(300);
     assert.equal(await page.locator(".rev-sticky").isVisible(), false);
     await page.screenshot({ path: "qa-artifacts/pricing-" + width + ".png" });
-    await page.locator("#acceder").screenshot({ path: "qa-artifacts/pricing-section-" + width + ".png" });
+    await page.locator("#acceder").screenshot({ path: "qa-artifacts/pricing-section-" + width + ".png", style: sectionCaptureStyle });
     if (width === 390) {
       const preview = await page.screenshot();
       console.log("QA_PRICING_390=" + preview.toString("base64"));

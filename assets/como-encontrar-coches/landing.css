@@ -11,8 +11,8 @@
 .revender-page .rev-header { backdrop-filter: none; box-shadow: none; background: #fff; }
 .revender-page .rev-header .nav-inner { justify-content: space-between; }
 .revender-page .rev-student-link { display: inline-flex; align-items: center; min-height: 44px; font-size: .82rem; color: var(--hub-muted); text-decoration: none; }
-.revender-page .rev-hero { padding: clamp(40px, 6vw, 90px) 0 68px; }
-.revender-page .rev-hero h1 { margin: 20px 0 24px; font-size: clamp(3.1rem, 6.5vw, 6.7rem); line-height: .97; letter-spacing: -.07em; max-width: 12ch; font-weight: 850; }
+.revender-page .rev-hero { padding: clamp(40px, 4vw, 60px) 0 68px; }
+.revender-page .rev-hero h1 { margin: 20px 0 24px; font-size: clamp(3.1rem, 5.5vw, 6rem); line-height: .97; letter-spacing: -.07em; max-width: none; font-weight: 850; }
 .revender-page .rev-lead { max-width: 53ch; font-size: clamp(1rem, 1.35vw, 1.13rem); line-height: 1.65; }
 .revender-page .rev-benefits { list-style: none; display: grid; gap: 10px; margin: 24px 0; }
 .revender-page .rev-benefits li { position: relative; padding-left: 22px; font-size: .93rem; line-height: 1.5; }
@@ -156,7 +156,7 @@
 @media (max-width: 1024px) {
  .revender-page .hub-shell { width: calc(100% - 48px); }
  .revender-page .rev-section::before { left: 24px; }
- .revender-page .rev-hero h1 { font-size: clamp(3rem, 6.6vw, 5rem); }
+ .revender-page .rev-hero h1 { font-size: clamp(3rem, 5.5vw, 4rem); }
  .revender-page .rev-hero-aside { padding-top: 60px; }
  .revender-page .rev-pricing { gap: 36px; }
  .revender-page .rev-flow { gap: 18px; }
