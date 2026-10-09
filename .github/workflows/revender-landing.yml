@@ -3,6 +3,12 @@ on:
   pull_request:
     paths:
       - 'como-encontrar-coches-para-revender/**'
+      - 'docs/landing-final/**'
+      - 'assets/hero-golf.webp'
+      - 'assets/ad-golf.webp'
+      - 'assets/video-thumb.webp'
+      - 'assets/og-landing-revender.jpg'
+      - 'assets/favicon/**'
       - 'assets/como-encontrar-coches/**'
       - 'assets/site.js'
       - 'assets/site-config.js'
@@ -31,7 +37,7 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: test -f dist/como-encontrar-coches-para-revender/index.html
-      - run: npm install --no-save --package-lock=false @playwright/test@1.56.1
+      - run: npm install --include=dev --no-save --package-lock=false @playwright/test@1.56.1 pngjs@7.0.0
       - run: npx playwright install --with-deps chromium
       - run: node scripts/qa-revender-landing.mjs
       - uses: actions/upload-artifact@v4
