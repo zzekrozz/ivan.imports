@@ -7,7 +7,7 @@
 - **Autorización por identidad estable:** el `sub` de Google debe estar en `RADAR_ADMIN_GOOGLE_SUBS` (servidor). El correo no decide nada.
 - **Sesión de servidor:** id aleatorio de 256 bits, guardado en Redis solo como HMAC, cookie `__Host-radar_admin` (`HttpOnly; Secure; SameSite=Strict; Path=/`, sin `Domain`).
 - **Operaciones que modifican:** exigen sesión + cabecera `x-radar-csrf` + `Origin` propio. El login tiene nonce de un solo uso y límite de intentos.
-- **Persistencia:** Upstash Redis existente con prefijo exclusivo `radar:v1:`. Nada de multimedia en Redis.
+- **Persistencia:** Upstash Redis existente con prefijo exclusivo `radar:v1:<entorno>:` (Preview y Producción separados; ver INTEGRACION.md). Nada de multimedia en Redis.
 - **Rutas:** `/radar/` y `/radar/coche/:slug/` (estáticas, recargables mediante rewrite); `/radar/admin/` lo sirve la función (login o panel según sesión), sin enlace público, `noindex`, `Disallow` en `robots.txt`.
 - **Acceso Gratis/PRO en servidor** (`api/_radar/access.js`): los campos que el visitante no puede ver se eliminan antes de responder; no se ocultan con CSS. Todo vehículo nuevo es PRO por defecto.
 

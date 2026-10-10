@@ -26,6 +26,7 @@ const log = (event, data = {}) => console.warn(JSON.stringify({ scope: "radar", 
 
 export const resolveRadarAction = (request) => new URL(request.url).searchParams.get("action") || "";
 
+export const LOGIN_HEADERS = { "Referrer-Policy": "strict-origin-when-cross-origin", "Cross-Origin-Opener-Policy": "same-origin-allow-popups" };
 const PUBLIC_CACHE = { "Cache-Control": "public, max-age=0, s-maxage=5, stale-while-revalidate=30" };
 /** Un análisis PRO abierto puede cerrarse en cualquier momento (por fecha o porque Iván lo cierra): nunca se guarda en la CDN. */
 export const publicCacheHeaders = (views) => (views.some((view) => view?.tier === "open") ? {} : PUBLIC_CACHE);
@@ -139,7 +140,9 @@ export function createRadarHandler({ env = process.env, fetchImpl = fetch, now =
     const headers = baseHeaders({ "Content-Type": "text/html; charset=utf-8", "Content-Security-Policy": ADMIN_CSP });
     if (missing.length) return new Response(adminShell({ state: "unconfigured", missing }), { status: 503, headers });
     const session = setup ? null : await sessionFrom(request);
-    return new Response(adminShell(session ? { state: "panel", csrf: session.csrf } : { state: "login", clientId: config.clientId, setup }), { status: 200, headers });
+    if (session) return new Response(adminShell({ state: "panel", csrf: session.csrf }), { status: 200, headers });
+    // Google Identity Services valida el origen con el Referer del iframe y abre un popup: no-referrer lo rompe.
+    return new Response(adminShell({ state: "login", clientId: config.clientId, setup }), { status: 200, headers: { ...headers, ...LOGIN_HEADERS } });
   }
 
   async function adminNonce(request) {

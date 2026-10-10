@@ -3,14 +3,17 @@ const err = (message) => { const el = document.getElementById("err"); if (el) el
 const api = (action, options = {}) => fetch(`/api/radar/${action}`, { credentials: "same-origin", ...options });
 
 function showSub(sub) {
-  document.querySelector("main .card").innerHTML = `<h1>Tu identificador de Google</h1><p>Cópialo en Vercel como <code>RADAR_ADMIN_GOOGLE_SUBS</code> y vuelve a desplegar. No lo compartas públicamente.</p><p><code id="sub">${sub}</code></p><button class="btn" id="copy">Copiar</button><p>Después de redesplegar, este modo de alta desaparece y solo esa cuenta podrá entrar.</p>`;
+  document.querySelector("main .card").innerHTML = `<h1>Tu identificador de Google</h1><p>Cópialo en Vercel como <code>RADAR_ADMIN_GOOGLE_SUBS</code> y vuelve a desplegar. No lo compartas públicamente.</p><p><code id="sub"></code></p><button class="btn" id="copy">Copiar</button><p>Después de redesplegar, este modo de alta desaparece y solo esa cuenta podrá entrar.</p>`;
+  document.getElementById("sub").textContent = sub;
   document.getElementById("copy").onclick = () => navigator.clipboard.writeText(sub);
 }
 
 async function login() {
   const ready = await new Promise((resolve) => { let tries = 0; const t = setInterval(() => { if (window.google?.accounts?.id || ++tries > 100) { clearInterval(t); resolve(!!window.google?.accounts?.id); } }, 100); });
   if (!ready) return err("No se pudo cargar Google Sign-In.");
-  const { nonce } = await (await api("admin-nonce")).json();
+  const nonceResponse = await api("admin-nonce");
+  if (!nonceResponse.ok) return err(nonceResponse.status === 429 ? "Demasiados intentos; espera unos minutos." : "No se pudo preparar el inicio de sesión.");
+  const { nonce } = await nonceResponse.json();
   window.google.accounts.id.initialize({
     client_id: clientId, nonce, ux_mode: "popup",
     callback: async ({ credential }) => {

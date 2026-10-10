@@ -15,6 +15,26 @@ test("sin sesión no se accede a datos de administración ni al panel", async ()
   assert.match(page.headers.get("x-robots-tag"), /noindex/);
 });
 
+test("la página de login es compatible con Google Identity Services (Referer de origen, popup y CSP)", async () => {
+  for (const env of [{}, { RADAR_ADMIN_GOOGLE_SUBS: "" }]) {
+    const ctx = setup({ env });
+    const page = await ctx.call("admin-page");
+    const html = await page.text();
+    assert.equal(page.headers.get("referrer-policy"), "strict-origin-when-cross-origin", "no-referrer impide a Google validar el origen");
+    assert.equal(page.headers.get("cross-origin-opener-policy"), "same-origin-allow-popups");
+    assert.doesNotMatch(html, /content="no-referrer"/);
+    assert.match(html, /data-client-id="test-client.apps.googleusercontent.com"/);
+    const csp = page.headers.get("content-security-policy");
+    for (const directive of ["script-src 'self' https://accounts.google.com/gsi/", "frame-src https://accounts.google.com/gsi/", "connect-src 'self' https://accounts.google.com/gsi/", "https://accounts.google.com/gsi/style"]) assert.ok(csp.includes(directive), directive);
+    assert.equal((await ctx.call("admin-nonce")).status, 200, "el alta inicial puede pedir nonce");
+  }
+  const ctx = setup();
+  const { r } = await ctx.login();
+  const cookie = ctx.cookieOf(r, "__Host-radar_admin").split(";")[0];
+  const panel = await ctx.call("admin-page", { cookie });
+  assert.equal(panel.headers.get("referrer-policy"), "no-referrer", "el panel conserva no-referrer");
+});
+
 test("sin configuración el panel está cerrado y solo muestra nombres de variables", async () => {
   const ctx = setup({ env: { RADAR_SESSION_SECRET: "" } });
   const page = await ctx.call("admin-page");
