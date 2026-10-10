@@ -8,7 +8,8 @@
     "api/academy.js": { "maxDuration": 60 },
     "api/control.js": { "maxDuration": 30 },
     "api/vehicle.js": { "maxDuration": 15 },
-    "api/ivi.js": { "maxDuration": 30 }
+    "api/ivi.js": { "maxDuration": 30 },
+    "api/radar.js": { "maxDuration": 15 }
   },
   "redirects": [
     { "source": "/importa-en-7-dias", "destination": "/academia/", "permanent": true },
@@ -193,6 +194,11 @@
     { "source": "/servicios/acompanamiento-matriculacion/", "destination": "/servicios/primera-importacion-contigo/", "permanent": true }
   ],
   "rewrites": [
+    { "source": "/radar/admin", "destination": "/api/radar?action=admin-page" },
+    { "source": "/radar/admin/", "destination": "/api/radar?action=admin-page" },
+    { "source": "/api/radar/:action", "destination": "/api/radar?action=:action" },
+    { "source": "/radar/coche/:slug", "destination": "/radar/coche/" },
+    { "source": "/radar/coche/:slug/", "destination": "/radar/coche/" },
     { "source": "/api/ivi/:action", "destination": "/api/ivi?action=:action" },
     { "source": "/mis-vehiculos/:vehicleId", "destination": "/mis-vehiculos/" },
     { "source": "/mis-vehiculos/:vehicleId/", "destination": "/mis-vehiculos/" },
@@ -225,6 +231,13 @@
     { "source": "/control/:path*", "destination": "/api/control?action=page&route=/control/:path*" }
   ],
   "headers": [
+    {
+      "source": "/radar/admin(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" },
+        { "key": "Cache-Control", "value": "private, no-store" }
+      ]
+    },
     {
       "source": "/gracias-acompanamiento",
       "headers": [
