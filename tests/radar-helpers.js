@@ -51,9 +51,8 @@ export function fakeRedis(seed = {}) {
   return { kv, sets, lists, fetchImpl };
 }
 
-export function setup({ env = {}, redisSeed, google = makeGoogle() } = {}) {
+export function setup({ env = {}, redisSeed, google = makeGoogle(), redis = fakeRedis(redisSeed) } = {}) {
   resetJwksCache();
-  const redis = fakeRedis(redisSeed);
   redis.fetchImpl.google = () => new Response(JSON.stringify({ keys: [google.jwk] }), { headers: { "cache-control": "max-age=3600" } });
   const fullEnv = { RADAR_GOOGLE_CLIENT_ID: CLIENT_ID, RADAR_ADMIN_GOOGLE_SUBS: ADMIN_SUB, RADAR_SESSION_SECRET: "x".repeat(40), UPSTASH_REDIS_REST_URL: "https://redis.test", UPSTASH_REDIS_REST_TOKEN: "t", VERCEL_ENV: "production", ...env };
   const uploads = [];

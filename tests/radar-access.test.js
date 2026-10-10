@@ -40,10 +40,10 @@ test("el contador de oportunidades reservadas es real y no cuenta archivadas", (
 });
 
 test("la API pública no filtra datos PRO ni borradores", async () => {
-  const seed = { sets: { "radar:v1:idx:published": ["a", "b", "c"] }, kv: {
-    "radar:v1:vehicle:a": JSON.stringify(v({ id: "a", accessMode: "free", slug: "a" })),
-    "radar:v1:vehicle:b": JSON.stringify(v({ id: "b", accessMode: "pro", analysis: { secret: "SECRETO-PRO" } })),
-    "radar:v1:vehicle:c": JSON.stringify(v({ id: "c", published: false, accessMode: "free" })) } };
+  const seed = { sets: { "radar:v1:production:idx:published": ["a", "b", "c"] }, kv: {
+    "radar:v1:production:vehicle:a": JSON.stringify(v({ id: "a", accessMode: "free", slug: "a" })),
+    "radar:v1:production:vehicle:b": JSON.stringify(v({ id: "b", accessMode: "pro", analysis: { secret: "SECRETO-PRO" } })),
+    "radar:v1:production:vehicle:c": JSON.stringify(v({ id: "c", published: false, accessMode: "free" })) } };
   const ctx = setup({ redisSeed: seed });
   const res = await ctx.call("vehicles");
   const text = await res.text();

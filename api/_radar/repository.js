@@ -1,8 +1,10 @@
 import { hmac, randomToken } from "./security.js";
 
-export const NS = "radar:v1:";
+export const radarNamespace = (environment) => `radar:v1:${environment}:`;
 
 export function createRadarRepository(config, fetchImpl = fetch) {
+  if (!["production", "preview", "development"].includes(config.environment)) throw new Error("radar_environment_required");
+  const NS = radarNamespace(config.environment);
   async function post(path, body) {
     const response = await fetchImpl(`${config.redisUrl}${path}`, {
       method: "POST",

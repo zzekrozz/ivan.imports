@@ -12,6 +12,9 @@ export function sniffImage(bytes) {
 }
 export const EXT = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 
+/** Las fotos de Preview y Producción van a carpetas distintas aunque compartan almacén. */
+export const imagePath = (environment, vehicleId, ext) => `radar/${environment}/vehicles/${vehicleId}/foto.${ext}`;
+
 export function createBlobStore(env = process.env) {
   const token = env.RADAR_BLOB_READ_WRITE_TOKEN || "";
   return {

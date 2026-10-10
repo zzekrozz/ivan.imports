@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { isActive, isHistorical, lockedCount, projectForViewer } from "./_radar/access.js";
-import { EXT, IMAGE_LIMIT, createBlobStore, sniffImage } from "./_radar/blob.js";
+import { EXT, IMAGE_LIMIT, createBlobStore, imagePath, sniffImage } from "./_radar/blob.js";
 import { makeSlug, normalizeTemplate, normalizeVehicleInput, publishErrors, summarize, validId } from "./_radar/vehicle.js";
 import { costSummary } from "../assets/radar/cost-model.js";
 import { createRadarRepository } from "./_radar/repository.js";
@@ -127,7 +127,7 @@ export function createRadarHandler({ env = process.env, fetchImpl = fetch, now =
     if (!type) return fail(415, "unsupported_image");
     const vehicleId = new URL(request.url).searchParams.get("vehicleId") || "";
     const folder = validId(vehicleId) ? vehicleId : "sin-asignar";
-    const out = await blob.put(`radar/vehicles/${folder}/foto.${EXT[type]}`, Buffer.from(bytes), type);
+    const out = await blob.put(imagePath(config.environment, folder, EXT[type]), Buffer.from(bytes), type);
     return json({ url: out.url, type, bytes: bytes.length }, 201);
   }
 

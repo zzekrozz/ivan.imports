@@ -15,7 +15,14 @@ export function radarConfigFromEnv(env = process.env) {
     redisToken: String(env.RADAR_REDIS_REST_TOKEN || env.UPSTASH_REDIS_REST_TOKEN || env.KV_REST_API_TOKEN || ""),
     allowedOrigins: list(env.RADAR_ALLOWED_ORIGINS),
     vercelEnv: String(env.VERCEL_ENV || "development"),
+    environment: radarEnvironment(env.VERCEL_ENV),
   };
+}
+
+/** Preview y Producción nunca comparten datos aunque usen el mismo Redis o Blob: cada entorno tiene su propio prefijo. */
+export function radarEnvironment(vercelEnv) {
+  const value = String(vercelEnv || "development");
+  return value === "production" ? "production" : value === "preview" ? "preview" : "development";
 }
 
 /** Nombres de variables ausentes (nunca valores). */

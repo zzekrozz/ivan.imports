@@ -113,7 +113,7 @@ test("todas las claves de Radar usan su namespace y no tocan otros productos", a
   const ctx = setup();
   await ctx.login();
   assert.ok(ctx.redis.kv.size > 0);
-  for (const key of ctx.redis.kv.keys()) assert.match(key, /^radar:v1:/);
+  for (const key of ctx.redis.kv.keys()) assert.match(key, /^radar:v1:production:/);
 });
 
 test("alta inicial: sin administradores autorizados se muestra el sub propio, sin sesión y sin registrar el identificador", async () => {
