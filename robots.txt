@@ -2,6 +2,7 @@ User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /control/
+Disallow: /radar/admin/
 Disallow: /importa-en-7-dias/gracias/
 
 Sitemap: https://ivanimports.es/sitemap.xml

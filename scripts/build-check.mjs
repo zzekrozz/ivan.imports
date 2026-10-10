@@ -11,7 +11,7 @@ const json = (path) => JSON.parse(read(path));
 
 const requiredRoutes = [
   "aviso-legal/index.html", "privacidad/index.html", "cookies/index.html", "condiciones-de-compra/index.html",
-  "como-encontrar-coches-para-revender/index.html", "index.html", "404.html", "academia/index.html", "control/index.html", "herramientas/index.html", "mis-vehiculos/index.html", "mis-vehiculos/candidatos/index.html", "recursos/index.html", "recursos/respuestas/index.html", "go/index.html", "placasverdes/index.html", "oportunidades/index.html", "directos/index.html", "servicios/index.html", "servicios/busqueda-vehiculo-europa/index.html", "subastaspro/index.html", "recomendaciones/index.html", "actualizaciones/index.html", "academia/ayuda/index.html", "academia/edicion-pdf/index.html", "importa-en-7-dias/gracias/index.html", "gracias-acompanamiento/index.html"
+  "como-encontrar-coches-para-revender/index.html", "index.html", "404.html", "academia/index.html", "control/index.html", "herramientas/index.html", "mis-vehiculos/index.html", "mis-vehiculos/candidatos/index.html", "recursos/index.html", "recursos/respuestas/index.html", "go/index.html", "placasverdes/index.html", "oportunidades/index.html", "radar/index.html", "radar/coche/index.html", "directos/index.html", "servicios/index.html", "servicios/busqueda-vehiculo-europa/index.html", "subastaspro/index.html", "recomendaciones/index.html", "actualizaciones/index.html", "academia/ayuda/index.html", "academia/edicion-pdf/index.html", "importa-en-7-dias/gracias/index.html", "gracias-acompanamiento/index.html"
 ];
 for (const route of requiredRoutes) if (!existsSync(join(root, route))) failures.push(`Falta la ruta pública: ${route}`);
 
@@ -145,7 +145,7 @@ const dist = join(root, "dist");
 if (relative(root, dist) !== "dist") throw new Error("Ruta de salida no segura");
 rmSync(dist, { recursive: true, force: true });
 mkdirSync(dist, { recursive: true });
-const publicDirectories = ["aviso-legal", "privacidad", "cookies", "condiciones-de-compra", "como-encontrar-coches-para-revender", "academia", "actualizaciones", "assets", "control", "directos", "go", "gracias-acompanamiento", "herramientas", "importa-en-7-dias", "ivi", "mis-vehiculos", "oportunidades", "placasverdes", "recursos", "recomendaciones", "servicios", "subastaspro"];
+const publicDirectories = ["aviso-legal", "privacidad", "cookies", "condiciones-de-compra", "como-encontrar-coches-para-revender", "academia", "actualizaciones", "assets", "control", "directos", "go", "gracias-acompanamiento", "herramientas", "importa-en-7-dias", "ivi", "mis-vehiculos", "oportunidades", "placasverdes", "radar", "recursos", "recomendaciones", "servicios", "subastaspro"];
 const publicFiles = ["index.html", "404.html", "CNAME", "favicon.svg", "robots.txt", "sitemap.xml"];
 for (const directory of publicDirectories) if (existsSync(join(root, directory))) cpSync(join(root, directory), join(dist, directory), { recursive: true });
 for (const file of publicFiles) if (existsSync(join(root, file))) cpSync(join(root, file), join(dist, file));
