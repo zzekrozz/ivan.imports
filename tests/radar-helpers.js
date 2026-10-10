@@ -51,13 +51,13 @@ export function fakeRedis(seed = {}) {
   return { kv, sets, lists, fetchImpl };
 }
 
-export function setup({ env = {}, redisSeed, google = makeGoogle(), redis = fakeRedis(redisSeed) } = {}) {
+export function setup({ env = {}, redisSeed, google = makeGoogle(), redis = fakeRedis(redisSeed), now } = {}) {
   resetJwksCache();
   redis.fetchImpl.google = () => new Response(JSON.stringify({ keys: [google.jwk] }), { headers: { "cache-control": "max-age=3600" } });
   const fullEnv = { RADAR_GOOGLE_CLIENT_ID: CLIENT_ID, RADAR_ADMIN_GOOGLE_SUBS: ADMIN_SUB, RADAR_SESSION_SECRET: "x".repeat(40), UPSTASH_REDIS_REST_URL: "https://redis.test", UPSTASH_REDIS_REST_TOKEN: "t", VERCEL_ENV: "production", ...env };
   const uploads = [];
   const blobStore = { configured: true, put: async (path, body, type) => { uploads.push({ path, type, size: body.length }); return { url: `https://abc123.public.blob.vercel-storage.com/${path}` }; } };
-  const handler = createRadarHandler({ env: fullEnv, fetchImpl: redis.fetchImpl, blobStore });
+  const handler = createRadarHandler({ env: fullEnv, fetchImpl: redis.fetchImpl, blobStore, ...(now ? { now } : {}) });
   const call = (action, { method = "GET", headers = {}, body, origin = BASE, cookie } = {}) => handler(new Request(`${BASE}/api/radar?action=${action}`, { method, headers: { ...(origin ? { origin } : {}), ...(cookie ? { cookie } : {}), ...(body ? { "content-type": "application/json" } : {}), ...headers }, body: body ? JSON.stringify(body) : undefined }));
   const cookieOf = (response, name) => (response.headers.getSetCookie?.() || []).find((c) => c.startsWith(`${name}=`));
   async function login(claims, tokenOpts) {

@@ -26,6 +26,10 @@ const log = (event, data = {}) => console.warn(JSON.stringify({ scope: "radar", 
 
 export const resolveRadarAction = (request) => new URL(request.url).searchParams.get("action") || "";
 
+const PUBLIC_CACHE = { "Cache-Control": "public, max-age=0, s-maxage=5, stale-while-revalidate=30" };
+/** Un análisis PRO abierto puede cerrarse en cualquier momento (por fecha o porque Iván lo cierra): nunca se guarda en la CDN. */
+export const publicCacheHeaders = (views) => (views.some((view) => view?.tier === "open") ? {} : PUBLIC_CACHE);
+
 const ADMIN_CSP = "default-src 'self'; script-src 'self' https://accounts.google.com/gsi/; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; frame-src https://accounts.google.com/gsi/; connect-src 'self' https://accounts.google.com/gsi/; img-src 'self' data: https:; base-uri 'none'; form-action 'self'; frame-ancestors 'none'";
 
 export function createRadarHandler({ env = process.env, fetchImpl = fetch, now = () => Date.now(), repository, blobStore } = {}) {
@@ -243,14 +247,14 @@ export function createRadarHandler({ env = process.env, fetchImpl = fetch, now =
         const archive = new URL(request.url).searchParams.get("archive") === "1";
         const list = all.filter((vehicle) => (archive ? isHistorical(vehicle) : isActive(vehicle))).sort((a, b) => String(b.publishedAt).localeCompare(String(a.publishedAt)));
         const visible = list.map(publicView).filter(Boolean);
-        return json({ vehicles: visible, locked: archive ? 0 : lockedCount(all, "free", now()), configured: true }, 200, { "Cache-Control": "public, max-age=0, s-maxage=5, stale-while-revalidate=30" });
+        return json({ vehicles: visible, locked: archive ? 0 : lockedCount(all, "free", now()), configured: true }, 200, publicCacheHeaders(visible));
       }
       if (action === "vehicle" && method === "GET") {
         if (!repo) return fail(404, "not_found");
         const slug = new URL(request.url).searchParams.get("slug") || "";
         const vehicle = /^[a-z0-9-]{3,100}$/.test(slug) ? await repo.vehicleBySlug(slug) : null;
         const view = vehicle ? publicView(vehicle) : null;
-        return view ? json({ vehicle: view }, 200, { "Cache-Control": "public, max-age=0, s-maxage=5, stale-while-revalidate=30" }) : fail(404, "not_found");
+        return view ? json({ vehicle: view }, 200, publicCacheHeaders([view])) : fail(404, "not_found");
       }
       return json({ error: "not_found" }, 404);
     } catch (error) {
