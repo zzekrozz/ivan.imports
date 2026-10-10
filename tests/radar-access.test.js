@@ -74,9 +74,39 @@ test("el archivo histórico solo entrega datos básicos a Gratis y nunca el aná
   const item = v({ accessMode: "pro_open", listingStatus: "archived", spainReference: { min: 1, max: 2, note: "interna" } });
   const free = projectForViewer(item, "free", NOW);
   assert.equal(free.tier, "archive");
-  for (const k of ["analysis", "costs", "comparables", "questions", "risks", "video"]) assert.equal(k in free, false, k);
-  assert.equal("note" in free.spainReference, false);
+  for (const k of ["analysis", "costs", "comparables", "questions", "risks", "video", "costSummary", "spainReference", "firstImpression", "internalNotes"]) assert.equal(k in free, false, k);
   assert.ok(projectForViewer(item, "pro", NOW).analysis);
+});
+
+test("archivo histórico: lo que era PRO sigue siendo PRO; lo que era gratuito conserva su resumen básico", () => {
+  const extra = { listingStatus: "sold", firstImpression: "Opinión de Iván", spainReference: { value: 25000, min: 24000, max: 26000, note: "interna" }, costSummary: { difference: 3000 }, internalNotes: "PRIVADO" };
+  const cases = [["pro", false], ["pro_open", false], ["delayed", false], ["free", true]];
+  for (const [accessMode, keeps] of cases) {
+    const out = projectForViewer(v({ ...extra, accessMode, freeReleaseAt: "2026-12-01T00:00:00Z" }), "free", NOW);
+    assert.equal(out.tier, "archive", accessMode);
+    assert.equal(out.brand, "BMW"); assert.equal(out.price, 21500);
+    for (const k of ["analysis", "costs", "comparables", "questions", "risks", "video", "costSummary", "internalNotes"]) assert.equal(k in out, false, `${accessMode}: ${k}`);
+    assert.equal("firstImpression" in out, keeps, `${accessMode}: firstImpression`);
+    assert.equal("spainReference" in out, keeps, `${accessMode}: spainReference`);
+    if (keeps) assert.deepEqual(out.spainReference, { min: 24000, max: 26000 }, "sin valor exacto ni nota interna");
+  }
+  const released = projectForViewer(v({ ...extra, accessMode: "delayed", freeReleaseAt: "2026-10-01T00:00:00Z" }), "free", NOW);
+  assert.equal(released.firstImpression, "Opinión de Iván", "diferido ya liberado = gratuito");
+  const pro = projectForViewer(v({ ...extra, accessMode: "pro" }), "pro", NOW);
+  assert.equal(pro.tier, "archive"); assert.ok(pro.analysis && pro.costSummary); assert.equal(pro.spainReference.note, "interna"); assert.equal("internalNotes" in pro, false);
+});
+
+test("la API del archivo no entrega a Gratis datos PRO de vehículos archivados", async () => {
+  const seed = { sets: { "radar:v1:production:idx:published": ["p", "f"] }, kv: {
+    "radar:v1:production:vehicle:p": JSON.stringify(v({ id: "p", slug: "bmw-p", accessMode: "pro", listingStatus: "sold", firstImpression: "OPINION-PRO", spainReference: { value: 1, min: 77777, max: 88888 }, analysis: { head: "ANALISIS-PRO" } })),
+    "radar:v1:production:vehicle:f": JSON.stringify(v({ id: "f", slug: "bmw-f", accessMode: "free", listingStatus: "sold", firstImpression: "OPINION-GRATIS" })) } };
+  const ctx = setup({ redisSeed: seed });
+  const text = await (await ctx.call("vehicles&archive=1")).text();
+  assert.equal(JSON.parse(text).vehicles.length, 2);
+  assert.doesNotMatch(text, /OPINION-PRO|ANALISIS-PRO|77777|88888/);
+  assert.match(text, /OPINION-GRATIS/);
+  const ficha = await (await ctx.call("vehicle&slug=bmw-p")).text();
+  assert.doesNotMatch(ficha, /OPINION-PRO|ANALISIS-PRO|77777/);
 });
 
 test("un borrador publicado por error jamás se muestra", () => {

@@ -21,7 +21,7 @@ export const header = () => `<div class="nh"><div class="wr"><a class="lo" href=
 const isExpress = (v) => v.editorialStatus === "express" || v.editorialStatus === "analyzing";
 const spec = (v) => `<div class="sp">${[v.year, v.km != null && K(v.km), [v.fuel, v.hp && `${v.hp} CV`].filter(Boolean).join(" · "), v.transmission].filter(Boolean).map((s) => `<span>${esc(s)}</span>`).join("")}</div>`;
 const statusLabel = (v) => (v.tier === "archive" ? `Archivo · ${v.editorialStatus === "discarded" ? "Descartado por Iván" : LIST[v.listingStatus] || "Archivado"}` : EDIT[v.editorialStatus] || "Radar");
-const refText = (v) => { const r = v.spainReference; if (r && r.min && r.max) return `Referencia en España: ${E(r.min)} – ${E(r.max)}`; if (r && r.value) return `Referencia en España: ${E(r.value)}`; return "Referencia española pendiente de analizar"; };
+const refText = (v) => { const r = v.spainReference; if (r && r.min && r.max) return `Referencia en España: ${E(r.min)} – ${E(r.max)}`; if (r && r.value) return `Referencia en España: ${E(r.value)}`; return v.tier === "archive" ? "Análisis reservado a PRO" : "Referencia española pendiente de analizar"; };
 const cover = (v) => (v.images && v.images[0] ? `<img src="${esc(v.images[0].url)}" alt="${esc(v.images[0].alt || nm(v))}" loading="lazy">` : "Sin fotografía");
 const href = (v) => `/radar/coche/${encodeURIComponent(v.slug)}/`;
 

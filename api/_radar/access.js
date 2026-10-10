@@ -32,6 +32,11 @@ export function visibleTier(vehicle, nowMs = Date.now()) {
   return "pro"; // por defecto, todo vehículo nuevo es PRO
 }
 
+/** Opinión editorial de Iván: solo pasa al archivo público si el vehículo ya era gratuito cuando estaba activo. */
+const EDITORIAL_FIELDS = ["firstImpression"];
+const ARCHIVE_PUBLIC_FIELDS = BASIC_FIELDS.filter((field) => !EDITORIAL_FIELDS.includes(field));
+const wasFree = (vehicle, nowMs) => vehicle.accessMode === "free" || (vehicle.accessMode === "delayed" && nowMs >= at(vehicle.freeReleaseAt));
+
 const pick = (source, fields) => Object.fromEntries(fields.filter((field) => source[field] !== undefined).map((field) => [field, source[field]]));
 const spain = (vehicle, full) => (vehicle.spainReference ? { spainReference: full ? vehicle.spainReference : { min: vehicle.spainReference.min, max: vehicle.spainReference.max } } : {});
 const questions = (vehicle) => (Array.isArray(vehicle.questions) ? { questions: vehicle.questions.filter((q) => q.public !== false).map((q) => pick(q, QUESTION_PUBLIC)) } : {});
@@ -41,7 +46,12 @@ export function projectForViewer(vehicle, viewer = "free", nowMs = Date.now()) {
   const tier = visibleTier(vehicle, nowMs);
   if (tier === "hidden") return null;
   const full = () => ({ ...pick(vehicle, FULL_FIELDS), ...questions(vehicle), ...spain(vehicle, true) });
-  if (tier === "archive") return viewer === "pro" ? { ...full(), tier: "archive" } : { ...pick(vehicle, BASIC_FIELDS), ...spain(vehicle, false), tier: "archive" };
+  if (tier === "archive") {
+    if (viewer === "pro") return { ...full(), tier: "archive" };
+    // Archivo para Gratis: datos del anuncio. Lo que era PRO (opinión, referencia española) sigue siendo PRO al archivarse;
+    // un "PRO abierto" cuenta como PRO porque la apertura era temporal.
+    return wasFree(vehicle, nowMs) ? { ...pick(vehicle, BASIC_FIELDS), ...spain(vehicle, false), tier: "archive" } : { ...pick(vehicle, ARCHIVE_PUBLIC_FIELDS), tier: "archive" };
+  }
   if (viewer === "pro") return { ...full(), tier: tier === "open" ? "open" : "pro" };
   if (tier === "open") return { ...full(), tier: "open" };
   if (tier === "basic") return { ...pick(vehicle, BASIC_FIELDS), ...spain(vehicle, false), tier: "basic" };
